@@ -35,7 +35,9 @@ for ((i=0;i<${#envarray[@]};i++)); do
    fi
    export CATAMEL_IMAGE_VERSION=$(git rev-parse HEAD)
    docker build -t $3:$CATAMEL_IMAGE_VERSION$LOCAL_ENV -t $3:latest .
+   echo docker build -t $3:$CATAMEL_IMAGE_VERSION$LOCAL_ENV -t $3:latest .
    docker push $3:$CATAMEL_IMAGE_VERSION$LOCAL_ENV
+   echo docker push $3:$CATAMEL_IMAGE_VERSION$LOCAL_ENV
    echo "Deploying to Kubernetes"
    cd ..
    helm install dacat-api-server --name catamel --namespace $LOCAL_ENV --set image.tag=$CATAMEL_IMAGE_VERSION$LOCAL_ENV --set image.repository=$3 ${INGRESS_NAME}

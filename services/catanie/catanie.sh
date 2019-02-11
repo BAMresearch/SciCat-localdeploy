@@ -48,6 +48,8 @@ for ((i=0;i<${#envarray[@]};i++)); do
      echo "Building release"
      ./node_modules/@angular/cli/bin/ng build --configuration $LOCAL_ENV --output-path dist/$LOCAL_ENV
    fi
+   echo STATUS:
+   kubectl cluster-info
    export CATANIE_IMAGE_VERSION=$(git rev-parse HEAD)
    docker build -t $2:$CATANIE_IMAGE_VERSION$LOCAL_ENV -t $2:latest --build-arg env=$LOCAL_ENV .
    echo docker build -t $2:$CATANIE_IMAGE_VERSION$LOCAL_ENV --build-arg env=$LOCAL_ENV .
