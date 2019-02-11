@@ -14,7 +14,6 @@ elif  [ "$(hostname)" == "k8-lrg-prod.esss.dk" ]; then
     INGRESS_NAME="-f ./dacat-gui/dmscprod.yaml"
 fi
 
-export DACATHOME=/home/encima/dev/psi
 export REPO=https://github.com/SciCatProject/catanie.git
 portarray=(30021 30023)
 hostextarray=('-qa' '')
