@@ -49,7 +49,7 @@ for file in $NS_DIR; do
   fi
   kubectl apply -f rabbit.yaml
   helm install stable/rabbitmq --version 0.6.3 --namespace $LOCAL_ENV --name local-rabbit --set rabbitmqUsername=admin,rabbitmqPassword=admin
-  helm install services/node-red --namespace dev --name local-node
+  helm install services/node-red --namespace $LOCAL_ENV --name local-node
 done
 ./secret.sh
 
