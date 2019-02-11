@@ -3,17 +3,17 @@ envarray=(dev)
 
 echo $1
 
-   export LOCAL_ENV="${envarray[i]}"
-   echo $LOCAL_ENV
+export LOCAL_ENV="${envarray[i]}"
+echo $LOCAL_ENV
 helm del --purge fileserver
 cd services/fileserver/
-   if [ -d "./component/" ]; then
-	cd component
-     git pull 
-   else
-git clone https://github.com/garethcmurphy/minitornado.git component
-	cd component
-   fi
+if [ -d "./component/" ]; then
+  cd component
+  git pull
+else
+  git clone https://github.com/garethcmurphy/minitornado.git component
+  cd component
+fi
 export FILESERVER_IMAGE_VERSION=$(git rev-parse HEAD)
 docker build . -t garethcmurphy/tornado:$FILESERVER_IMAGE_VERSION$LOCAL_ENV
 docker push garethcmurphy/tornado:$FILESERVER_IMAGE_VERSION$LOCAL_ENV

@@ -35,17 +35,17 @@ for ((i=0;i<${#envarray[@]};i++)); do
    if [ -d "./component/" ]; then
      cd component/
      git checkout develop
-	git pull
-./CI/ESS/copyimages.sh
+     git pull
+     ./CI/ESS/copyimages.sh
      npm install
      ./node_modules/@angular/cli/bin/ng build --configuration $LOCAL_ENV --output-path dist/$LOCAL_ENV
    else
      git clone $REPO component
      cd component/
      git checkout develop
-	git pull
+     git pull
      npm install
-./CI/ESS/copyimages.sh
+     ./CI/ESS/copyimages.sh
      echo "Building release"
      ./node_modules/@angular/cli/bin/ng build --configuration $LOCAL_ENV --output-path dist/$LOCAL_ENV
    fi

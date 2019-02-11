@@ -25,12 +25,12 @@ for ((i=0;i<${#envarray[@]};i++)); do
    cd ./services/catamel/
    if [ -d "./component/" ]; then
      cd component/
-	git checkout develop
+     git checkout develop
      git pull 
    else
      git clone $REPO component
      cd component/
-	git checkout develop
+     git checkout develop
      npm install
      echo "Building release"
    fi
