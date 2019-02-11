@@ -11,6 +11,9 @@ elif  [ "$(hostname)" == "scicat01.esss.lu.se" ]; then
 elif  [ "$(hostname)" == "k8-lrg-prod.esss.dk" ]; then
 	envarray=(dev)
     INGRESS_NAME="-f ./landingserver/dmscprod.yaml"
+else
+    envarray=(dev)
+    INGRESS_NAME="-f ./landingserver/$(hostname).yaml"
 fi
 
 echo $1

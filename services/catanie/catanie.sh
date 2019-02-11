@@ -12,6 +12,8 @@ elif  [ "$(hostname)" == "scicat01.esss.lu.se" ]; then
 elif  [ "$(hostname)" == "k8-lrg-prod.esss.dk" ]; then
 	envarray=(dmscprod)
     INGRESS_NAME="-f ./dacat-gui/dmscprod.yaml"
+else
+    INGRESS_NAME="-f ./dacat-gui/$(hostname).yaml"
 fi
 
 export REPO=https://github.com/SciCatProject/catanie.git

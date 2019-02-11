@@ -11,6 +11,8 @@ elif  [ "$(hostname)" == "scicat01.esss.lu.se" ]; then
     INGRESS_NAME="-f ./dacat-api-server/lund.yaml"
 elif  [ "$(hostname)" == "k8-lrg-prod.esss.dk" ]; then
     INGRESS_NAME="-f ./dacat-api-server/dmscprod.yaml"
+else
+    INGRESS_NAME="-f ./dacat-api-server/$(hostname).yaml"
 fi
 
 
