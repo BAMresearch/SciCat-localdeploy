@@ -46,7 +46,7 @@ NS_DIR=./namespaces/*.yaml
 
 for file in $NS_DIR; do
   f="$(basename $file)"
-   ns="${f%.*}"
-   kubectl delete namespace $ns
+  ns="${f%.*}"
+  kubectl delete namespace $ns 2> /dev/null
 done
 
