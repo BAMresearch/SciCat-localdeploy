@@ -10,8 +10,9 @@ if [ "$(uname)" == "Darwin" ]; then
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         LOCAL_IP=`hostname --ip-address`
 fi
+LOCAL_IP=docker.local
 
-DOCKER_REPO="localhost:5000"
+DOCKER_REPO="$LOCAL_IP:5000"
 KAFKA=0 
 
 while getopts 'fhkd:' flag; do
