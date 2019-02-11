@@ -15,14 +15,14 @@ else
   cd component
 fi
 export FILESERVER_IMAGE_VERSION=$(git rev-parse HEAD)
-docker build . -t garethcmurphy/tornado:$FILESERVER_IMAGE_VERSION$LOCAL_ENV
-docker push garethcmurphy/tornado:$FILESERVER_IMAGE_VERSION$LOCAL_ENV
+docker build . -t $4:$FILESERVER_IMAGE_VERSION$LOCAL_ENV
+docker push $4:$FILESERVER_IMAGE_VERSION$LOCAL_ENV
 echo "Deploying to Kubernetes"
 cd ..
 cd ..
 pwd
-echo helm install fileserver --name fileserver --namespace $LOCAL_ENV --set image.tag=$FILESERVER_IMAGE_VERSION$LOCAL_ENV --set image.repository=garethcmurphy/tornado
-helm install fileserver --name fileserver --namespace $LOCAL_ENV --set image.tag=$FILESERVER_IMAGE_VERSION$LOCAL_ENV --set image.repository=garethcmurphy/tornado
+echo helm install fileserver --name fileserver --namespace $LOCAL_ENV --set image.tag=$FILESERVER_IMAGE_VERSION$LOCAL_ENV --set image.repository=$4
+helm install fileserver --name fileserver --namespace $LOCAL_ENV --set image.tag=$FILESERVER_IMAGE_VERSION$LOCAL_ENV --set image.repository=$4
 # envsubst < ../catanie-deployment.yaml | kubectl apply -f - --validate=false
 
 
