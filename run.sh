@@ -29,11 +29,11 @@ CATAMEL_REPO=$DOCKER_REPO/catamel
 echo $CATANIE_REPO
 
 
-helm del --purge local-mongodb
-helm del --purge local-rabbit
-helm del --purge local-node
-        if [[ "KAFKA" -eq "1" ]]; then
-helm del --purge local-kafka
+helm del --purge local-mongodb 2> /dev/null
+helm del --purge local-rabbit 2> /dev/null
+helm del --purge local-node 2> /dev/null
+if [[ "KAFKA" -eq "1" ]]; then
+  helm del --purge local-kafka 2> /dev/null
 fi
 
 for file in $NS_DIR; do
