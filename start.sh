@@ -11,31 +11,21 @@ echo $LOCAL_IP
 minikube start --kubernetes-version=v1.11.0 --insecure-registry docker.local:5000
 #kubectl config use-context minikube #should auto set, but added in case
 
-kubectl -n kube-system create sa tiller
+#kubectl -n kube-system create sa tiller # handled by rbac-config.yaml
 kubectl create -f rbac-config.yaml
 helm init --service-account tiller
 helm repo update
 #kubectl apply -f ./deployments/registry.yaml
 #kubectl apply -f ./deployments/ingress/nginx-controller.yaml
-curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/namespace.yaml \
-    | kubectl apply -f -
+#curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/namespace.yaml | kubectl apply --validate=false -f -
+#curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/default-backend.yaml | kubectl apply --validate=false -f -
+#curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/configmap.yaml | kubectl apply --validate=false -f -
+#curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/tcp-services-configmap.yaml | kubectl apply --validate=false -f -
+#curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/udp-services-configmap.yaml | kubectl apply --validate=false -f -
+#curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/rbac.yaml | kubectl apply --validate=false -f -
+#curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/with-rbac.yaml | kubectl apply --validate=false -f -
+for fn in ingress-nginx/*.yaml; do kubectl apply -f $fn; done
 
-curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/default-backend.yaml \
-    | kubectl apply -f -
-
-curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/configmap.yaml \
-    | kubectl apply -f -
-
-curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/tcp-services-configmap.yaml \
-    | kubectl apply -f -
-
-curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/udp-services-configmap.yaml \
-    | kubectl apply -f -
-curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/rbac.yaml \
-    | kubectl apply -f -
-
-curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/with-rbac.yaml \
-    | kubectl apply -f -
 sleep 5
 
 kubectl apply -f service-nodeport.yaml
