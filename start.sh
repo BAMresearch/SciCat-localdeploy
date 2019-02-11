@@ -50,3 +50,17 @@ for file in $NS_DIR; do
   kubectl delete namespace $ns 2> /dev/null
 done
 
+# set up a local registry
+# https://hackernoon.com/local-kubernetes-setup-with-minikube-on-mac-os-x-eeeb1cbdc0b
+# let docker context point to minikube
+eval $(minikube docker-env)
+# start local docker registry
+docker run -d -p 5000:5000 --restart=always --name registry registry:2
+# https://stackoverflow.com/a/54190375
+IPADDR="$(minikube ip)"
+DNAME="docker.local"
+sudo sed -i "/$DNAME/d" /etc/hosts
+sudo sh -c "echo '$IPADDR\t$DNAME' >> /etc/hosts"
+sudo sh -c "echo '{ \"insecure-registries\":[\"$DNAME:5000\"] }' > /etc/docker/daemon.json"
+sudo service docker restart
+
