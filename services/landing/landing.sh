@@ -30,13 +30,13 @@ else
   cd component
 fi
 export FILESERVER_IMAGE_VERSION=$(git rev-parse HEAD)
-docker build . -t garethcmurphy/landingpageserver:$FILESERVER_IMAGE_VERSION$LOCAL_ENV
-docker push garethcmurphy/landingpageserver:$FILESERVER_IMAGE_VERSION$LOCAL_ENV
+docker build . -t $5:$FILESERVER_IMAGE_VERSION$LOCAL_ENV
+docker push $5:$FILESERVER_IMAGE_VERSION$LOCAL_ENV
 echo "Deploying to Kubernetes"
 cd ..
 pwd
-echo helm install landingserver --name landingserver --namespace $LOCAL_ENV --set image.tag=$FILESERVER_IMAGE_VERSION$LOCAL_ENV --set image.repository=garethcmurphy/landingpageserver ${INGRESS_NAME}
-helm install landingserver --name landingserver --namespace $LOCAL_ENV --set image.tag=$FILESERVER_IMAGE_VERSION$LOCAL_ENV --set image.repository=garethcmurphy/landingpageserver ${INGRESS_NAME}
+echo helm install landingserver --name landingserver --namespace $LOCAL_ENV --set image.tag=$FILESERVER_IMAGE_VERSION$LOCAL_ENV --set image.repository=$5 ${INGRESS_NAME}
+helm install landingserver --name landingserver --namespace $LOCAL_ENV --set image.tag=$FILESERVER_IMAGE_VERSION$LOCAL_ENV --set image.repository=$5 ${INGRESS_NAME}
 # envsubst < ../catanie-deployment.yaml | kubectl apply -f - --validate=false
 
 
