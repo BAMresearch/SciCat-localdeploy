@@ -1,6 +1,6 @@
 #!/bin/bash
 
-envarray=(dev) # selects angular configuration in subrepo component
+envarray=(bam) # selects angular configuration in subrepo component
 
 INGRESS_NAME=" "
 if [ "$(hostname)" == "kubetest01.dm.esss.dk" ]; then
