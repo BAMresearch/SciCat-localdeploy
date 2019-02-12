@@ -13,8 +13,14 @@ elif  [ "$(hostname)" == "k8-lrg-prod.esss.dk" ]; then
   envarray=(dmscprod)
   INGRESS_NAME="-f ./dacat-gui/dmscprod.yaml"
 else
-  INGRESS_NAME="-f ./dacat-gui/$(hostname).yaml"
-  # TODO: generate yaml file here
+  YAMLFN="./dacat-gui/$(hostname).yaml"
+  INGRESS_NAME="-f $YAMLFN"
+  # generate yaml file with appropriate hostname here
+  cat > "$YAMLFN" << EOF
+ingress:
+  enabled: true
+  host:  catanie.debianvm.local
+EOF
 fi
 
 export REPO=https://github.com/SciCatProject/catanie.git

@@ -11,7 +11,14 @@ elif  [ "$(hostname)" == "scicat01.esss.lu.se" ]; then
 elif  [ "$(hostname)" == "k8-lrg-prod.esss.dk" ]; then
   INGRESS_NAME="-f ./dacat-api-server/dmscprod.yaml"
 else
-  INGRESS_NAME="-f ./dacat-api-server/$(hostname).yaml"
+  YAMLFN="./dacat-api-server/$(hostname).yaml"
+  INGRESS_NAME="-f $YAMLFN"
+  # generate yaml file with appropriate hostname here
+  cat > "$YAMLFN" << EOF
+ingress:
+  enabled: true
+  host:  catamel.debianvm.local
+EOF
 fi
 
 echo $1

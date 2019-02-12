@@ -14,7 +14,14 @@ elif  [ "$(hostname)" == "k8-lrg-prod.esss.dk" ]; then
   INGRESS_NAME="-f ./landingserver/dmscprod.yaml"
 else
   envarray=(dev)
-  INGRESS_NAME="-f ./landingserver/$(hostname).yaml"
+  YAMLFN="./landingserver/$(hostname).yaml"
+  INGRESS_NAME="-f $YAMLFN"
+  # generate yaml file with appropriate hostname here
+  cat > "$YAMLFN" << EOF
+ingress:
+  enabled: true
+  host: landing.debianvm.local
+EOF
 fi
 
 echo $1
