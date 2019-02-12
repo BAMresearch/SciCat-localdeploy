@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export REPO=https://github.com/SciCatProject/catamel.git
+export REPO=https://github.com/SciCatBAM/catamel.git
 envarray=(dev)
 
 INGRESS_NAME=" "

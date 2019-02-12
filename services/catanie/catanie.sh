@@ -1,5 +1,6 @@
 #!/bin/bash
 
+export REPO=https://github.com/SciCatBAM/catanie.git
 envarray=(bam) # selects angular configuration in subrepo component
 
 INGRESS_NAME=" "
@@ -23,7 +24,6 @@ ingress:
 EOF
 fi
 
-export REPO=https://github.com/SciCatProject/catanie.git
 portarray=(30021 30023)
 hostextarray=('-qa' '')
 certarray=('discovery' 'discovery')
