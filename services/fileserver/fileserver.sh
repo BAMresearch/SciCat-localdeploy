@@ -1,5 +1,7 @@
-envarray=(dev)
+#!/bin/bash
 
+REPO="https://github.com/garethcmurphy/minitornado.git"
+envarray=(dev)
 
 echo $1
 
@@ -11,7 +13,7 @@ if [ -d "./component/" ]; then
   cd component
   git pull
 else
-  git clone https://github.com/garethcmurphy/minitornado.git component
+  git clone $REPO component
   cd component
 fi
 export FILESERVER_IMAGE_VERSION=$(git rev-parse HEAD)

@@ -1,5 +1,6 @@
 #!/bin/bash
 
+REPO="https://github.com/SciCatProject/LandingPageServer.git"
 envarray=(dev)
 
 INGRESS_NAME=" "
@@ -34,7 +35,7 @@ if [ -d "./component/" ]; then
   cd component
   git pull
 else
-  git clone https://github.com/garethcmurphy/landingpageserver.git component
+  git clone $REPO component
   cd component
 fi
 export FILESERVER_IMAGE_VERSION=$(git rev-parse HEAD)
