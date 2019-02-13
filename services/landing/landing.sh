@@ -2,6 +2,7 @@
 
 REPO="https://github.com/SciCatProject/LandingPageServer.git"
 envarray=(dev)
+cd ./services/landing/
 
 INGRESS_NAME=" "
 if [ "$(hostname)" == "kubetest01.dm.esss.dk" ]; then
@@ -30,7 +31,6 @@ echo $1
 export LOCAL_ENV="${envarray[i]}"
 echo $LOCAL_ENV
 helm del --purge landingserver
-cd services/landing/
 if [ -d "./component/" ]; then
   cd component
   git pull

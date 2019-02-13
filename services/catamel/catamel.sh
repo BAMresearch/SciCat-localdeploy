@@ -2,6 +2,7 @@
 
 export REPO=https://github.com/SciCatBAM/catamel.git
 envarray=(dev)
+cd ./services/catamel/
 
 INGRESS_NAME=" "
 if [ "$(hostname)" == "kubetest01.dm.esss.dk" ]; then
@@ -28,7 +29,6 @@ for ((i=0;i<${#envarray[@]};i++)); do
   export LOCAL_IP="$1"
   echo $LOCAL_ENV
   helm del --purge catamel
-  cd ./services/catamel/
   if [ -d "./component/" ]; then
     cd component/
     git checkout develop

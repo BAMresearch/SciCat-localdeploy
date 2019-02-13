@@ -2,6 +2,7 @@
 
 export REPO=https://github.com/SciCatBAM/catanie.git
 envarray=(bam) # selects angular configuration in subrepo component
+cd ./services/catanie/
 
 INGRESS_NAME=" "
 if [ "$(hostname)" == "kubetest01.dm.esss.dk" ]; then
@@ -39,7 +40,6 @@ for ((i=0;i<${#envarray[@]};i++)); do
   echo $LOCAL_ENV $PORTOFFSET $HOST_EXT
   echo $LOCAL_ENV
   helm del --purge catanie
-  cd ./services/catanie/
   if [ -d "./component/" ]; then
     cd component/
     git checkout develop
