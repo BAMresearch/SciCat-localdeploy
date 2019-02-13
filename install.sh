@@ -11,9 +11,6 @@ elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
   mkdir -p scripts
   curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > scripts/get_helm.sh
   chmod +x scripts/get_helm.sh
-  sh scripts/get_helm.sh
+  bash scripts/get_helm.sh
 fi
-
-
-
 
