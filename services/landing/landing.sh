@@ -1,19 +1,23 @@
-#!/bin/bash
+#!/usr/bin/env bash
+envarray=(dev)
 
 REPO="https://github.com/SciCatProject/LandingPageServer.git"
-envarray=(dev)
 cd ./services/landing/
 
 INGRESS_NAME=" "
+DOCKERNAME="-f ./Dockerfile"
 if [ "$(hostname)" == "kubetest01.dm.esss.dk" ]; then
   envarray=(dmsc)
   INGRESS_NAME="-f ./landingserver/dmsc.yaml"
+  DOCKERNAME="-f ./CI/ESS/Dockerfile.dmsc"
 elif  [ "$(hostname)" == "scicat01.esss.lu.se" ]; then
   envarray=(ess)
   INGRESS_NAME="-f ./landingserver/lund.yaml"
-elif  [ "$(hostname)" == "k8-lrg-prod.esss.dk" ]; then
-  envarray=(dev)
+  DOCKERNAME="-f ./CI/ESS/Dockerfile.ess"
+elif  [ "$(hostname)" == "k8-lrg-serv-prod.esss.dk" ]; then
+  envarray=(dmscprod)
   INGRESS_NAME="-f ./landingserver/dmscprod.yaml"
+  DOCKERNAME="-f ./CI/ESS/Dockerfile.dmscprod"
 else
   envarray=(dev)
   YAMLFN="./landingserver/$(hostname).yaml"
@@ -38,13 +42,15 @@ else
   git clone $REPO component
   cd component
 fi
-export FILESERVER_IMAGE_VERSION=$(git rev-parse HEAD)
-docker build . -t $5:$FILESERVER_IMAGE_VERSION$LOCAL_ENV
-docker push $5:$FILESERVER_IMAGE_VERSION$LOCAL_ENV
+export LANDING_IMAGE_VERSION=$(git rev-parse HEAD)
+echo $DOCKERNAME
+if  [ "$(hostname)" != "k8-lrg-serv-prod.esss.dk" ]; then
+  docker build $DOCKERNAME . -t $5:$LANDING_IMAGE_VERSION$LOCAL_ENV
+  docker push $5:$LANDING_IMAGE_VERSION$LOCAL_ENV
 echo "Deploying to Kubernetes"
 cd ..
 pwd
-echo helm install landingserver --name landingserver --namespace $LOCAL_ENV --set image.tag=$FILESERVER_IMAGE_VERSION$LOCAL_ENV --set image.repository=$5 ${INGRESS_NAME}
-helm install landingserver --name landingserver --namespace $LOCAL_ENV --set image.tag=$FILESERVER_IMAGE_VERSION$LOCAL_ENV --set image.repository=$5 ${INGRESS_NAME}
+echo helm install landingserver --name landingserver --namespace $LOCAL_ENV --set image.tag=$LANDING_IMAGE_VERSION$LOCAL_ENV --set image.repository=$5 ${INGRESS_NAME}
+helm install landingserver --name landingserver --namespace $LOCAL_ENV --set image.tag=$LANDING_IMAGE_VERSION$LOCAL_ENV --set image.repository=$5 ${INGRESS_NAME}
 # envsubst < ../catanie-deployment.yaml | kubectl apply -f - --validate=false
 

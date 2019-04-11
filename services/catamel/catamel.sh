@@ -5,12 +5,16 @@ envarray=(dev)
 cd ./services/catamel/
 
 INGRESS_NAME=" "
+DOCKERNAME="-f ./Dockerfile"
 if [ "$(hostname)" == "kubetest01.dm.esss.dk" ]; then
   INGRESS_NAME="-f ./dacat-api-server/dmsc.yaml"
+  DOCKERNAME="-f ./CI/ESS/Dockerfile.proxy"
 elif  [ "$(hostname)" == "scicat01.esss.lu.se" ]; then
   INGRESS_NAME="-f ./dacat-api-server/lund.yaml"
-elif  [ "$(hostname)" == "k8-lrg-prod.esss.dk" ]; then
+  DOCKERNAME="-f ./Dockerfile"
+elif  [ "$(hostname)" == "k8-lrg-serv-prod.esss.dk" ]; then
   INGRESS_NAME="-f ./dacat-api-server/dmscprod.yaml"
+  DOCKERNAME="-f ./CI/ESS/Dockerfile.proxy"
 else
   YAMLFN="./dacat-api-server/$(hostname).yaml"
   INGRESS_NAME="-f $YAMLFN"
@@ -37,14 +41,18 @@ for ((i=0;i<${#envarray[@]};i++)); do
     git clone $REPO component
     cd component/
     git checkout develop
-    npm install
+    if  [ "$(hostname)" != "k8-lrg-serv-prod.esss.dk" ]; then
+      npm install
+    fi
     echo "Building release"
   fi
   export CATAMEL_IMAGE_VERSION=$(git rev-parse HEAD)
-  docker build -t $3:$CATAMEL_IMAGE_VERSION$LOCAL_ENV -t $3:latest .
-  echo docker build -t $3:$CATAMEL_IMAGE_VERSION$LOCAL_ENV -t $3:latest .
-  docker push $3:$CATAMEL_IMAGE_VERSION$LOCAL_ENV
-  echo docker push $3:$CATAMEL_IMAGE_VERSION$LOCAL_ENV
+  if  [ "$(hostname)" != "k8-lrg-serv-prod.esss.dk" ]; then
+    docker build -t $3:$CATAMEL_IMAGE_VERSION$LOCAL_ENV -t $3:latest .
+    echo docker build -t $3:$CATAMEL_IMAGE_VERSION$LOCAL_ENV -t $3:latest .
+    docker push $3:$CATAMEL_IMAGE_VERSION$LOCAL_ENV
+    echo docker push $3:$CATAMEL_IMAGE_VERSION$LOCAL_ENV
+  fi
   echo "Deploying to Kubernetes"
   cd ..
   helm install dacat-api-server --name catamel --namespace $LOCAL_ENV --set image.tag=$CATAMEL_IMAGE_VERSION$LOCAL_ENV --set image.repository=$3 ${INGRESS_NAME}
