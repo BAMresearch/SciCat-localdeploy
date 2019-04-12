@@ -19,9 +19,13 @@ The purpose of this repo is to create a minimal install of the Data Catalog proj
 
 ## How? 
 
-1. Install.sh
+```
+curl -L https://github.com/scicatbam/localdeploy/raw/develop/preinst_linux.sh | sh
+```
 
 Running this will install:
+* docker
+* VirtualBox
 * Minikube
 * Kubectl 
 * Helm 
