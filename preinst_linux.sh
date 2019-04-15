@@ -1,7 +1,7 @@
 #!/bin/sh
 
-distrib="$(grep ^ID_LIKE= /etc/os-release | awk -F= '{print $2}')"
-[ -z "$distrib" ] && distrib="$(grep ^ID= /etc/os-release | awk -F= '{print $2}')"
+distrib="$(grep ^ID= /etc/os-release | awk -F= '{print $2}')"
+[ -z "$distrib" ] && distrib="$(grep ^ID_LIKE= /etc/os-release | awk -F= '{print $2}')"
 if [ "$distrib" != ubuntu ] && [ "$distrib" != debian ]; then
     echo "This script is made for Debian/Ubuntu only, sorry!"
     exit 1
