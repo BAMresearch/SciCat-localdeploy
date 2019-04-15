@@ -26,7 +26,7 @@ else
   cat > "$YAMLFN" << EOF
 ingress:
   enabled: true
-  host: landing.debianvm.local
+  host: landing.$(hostname).local
 EOF
 fi
 

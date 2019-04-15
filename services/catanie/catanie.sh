@@ -21,7 +21,7 @@ else
   cat > "$YAMLFN" << EOF
 ingress:
   enabled: true
-  host:  catanie.debianvm.local
+  host:  catanie.$(hostname).local
 EOF
 fi
 
