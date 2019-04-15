@@ -8,15 +8,15 @@ if [ "$distrib" != ubuntu ] && [ "$distrib" != debian ]; then
 fi
 codename="$(grep ^UBUNTU_CODENAME= /etc/os-release | awk -F= '{print $2}')"
 [ -z "$codename" ] && codename="$(grep ^VERSION= /etc/os-release | grep -oE '\w+' | tail -n1)"
-# prepare for docker
-sudo apt update
-sudo apt install -y git curl jq vim apt-transport-https ca-certificates curl software-properties-common
+# prepare for docker and other required packages
+sudo apt-get update
+sudo apt-get install -y git curl jq vim apt-transport-https ca-certificates curl software-properties-common g++
 
 # install docker
 curl -fsSL "https://download.docker.com/linux/${distrib}/gpg" | sudo apt-key add -
 sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/${distrib} ${codename} stable"
-sudo apt update
-sudo apt install -y docker-ce
+sudo apt-get update
+sudo apt-get install -y docker-ce
 
 # fix 'invoke-rc.d: policy-rc.d denied execution of start.'
 if [ -f '/usr/sbin/policy-rc.d' ]; then
@@ -40,41 +40,12 @@ fi
 sudo add-apt-repository "deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian ${codename} contrib"
 wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
 wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
-sudo apt update
-sudo apt install -y virtualbox-6.0
+sudo apt-get update
+sudo apt-get install -y virtualbox-6.0
 
 # install nodejs/npm (some scripts need this)
 curl -sL https://deb.nodesource.com/setup_10.x | sudo bash -
-sudo apt install -y nodejs
-
-## install docker-machine
-#dmachine=/usr/local/bin/docker-machine
-#if [ ! -f "$dmachine" ]; then
-#    tmpfn=$(mktemp)
-#    latest="$(curl -s https://api.github.com/repos/docker/machine/releases | jq '[.[] | select(.prerelease == false)] | .[0].name'  | tr -d '"')"
-#    curl -L https://github.com/docker/machine/releases/download/${latest}/docker-machine-`uname -s`-`uname -m` -o "$tmpfn"
-#    chmod 755 "$tmpfn"
-#    sudo mv "$tmpfn" "$dmachine"
-#    sudo chown root.staff "$dmachine"
-#fi
-## install docker-machine kvm driver
-#dmachdrv=/usr/local/bin/docker-machine-driver-kvm2
-#if [ ! -f "$dmachdrv" ]; then
-#    tmpfn=$(mktemp)
-#    latest="$(curl -s https://api.github.com/repos/kubernetes/minikube/releases | jq '[.[] | select(.prerelease == false)] | .[0].name'  | tr -d '"')"
-#    curl -L https://github.com/kubernetes/minikube/releases/download/${latest}/docker-machine-driver-kvm2 -o "$tmpfn"
-#    chmod 755 "$tmpfn"
-#    sudo mv "$tmpfn" "$dmachdrv"
-#    sudo chown root.staff "$dmachdrv"
-#fi
-#
-## install kvm
-## https://www.cyberciti.biz/faq/install-kvm-server-debian-linux-9-headless-server/
-#sudo apt install qemu-kvm libvirt-clients libvirt-daemon-system bridge-utils libguestfs-tools genisoimage virtinst libosinfo-bin
-#sudo adduser $(whoami) libvirt
-#sudo adduser $(whoami) libvirt-qemu
-## minikube config set vm-driver xhyve #?
-## https://kubernetes.io/docs/setup/minikube/#quickstart
+sudo apt-get install -y nodejs
 
 # get scicat
 cd; mkdir -p code; cd code
