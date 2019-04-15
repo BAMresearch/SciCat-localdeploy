@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-envarray=(dev)
 
 REPO="https://github.com/SciCatProject/LandingPageServer.git"
 cd ./services/landing/
 
+envarray=(dev)
 INGRESS_NAME=" "
 DOCKERNAME="-f ./Dockerfile"
 if [ "$(hostname)" == "kubetest01.dm.esss.dk" ]; then
@@ -19,7 +19,6 @@ elif  [ "$(hostname)" == "k8-lrg-serv-prod.esss.dk" ]; then
   INGRESS_NAME="-f ./landingserver/dmscprod.yaml"
   DOCKERNAME="-f ./CI/ESS/Dockerfile.dmscprod"
 else
-  envarray=(dev)
   YAMLFN="./landingserver/$(hostname).yaml"
   INGRESS_NAME="-f $YAMLFN"
   # generate yaml file with appropriate hostname here

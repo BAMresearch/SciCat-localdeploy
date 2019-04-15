@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export REPO=https://github.com/SciCatBAM/catanie.git
-envarray=(bam2) # selects angular configuration in subrepo component
+envarray=(dev) # selects angular configuration in subrepo component
 cd ./services/catanie/
 
 INGRESS_NAME=" "
@@ -32,7 +32,6 @@ certarray=('discovery' 'discovery')
 echo $1
 
 for ((i=0;i<${#envarray[@]};i++)); do
-<<<<<<< HEAD
   export LOCAL_ENV="${envarray[i]}"
   export PORTOFFSET="${portarray[i]}"
   export HOST_EXT="${hostextarray[i]}"
