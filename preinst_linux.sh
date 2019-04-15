@@ -78,10 +78,16 @@ sudo apt install -y nodejs
 
 # get scicat
 cd; mkdir -p code; cd code
-git clone https://github.com/SciCatBAM/localdeploy.git
-cd localdeploy && mkdir -p scripts
-bash ./install.sh
-helm init
-sudo reboot
+if [ ! -d localdeploy ]; then
+	git clone https://github.com/SciCatBAM/localdeploy.git
+fi
+if cd localdeploy; then
+	git pull
+	bash ./install.sh # installs helm
+	helm init
+	echo "Rebooting in 30 secs ... press Ctrl-C to abort."
+	sleep 30
+	sudo reboot
+fi
 
 # vim: set ts=4 sts=4 sw=4 tw=0:
