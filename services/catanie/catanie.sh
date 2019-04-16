@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export REPO=https://github.com/SciCatBAM/catanie.git
-envarray=(dev) # selects angular configuration in subrepo component
+envarray=(bam2) # selects angular configuration in subrepo component
 cd ./services/catanie/
 
 INGRESS_NAME=" "
