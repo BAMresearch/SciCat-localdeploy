@@ -42,7 +42,6 @@ else
   cd component
 fi
 export LANDING_IMAGE_VERSION=$(git rev-parse HEAD)
-eval $(minikube docker-env)
 echo $DOCKERNAME
 if  [ "$(hostname)" != "k8-lrg-serv-prod.esss.dk" ]; then
   docker build $DOCKERNAME . -t $5:$LANDING_IMAGE_VERSION$LOCAL_ENV

@@ -10,8 +10,10 @@ if [ "$(uname)" == "Darwin" ]; then
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         LOCAL_IP=`hostname --ip-address`
 fi
-LOCAL_IP=docker.local
+# using minikube
+eval $(minikube docker-env)
 
+LOCAL_IP=docker.local
 DOCKER_REPO="$LOCAL_IP:5000"
 KAFKA=0 
 
@@ -28,7 +30,6 @@ CATANIE_REPO=$DOCKER_REPO/catanie
 CATAMEL_REPO=$DOCKER_REPO/catamel
 
 echo $CATANIE_REPO
-
 
 helm del --purge local-mongodb 2> /dev/null
 helm del --purge local-rabbit 2> /dev/null
