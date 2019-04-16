@@ -8,7 +8,7 @@ fi
 echo $LOCAL_IP
 #minikube start -v7  --insecure-registry localhost:5000 --extra-config=apiserver.GenericServerRunOptions.AuthorizationMode=RBAC
 
-minikube start --kubernetes-version=v1.11.0 --insecure-registry docker.local:5000
+minikube start --insecure-registry docker.local:5000
 #kubectl config use-context minikube #should auto set, but added in case
 
 #kubectl -n kube-system create sa tiller # handled by rbac-config.yaml
@@ -37,10 +37,8 @@ eval $(minikube docker-env)
 # start local docker registry
 docker run -d -p 5000:5000 --restart=always --name registry registry:2
 # https://stackoverflow.com/a/54190375
-IPADDR="$(minikube ip)"
 DNAME="docker.local"
+IPADDR="$(minikube ip)"
 sudo sed -i "/$DNAME/d" /etc/hosts
 sudo sh -c "echo '$IPADDR\t$DNAME' >> /etc/hosts"
-sudo sh -c "echo '{ \"insecure-registries\":[\"$DNAME:5000\"] }' > /etc/docker/daemon.json"
 sudo service docker restart
-

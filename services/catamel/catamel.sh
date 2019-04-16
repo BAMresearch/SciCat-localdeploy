@@ -46,6 +46,7 @@ for ((i=0;i<${#envarray[@]};i++)); do
     fi
     echo "Building release"
   fi
+  eval $(minikube docker-env)
   export CATAMEL_IMAGE_VERSION=$(git rev-parse HEAD)
   if  [ "$(hostname)" != "k8-lrg-serv-prod.esss.dk" ]; then
     docker build -t $3:$CATAMEL_IMAGE_VERSION$LOCAL_ENV -t $3:latest .

@@ -64,6 +64,7 @@ for ((i=0;i<${#envarray[@]};i++)); do
   fi
   echo STATUS:
   kubectl cluster-info
+  eval $(minikube docker-env)
   export CATANIE_IMAGE_VERSION=$(git rev-parse HEAD)
   if  [ "$(hostname)" != "k8-lrg-serv-prod.esss.dk" ]; then
     docker build -t $2:$CATANIE_IMAGE_VERSION$LOCAL_ENV -t $2:latest --build-arg env=$LOCAL_ENV .
