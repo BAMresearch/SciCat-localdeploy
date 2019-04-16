@@ -41,6 +41,12 @@ for ((i=0;i<${#envarray[@]};i++)); do
     git clone $REPO component
     cd component/
     git checkout develop
+    if cd server; then # activate default config files
+	cp -n config.local.js-sample config.local.js
+	cp -n datasources.json-sample datasources.json
+	cp -n providers.json-sample providers.json
+	cp -n functionalAccounts_example.json functionalAccounts.json
+    fi
     if  [ "$(hostname)" != "k8-lrg-serv-prod.esss.dk" ]; then
       npm install
     fi
@@ -49,10 +55,10 @@ for ((i=0;i<${#envarray[@]};i++)); do
   eval $(minikube docker-env)
   export CATAMEL_IMAGE_VERSION=$(git rev-parse HEAD)
   if  [ "$(hostname)" != "k8-lrg-serv-prod.esss.dk" ]; then
-    docker build -t $3:$CATAMEL_IMAGE_VERSION$LOCAL_ENV -t $3:latest .
-    echo docker build -t $3:$CATAMEL_IMAGE_VERSION$LOCAL_ENV -t $3:latest .
-    docker push $3:$CATAMEL_IMAGE_VERSION$LOCAL_ENV
-    echo docker push $3:$CATAMEL_IMAGE_VERSION$LOCAL_ENV
+    cmd="docker build ${DOCKERNAME} -t $3:$CATAMEL_IMAGE_VERSION$LOCAL_ENV -t $3:latest ."
+    echo "$cmd"; eval $cmd
+    cmd="docker push $3:$CATAMEL_IMAGE_VERSION$LOCAL_ENV"
+    echo "$cmd"; eval "$cmd"
   fi
   echo "Deploying to Kubernetes"
   cd ..
