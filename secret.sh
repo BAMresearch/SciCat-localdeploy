@@ -27,10 +27,10 @@ else
 fi
 
 for tmpns in dev $NS; do
-  kubectl delete secret -n$tmpns catanieservice
-  kubectl delete secret -n$tmpns catamelservice
-  kubectl delete secret -n$tmpns landingserverservice
-  kubectl delete secret -n$tmpns fileserverservice
+  kubectl delete secret -n$tmpns catanieservice 2>/dev/null
+  kubectl delete secret -n$tmpns catamelservice 2>/dev/null
+  kubectl delete secret -n$tmpns landingserverservice 2>/dev/null
+  kubectl delete secret -n$tmpns fileserverservice 2>/dev/null
 done
 
 kubectl create ns $NS
