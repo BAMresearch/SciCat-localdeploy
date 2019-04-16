@@ -66,10 +66,10 @@ for ((i=0;i<${#envarray[@]};i++)); do
   kubectl cluster-info
   export CATANIE_IMAGE_VERSION=$(git rev-parse HEAD)
   if  [ "$(hostname)" != "k8-lrg-serv-prod.esss.dk" ]; then
-    docker build -t $2:$CATANIE_IMAGE_VERSION$LOCAL_ENV -t $2:latest --build-arg env=$LOCAL_ENV .
-    echo docker build -t $2:$CATANIE_IMAGE_VERSION$LOCAL_ENV --build-arg env=$LOCAL_ENV .
-    docker push $2:$CATANIE_IMAGE_VERSION$LOCAL_ENV
-    echo docker push $2:$CATANIE_IMAGE_VERSION$LOCAL_ENV
+    cmd="docker build -t $2:$CATANIE_IMAGE_VERSION$LOCAL_ENV -t $2:latest --build-arg env=$LOCAL_ENV ."
+    echo "$cmd"; eval $cmd
+    cmd="docker push $2:$CATANIE_IMAGE_VERSION$LOCAL_ENV"
+    echo "$cmd"; eval $cmd
   fi
   echo "Deploying to Kubernetes"
   cd ..
