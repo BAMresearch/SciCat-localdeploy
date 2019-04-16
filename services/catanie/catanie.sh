@@ -74,5 +74,9 @@ for ((i=0;i<${#envarray[@]};i++)); do
   echo "Deploying to Kubernetes"
   cd ..
   helm install dacat-gui --name catanie --namespace $LOCAL_ENV --set image.tag=$CATANIE_IMAGE_VERSION$LOCAL_ENV --set image.repository=$2 ${INGRESS_NAME}
-  echo helm install dacat-gui --name catanie --namespace $LOCAL_ENV --set image.tag=$CATANIE_IMAGE_VERSION$LOCAL_ENV --set image.repository=$2
+
+  svcname="$(kubectl get svc --no-headers=true -n$LOCAL_ENV | awk '{print $1}')"
+  guestport="$(kubectl get service $svcname -n$LOCAL_ENV -o yaml | awk '/nodePort:/ {print $NF}')"
+  sudo killall ssh 2>/dev/null
+  sudo ssh -N -i ~/.minikube/machines/minikube/id_rsa -L 0.0.0.0:80:$(minikube ip):$guestport docker@$(minikube ip) &
 done
