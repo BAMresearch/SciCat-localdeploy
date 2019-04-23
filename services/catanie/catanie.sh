@@ -77,6 +77,10 @@ for ((i=0;i<${#envarray[@]};i++)); do
 
   svcname="$(kubectl get svc --no-headers=true -n$LOCAL_ENV | awk '{print $1}')"
   guestport="$(kubectl get service $svcname -n$LOCAL_ENV -o yaml | awk '/nodePort:/ {print $NF}')"
+  ipaddr="$(minikube ip)"
   sudo killall ssh 2>/dev/null
-  sudo ssh -N -i ~/.minikube/machines/minikube/id_rsa -L 0.0.0.0:80:$(minikube ip):$guestport docker@$(minikube ip) &
+  sudo sh -c "if [ -z \"\$(ssh-keygen -F $ipaddr)\" ]; then \
+    ssh-keyscan -H '$ipaddr' >> ~\$(whoami)/.ssh/known_hosts; \
+  fi; \
+  ssh -N -i ~/.minikube/machines/minikube/id_rsa -L 0.0.0.0:80:$ipaddr:$guestport docker@$ipaddr &"
 done
