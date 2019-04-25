@@ -36,7 +36,7 @@ injectEnvConfig()
   devpath="$(readlink -f /sys/class/net/* | awk '{print $NF}' | grep -v virtual)"
   devname="${devpath##*/}"
   hostaddr="$(ifconfig "$devname" | awk '/inet\s/ {print $2}')"
-  echo $hostaddr
+  echo "catanie host address: $hostaddr"
   envfn="src/environments/environment.$LOCAL_ENV.ts"
 
   cat <<EOF > "$envfn"
@@ -119,8 +119,9 @@ for ((i=0;i<${#envarray[@]};i++)); do
   guestport="$(kubectl get service $svcname -n$LOCAL_ENV -o yaml | awk '/nodePort:/ {print $NF}')"
   ipaddr="$(minikube ip)"
   sudo killall ssh 2>/dev/null
-  sudo sh -c "if [ -z \"\$(ssh-keygen -F $ipaddr)\" ]; then \
-    ssh-keyscan -H '$ipaddr' >> ~\$(whoami)/.ssh/known_hosts; \
-  fi; \
-  ssh -N -i ~/.minikube/machines/minikube/id_rsa -L 0.0.0.0:80:$ipaddr:$guestport docker@$ipaddr &"
+  sudo sh -c "\
+    fn=\$(eval echo ~\$(whoami)/.ssh/known_hosts);
+    ssh-keygen -f \$fn -R '$ipaddr'; \
+    ssh-keyscan -H '$ipaddr' >> \$fn; \
+    ssh -N -i ~/.minikube/machines/minikube/id_rsa -L 0.0.0.0:80:$ipaddr:$guestport docker@$ipaddr &"
 done
