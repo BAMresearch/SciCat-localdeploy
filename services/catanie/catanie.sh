@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export REPO=https://github.com/SciCatBAM/catanie.git
+export REPO=https://github.com/SciCatProject/catanie.git
 envarray=(bam2) # selects angular configuration in subrepo component
 cd ./services/catanie/
 
@@ -28,8 +28,58 @@ fi
 portarray=(30021 30023)
 hostextarray=('-qa' '')
 certarray=('discovery' 'discovery')
-
 echo $1
+
+injectEnvConfig()
+{
+  local LOCAL_ENV="$1"
+  devpath="$(readlink -f /sys/class/net/* | awk '{print $NF}' | grep -v virtual)"
+  devname="${devpath##*/}"
+  hostaddr="$(ifconfig "$devname" | awk '/inet\s/ {print $2}')"
+  echo $hostaddr
+  envfn="src/environments/environment.$LOCAL_ENV.ts"
+
+  cat <<EOF > "$envfn"
+export const environment = {
+  production: true,
+  lbBaseURL: "http://${hostaddr}:3000",
+  fileserverBaseURL: "http://${hostaddr}:8889",
+  externalAuthEndpoint: "/auth/msad",
+  archiveWorkflowEnabled: true,
+  editMetadataEnabled: true,
+  columnSelectEnabled: true,
+  editSampleEnabled: true,
+  shoppingCartEnabled: true,
+  facility: "BAM"
+};
+EOF
+
+  # build configuration in angular.json for environment $LOCAL_ENV
+  json="{
+    \"optimization\": true,
+    \"outputHashing\": \"all\",
+    \"sourceMap\": false,
+    \"extractCss\": true,
+    \"namedChunks\": false,
+    \"aot\": true,
+    \"extractLicenses\": true,
+    \"vendorChunk\": false,
+    \"buildOptimizer\": true,
+    \"fileReplacements\": [ {
+      \"replace\": \"src/environments/environment.ts\",
+      \"with\": \"$envfn\" } ],
+    \"serviceWorker\": true
+  }"
+
+  angularCfg='angular.json'
+  tmpcfg="$(mktemp)"
+  jq "del(.projects.catanie.architect.build.configurations.$LOCAL_ENV,
+          .projects.catanie.architect.serve.configurations.$LOCAL_ENV)" \
+    "$angularCfg" | \
+  jq ".projects.catanie.architect.build.configurations.$LOCAL_ENV = $json" \
+    > "$tmpcfg"
+  mv "$tmpcfg" "$angularCfg"
+}
 
 for ((i=0;i<${#envarray[@]};i++)); do
   export LOCAL_ENV="${envarray[i]}"
@@ -40,27 +90,17 @@ for ((i=0;i<${#envarray[@]};i++)); do
   echo $LOCAL_ENV $PORTOFFSET $HOST_EXT
   echo $LOCAL_ENV
   helm del --purge catanie
-  if [ -d "./component/" ]; then
-    cd component/
-    git checkout develop
-    git pull
-    ./CI/ESS/copyimages.sh
-    if  [ "$(hostname)" != "k8-lrg-serv-prod.esss.dk" ]; then
-      npm install
-      ./node_modules/@angular/cli/bin/ng build --configuration $LOCAL_ENV --output-path dist/$LOCAL_ENV
-    fi
-  else
+  if [ ! -d "./component" ]; then
     git clone $REPO component
-    cd component/
-    git checkout develop
-    git pull
+  fi
+  cd component
+  git checkout develop
+  git pull
+  injectEnvConfig $LOCAL_ENV
+  ./CI/ESS/copyimages.sh
+  if  [ "$(hostname)" != "k8-lrg-serv-prod.esss.dk" ]; then
     npm install
-    ./CI/ESS/copyimages.sh
-    echo "Building release"
-    if  [ "$(hostname)" != "k8-lrg-serv-prod.esss.dk" ]; then
-      npm install
-      ./node_modules/@angular/cli/bin/ng build --configuration $LOCAL_ENV --output-path dist/$LOCAL_ENV
-    fi
+    ./node_modules/@angular/cli/bin/ng build --configuration $LOCAL_ENV --output-path dist/$LOCAL_ENV
   fi
   echo STATUS:
   kubectl cluster-info
