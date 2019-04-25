@@ -43,7 +43,7 @@ injectEnvConfig()
 export const environment = {
   production: true,
   lbBaseURL: "http://${hostaddr}:3000",
-  fileserverBaseURL: "http://${hostaddr}:8889",
+  fileserverBaseURL: "http://${hostaddr}:8888",
   externalAuthEndpoint: "/auth/msad",
   archiveWorkflowEnabled: true,
   editMetadataEnabled: true,

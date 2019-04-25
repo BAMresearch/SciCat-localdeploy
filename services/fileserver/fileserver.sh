@@ -35,3 +35,8 @@ pwd
 cmd="helm install fileserver --name fileserver --namespace $LOCAL_ENV --set image.tag=$FILESERVER_IMAGE_VERSION$LOCAL_ENV --set image.repository=$4"
 echo "$cmd"; eval $cmd
 # envsubst < ../catanie-deployment.yaml | kubectl apply -f - --validate=false
+
+rule="fileserver-$LOCAL_ENV"
+vboxmanage controlvm "minikube" natpf1 delete "$rule" 2> /dev/null
+nodeport="$(kubectl get service fileserver-fileserver -ndev -o yaml | awk '/nodePort/ {print $NF}')"
+vboxmanage controlvm "minikube" natpf1 "$rule,tcp,,8888,,$nodeport"
