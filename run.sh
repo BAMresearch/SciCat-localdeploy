@@ -63,14 +63,6 @@ for file in $SERVICES_DIR; do
   read -p "Press <enter> to deploy the next service: $file (any input skips)" answer
   [ -z "$answer" ] || continue
   bash $file $LOCAL_IP $CATANIE_REPO $CATAMEL_REPO $DOCKER_REPO/fs $DOCKER_REPO/ls
-  continue # skip the rest
-  if [ $file !=  "./services/fileserver/fileserver.sh" ]; then
-    bash $file $LOCAL_IP $CATANIE_REPO $CATAMEL_REPO
-  else
-    if [[ "$FILESERVER" -eq "1" ]]; then
-      bash $file $LOCAL_IP $CATANIE_REPO $CATAMEL_REPO
-    fi
-  fi
 done
 
 
