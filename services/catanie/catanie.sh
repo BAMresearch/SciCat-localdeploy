@@ -1,5 +1,6 @@
 #!/bin/bash
 
+source ./services/deploytools
 export REPO=https://github.com/SciCatProject/catanie.git
 envarray=(bam2) # selects angular configuration in subrepo component
 cd ./services/catanie/
@@ -30,16 +31,9 @@ hostextarray=('-qa' '')
 certarray=('discovery' 'discovery')
 echo $1
 
-injectEnvConfig()
-{
-  local LOCAL_ENV="$1"
-  devpath="$(readlink -f /sys/class/net/* | awk '{print $NF}' | grep -v virtual)"
-  devname="${devpath##*/}"
-  hostaddr="$(ifconfig "$devname" | awk '/inet\s/ {print $2}')"
-  echo "catanie host address: $hostaddr"
-  envfn="src/environments/environment.$LOCAL_ENV.ts"
+hostaddr="$(getHostAddr)"
 
-  cat <<EOF > "$envfn"
+read -r -d '' angEnv <<EOF
 export const environment = {
   production: true,
   lbBaseURL: "http://${hostaddr}:3000",
@@ -54,32 +48,23 @@ export const environment = {
 };
 EOF
 
-  # build configuration in angular.json for environment $LOCAL_ENV
-  json="{
-    \"optimization\": true,
-    \"outputHashing\": \"all\",
-    \"sourceMap\": false,
-    \"extractCss\": true,
-    \"namedChunks\": false,
-    \"aot\": true,
-    \"extractLicenses\": true,
-    \"vendorChunk\": false,
-    \"buildOptimizer\": true,
-    \"fileReplacements\": [ {
-      \"replace\": \"src/environments/environment.ts\",
-      \"with\": \"$envfn\" } ],
-    \"serviceWorker\": true
-  }"
-
-  angularCfg='angular.json'
-  tmpcfg="$(mktemp)"
-  jq "del(.projects.catanie.architect.build.configurations.$LOCAL_ENV,
-          .projects.catanie.architect.serve.configurations.$LOCAL_ENV)" \
-    "$angularCfg" | \
-  jq ".projects.catanie.architect.build.configurations.$LOCAL_ENV = $json" \
-    > "$tmpcfg"
-  mv "$tmpcfg" "$angularCfg"
-}
+read -r -d '' angCfg <<EOF
+  {
+    "optimization": true,
+    "outputHashing": "all",
+    "sourceMap": false,
+    "extractCss": true,
+    "namedChunks": false,
+    "aot": true,
+    "extractLicenses": true,
+    "vendorChunk": false,
+    "buildOptimizer": true,
+    "fileReplacements": [ {
+      "replace": "src/environments/environment.ts",
+      "with": \$envfn } ],
+    "serviceWorker": true
+  }
+EOF
 
 for ((i=0;i<${#envarray[@]};i++)); do
   export LOCAL_ENV="${envarray[i]}"
@@ -95,8 +80,9 @@ for ((i=0;i<${#envarray[@]};i++)); do
   fi
   cd component
   git checkout develop
+  git clean -f
   git pull
-  injectEnvConfig $LOCAL_ENV
+  injectEnvConfig catanie $LOCAL_ENV "$angEnv" "$angCfg"
   ./CI/ESS/copyimages.sh
   if  [ "$(hostname)" != "k8-lrg-serv-prod.esss.dk" ]; then
     npm install
