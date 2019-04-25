@@ -41,12 +41,6 @@ for ((i=0;i<${#envarray[@]};i++)); do
     git clone $REPO component
     cd component/
     git checkout develop
-    if cd server; then # activate default config files
-	cp -n config.local.js-sample config.local.js
-	cp -n datasources.json-sample datasources.json
-	cp -n providers.json-sample providers.json
-	cp -n functionalAccounts_example.json functionalAccounts.json
-    fi
     if  [ "$(hostname)" != "k8-lrg-serv-prod.esss.dk" ]; then
       npm install
     fi
