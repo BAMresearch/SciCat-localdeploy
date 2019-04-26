@@ -115,9 +115,10 @@ cmd="helm install landingserver --name landingserver --namespace $LOCAL_ENV --se
 echo "$cmd"; eval $cmd
 # envsubst < ../catanie-deployment.yaml | kubectl apply -f - --validate=false
 
-rule="landing-$LOCAL_ENV"
-vboxmanage controlvm "minikube" natpf1 delete "$rule" 2> /dev/null
+oldrule="$(vboxmanage showvminfo minikube | grep 'NIC\s[0-9]\sRule' | awk '{print $6}' |tr -d ',' |grep landing)"
+vboxmanage controlvm "minikube" natpf1 delete "$oldrule" 2> /dev/null
 nodeport="$(kubectl get service landingserver-landingserver -ndev -o yaml | awk '/nodePort/ {print $NF}')"
+rule="landing-$LOCAL_ENV"
 vboxmanage controlvm "minikube" natpf1 "$rule,tcp,,4000,,$nodeport"
 
 # vim: set ts=4 sw=4 sts=4 tw=0 et:
