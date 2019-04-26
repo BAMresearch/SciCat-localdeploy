@@ -8,25 +8,25 @@ envarray=(dev)
 INGRESS_NAME=" "
 DOCKERNAME="-f ./Dockerfile"
 if [ "$(hostname)" == "kubetest01.dm.esss.dk" ]; then
-  envarray=(dmsc)
-  INGRESS_NAME="-f ./landingserver/dmsc.yaml"
-  DOCKERNAME="-f ./CI/ESS/Dockerfile.dmsc"
-elif  [ "$(hostname)" == "scicat01.esss.lu.se" ]; then
-  envarray=(ess)
-  INGRESS_NAME="-f ./landingserver/lund.yaml"
-  DOCKERNAME="-f ./CI/ESS/Dockerfile.ess"
-elif  [ "$(hostname)" == "k8-lrg-serv-prod.esss.dk" ]; then
-  envarray=(dmscprod)
-  INGRESS_NAME="-f ./landingserver/dmscprod.yaml"
-  DOCKERNAME="-f ./CI/ESS/Dockerfile.dmscprod"
+    envarray=(dmsc)
+    INGRESS_NAME="-f ./landingserver/dmsc.yaml"
+    DOCKERNAME="-f ./CI/ESS/Dockerfile.dmsc"
+elif    [ "$(hostname)" == "scicat01.esss.lu.se" ]; then
+    envarray=(ess)
+    INGRESS_NAME="-f ./landingserver/lund.yaml"
+    DOCKERNAME="-f ./CI/ESS/Dockerfile.ess"
+elif    [ "$(hostname)" == "k8-lrg-serv-prod.esss.dk" ]; then
+    envarray=(dmscprod)
+    INGRESS_NAME="-f ./landingserver/dmscprod.yaml"
+    DOCKERNAME="-f ./CI/ESS/Dockerfile.dmscprod"
 else
-  YAMLFN="./landingserver/$(hostname).yaml"
-  INGRESS_NAME="-f $YAMLFN"
-  # generate yaml file with appropriate hostname here
-  cat > "$YAMLFN" << EOF
+    YAMLFN="./landingserver/$(hostname).yaml"
+    INGRESS_NAME="-f $YAMLFN"
+    # generate yaml file with appropriate hostname here
+    cat > "$YAMLFN" << EOF
 ingress:
-  enabled: true
-  host: landing.$(hostname).local
+    enabled: true
+    host: landing.$(hostname).local
 EOF
 fi
 
@@ -36,14 +36,14 @@ hostaddr="$(getHostAddr)"
 
 read -r -d '' angEnv <<EOF
 export const environment = {
-  production: true,
-  lbBaseURL: "http://${hostaddr}:3000",
-  facility: "BAM"
+    production: true,
+    lbBaseURL: "http://${hostaddr}:3000",
+    facility: "BAM"
 };
 EOF
 
 read -r -d '' angCfg <<EOF
-  {
+{
     "optimization": true,
     "outputHashing": "all",
     "sourceMap": false,
@@ -54,10 +54,10 @@ read -r -d '' angCfg <<EOF
     "vendorChunk": false,
     "buildOptimizer": true,
     "fileReplacements": [ {
-      "replace": "src/environments/environment.ts",
-      "with": \$envfn } ],
+        "replace": "src/environments/environment.ts",
+        "with": \$envfn } ],
     "serviceWorker": true
-  }
+}
 EOF
 
 export LOCAL_ENV="${envarray[i]}"
@@ -65,7 +65,7 @@ echo $LOCAL_ENV
 
 helm del --purge landingserver
 if [ ! -d "./component/" ]; then
-  git clone $REPO component
+    git clone $REPO component
 fi
 cd component
 git pull
@@ -76,37 +76,37 @@ injectEnvConfig LandingPageServer $LOCAL_ENV "$angEnv" "$angCfg"
 
 # use own Dockerfile
 cat <<EOF > Dockerfile
-  FROM mhart/alpine-node:8
-  RUN mkdir /usr/html
-  RUN mkdir /landing
-  WORKDIR /landing
-  COPY package.json .
-  RUN npm install http-server -g
-  RUN npm install -g @angular/cli
-  RUN npm install
-  COPY src src
-  COPY angular.json .
-  COPY tsconfig.json .
-  COPY ngsw-config.json .
-  COPY webpack.server.config.js .
-  COPY server.ts .
-  COPY karma.conf.js .
-  ARG APP_PROD='true'
-  ARG LB_BASE_URL='http://$hostaddr:3000/api'
-  ARG LB_API_VERSION=''
-  RUN ng build --configuration=$LOCAL_ENV && ng run LandingPageServer:server:$LOCAL_ENV && npm run webpack:server
-  WORKDIR /landing/
-  EXPOSE 4000
-  CMD ["node", "dist/server.js"]
+    FROM mhart/alpine-node:8
+    RUN mkdir /usr/html
+    RUN mkdir /landing
+    WORKDIR /landing
+    COPY package.json .
+    RUN npm install http-server -g
+    RUN npm install -g @angular/cli
+    RUN npm install
+    COPY src src
+    COPY angular.json .
+    COPY tsconfig.json .
+    COPY ngsw-config.json .
+    COPY webpack.server.config.js .
+    COPY server.ts .
+    COPY karma.conf.js .
+    ARG APP_PROD='true'
+    ARG LB_BASE_URL='http://$hostaddr:3000/api'
+    ARG LB_API_VERSION=''
+    RUN ng build --configuration=$LOCAL_ENV && ng run LandingPageServer:server:$LOCAL_ENV && npm run webpack:server
+    WORKDIR /landing/
+    EXPOSE 4000
+    CMD ["node", "dist/server.js"]
 EOF
 
 export LANDING_IMAGE_VERSION=$(git rev-parse HEAD)
 echo $DOCKERNAME
-if  [ "$(hostname)" != "k8-lrg-serv-prod.esss.dk" ]; then
-  cmd="docker build $DOCKERNAME . -t $5:$LANDING_IMAGE_VERSION$LOCAL_ENV"
-  echo "$cmd"; eval $cmd
-  cmd="docker push $5:$LANDING_IMAGE_VERSION$LOCAL_ENV"
-  echo "$cmd"; eval $cmd
+if [ "$(hostname)" != "k8-lrg-serv-prod.esss.dk" ]; then
+    cmd="docker build $DOCKERNAME . -t $5:$LANDING_IMAGE_VERSION$LOCAL_ENV"
+    echo "$cmd"; eval $cmd
+    cmd="docker push $5:$LANDING_IMAGE_VERSION$LOCAL_ENV"
+    echo "$cmd"; eval $cmd
 fi
 echo "Deploying to Kubernetes"
 cd ..
