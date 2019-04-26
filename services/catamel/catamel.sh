@@ -63,7 +63,7 @@ for ((i=0;i<${#envarray[@]};i++)); do
   oldrule="$(vboxmanage showvminfo minikube | grep 'NIC\s[0-9]\sRule' | awk '{print $6}' |tr -d ',' |grep catamel)"
   vboxmanage controlvm "minikube" natpf1 delete "$oldrule" 2> /dev/null
   rule="catamel-$LOCAL_ENV"
-  nodeport="$(kubectl get service catamel-out -ndev -o yaml | awk '/nodePort/ {print $NF}')"
+  nodeport="$(kubectl get service catamel-out -n$LOCAL_ENV -o yaml | awk '/nodePort/ {print $NF}')"
   vboxmanage controlvm "minikube" natpf1 "$rule,tcp,,3000,,$nodeport"
 done
 

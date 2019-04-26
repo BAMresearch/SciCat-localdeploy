@@ -125,7 +125,7 @@ echo "$cmd"; eval $cmd
 
 oldrule="$(vboxmanage showvminfo minikube | grep 'NIC\s[0-9]\sRule' | awk '{print $6}' |tr -d ',' |grep landing)"
 vboxmanage controlvm "minikube" natpf1 delete "$oldrule" 2> /dev/null
-nodeport="$(kubectl get service landingserver-landingserver -ndev -o yaml | awk '/nodePort/ {print $NF}')"
+nodeport="$(kubectl get service landingserver-landingserver -n$LOCAL_ENV -o yaml | awk '/nodePort/ {print $NF}')"
 rule="landing-$LOCAL_ENV"
 vboxmanage controlvm "minikube" natpf1 "$rule,tcp,,4000,,$nodeport"
 
