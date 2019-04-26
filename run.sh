@@ -65,4 +65,4 @@ for file in $SERVICES_DIR; do
   bash $file $LOCAL_IP $CATANIE_REPO $CATAMEL_REPO $DOCKER_REPO/fs $DOCKER_REPO/ls
 done
 
-
+# vim: set ts=4 sw=4 sts=4 tw=0 et:

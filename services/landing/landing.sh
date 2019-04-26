@@ -120,3 +120,4 @@ vboxmanage controlvm "minikube" natpf1 delete "$rule" 2> /dev/null
 nodeport="$(kubectl get service landingserver-landingserver -ndev -o yaml | awk '/nodePort/ {print $NF}')"
 vboxmanage controlvm "minikube" natpf1 "$rule,tcp,,4000,,$nodeport"
 
+# vim: set ts=4 sw=4 sts=4 tw=0 et:

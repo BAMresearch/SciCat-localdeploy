@@ -111,3 +111,5 @@ for ((i=0;i<${#envarray[@]};i++)); do
     ssh-keyscan -H '$ipaddr' >> \$fn; \
     ssh -N -i ~/.minikube/machines/minikube/id_rsa -L 0.0.0.0:80:$ipaddr:$guestport docker@$ipaddr &"
 done
+
+# vim: set ts=4 sw=4 sts=4 tw=0 et:

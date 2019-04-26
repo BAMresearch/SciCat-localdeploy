@@ -40,3 +40,5 @@ rule="fileserver-$LOCAL_ENV"
 vboxmanage controlvm "minikube" natpf1 delete "$rule" 2> /dev/null
 nodeport="$(kubectl get service fileserver-fileserver -ndev -o yaml | awk '/nodePort/ {print $NF}')"
 vboxmanage controlvm "minikube" natpf1 "$rule,tcp,,8888,,$nodeport"
+
+# vim: set ts=4 sw=4 sts=4 tw=0 et:

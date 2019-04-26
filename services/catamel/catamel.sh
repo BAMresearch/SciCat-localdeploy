@@ -64,3 +64,5 @@ for ((i=0;i<${#envarray[@]};i++)); do
   nodeport="$(kubectl get service catamel-out -ndev -o yaml | awk '/nodePort/ {print $NF}')"
   vboxmanage controlvm "minikube" natpf1 "$rule,tcp,,3000,,$nodeport"
 done
+
+# vim: set ts=4 sw=4 sts=4 tw=0 et:
