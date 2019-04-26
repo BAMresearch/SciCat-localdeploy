@@ -58,9 +58,11 @@ for ((i=0;i<${#envarray[@]};i++)); do
   helm install dacat-api-server --name catamel --namespace $LOCAL_ENV --set image.tag=$CATAMEL_IMAGE_VERSION$LOCAL_ENV --set image.repository=$3 ${INGRESS_NAME}
   # envsubst < ../catanie-deployment.yaml | kubectl apply -f - --validate=false
 
-  kubectl expose deployment catamel-dacat-api-server-dev -ndev --name=catamel-out --type=NodePort
+  kubectl -ndev delete svc catamel-out
+  kubectl -ndev expose deployment catamel-dacat-api-server-dev --name=catamel-out --type=NodePort
+  oldrule="$(vboxmanage showvminfo minikube | grep 'NIC\s[0-9]\sRule' | awk '{print $6}' |tr -d ',' |grep catamel)"
+  vboxmanage controlvm "minikube" natpf1 delete "$oldrule" 2> /dev/null
   rule="catamel-$LOCAL_ENV"
-  vboxmanage controlvm "minikube" natpf1 delete "$rule" 2> /dev/null
   nodeport="$(kubectl get service catamel-out -ndev -o yaml | awk '/nodePort/ {print $NF}')"
   vboxmanage controlvm "minikube" natpf1 "$rule,tcp,,3000,,$nodeport"
 done
