@@ -60,6 +60,14 @@ read -r -d '' angCfg <<EOF
 }
 EOF
 
+read -r -d '' angCfg2 <<EOF
+{
+    "fileReplacements": [ {
+        "replace": "src/environments/environment.ts",
+        "with": \$envfn } ]
+}
+EOF
+
 export LOCAL_ENV="${envarray[i]}"
 echo $LOCAL_ENV
 
@@ -72,7 +80,7 @@ git pull
 git checkout -f develop
 git clean -f
 # update angular config
-injectEnvConfig LandingPageServer $LOCAL_ENV "$angEnv" "$angCfg"
+injectEnvConfig LandingPageServer $LOCAL_ENV "$angEnv" "$angCfg" "$angCfg2"
 
 # use own Dockerfile
 cat <<EOF > Dockerfile
