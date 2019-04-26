@@ -66,6 +66,25 @@ read -r -d '' angCfg <<EOF
   }
 EOF
 
+copyimages()
+{
+    if [ "$(basename $(pwd))" != component ]; then
+        echo "$0 not in directory 'component', aborting!"
+        return
+    fi
+    local mediaPath="$HOME/media"
+    if [ ! -d "$mediaPath" ]; then
+        echo "No media/images found, not copying site specific media."
+        return
+    fi
+    local logosrc; logosrc="$(find $mediaPath -maxdepth 1 -iname '*logo*' | head -n1)"
+    local sitesrc; sitesrc="$(find $mediaPath -maxdepth 1 -iname '*site*' | head -n1)"
+    local favicon="$mediaPath/favicon.ico"
+    [ -f "$logosrc" ] && cp "$logosrc" src/assets/images/esslogo.png
+    [ -f "$sitesrc" ] && cp "$sitesrc" src/assets/images/ess-site.png
+    [ -f "$favicon" ] && cp "$favicon" src/favicon.ico
+}
+
 for ((i=0;i<${#envarray[@]};i++)); do
   export LOCAL_ENV="${envarray[i]}"
   export PORTOFFSET="${portarray[i]}"
@@ -84,6 +103,7 @@ for ((i=0;i<${#envarray[@]};i++)); do
   git pull
   injectEnvConfig catanie $LOCAL_ENV "$angEnv" "$angCfg"
   ./CI/ESS/copyimages.sh
+  copyimages
   if  [ "$(hostname)" != "k8-lrg-serv-prod.esss.dk" ]; then
     npm install
     ./node_modules/@angular/cli/bin/ng build --configuration $LOCAL_ENV --output-path dist/$LOCAL_ENV
