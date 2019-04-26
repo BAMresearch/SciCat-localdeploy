@@ -108,8 +108,26 @@ cat <<EOF > Dockerfile
     CMD ["node", "dist/server.js"]
 EOF
 
+copyimages()
+{
+    if [ "$(basename $(pwd))" != component ]; then
+        echo "$0 not in directory 'component', aborting!"
+        return
+    fi
+    local mediaPath="$HOME/media"
+    if [ ! -d "$mediaPath" ]; then
+        echo "No media/images found, not copying site specific media."
+        return
+    fi
+    local bannersrc; bannersrc="$(find $mediaPath -maxdepth 1 -iname '*banner*.png' | head -n1)"
+    local favicon="$mediaPath/favicon.ico"
+    [ -f "$bannersrc" ] && cp "$bannersrc" src/assets/site_banner.png
+    [ -f "$favicon" ] && cp "$favicon" src/favicon.ico
+}
+
 export LANDING_IMAGE_VERSION=$(git rev-parse HEAD)
 echo $DOCKERNAME
+copyimages
 if [ "$(hostname)" != "k8-lrg-serv-prod.esss.dk" ]; then
     cmd="docker build $DOCKERNAME . -t $5:$LANDING_IMAGE_VERSION$LOCAL_ENV"
     echo "$cmd"; eval $cmd
