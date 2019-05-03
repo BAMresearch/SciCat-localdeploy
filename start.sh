@@ -32,8 +32,7 @@ sleep 5
 kubectl apply -f service-nodeport.yaml
 kubectl apply -f configmap.yaml
 
-export MAP_INGRESS_PORTS=false
-if $($MAP_INGRESS_PORTS); then # forward ingress ports to the outside
+if false; then # forward ingress ports to the outside
     ns=ingress-nginx
     ipaddr="$(minikube ip)"
     portmapping="$(kubectl get svc --no-headers=true -ningress-nginx -o yaml | \

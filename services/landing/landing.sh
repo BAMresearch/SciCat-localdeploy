@@ -140,7 +140,8 @@ cmd="helm install landingserver --name landingserver --namespace $LOCAL_ENV \
 echo "$cmd"; eval $cmd
 # envsubst < ../catanie-deployment.yaml | kubectl apply -f - --validate=false
 
-if ! $($MAP_INGRESS_PORTS); then # forward service ports to the outside
+if true; then # forward service ports to the outside
+    echo "Mapping service ports directly!"
     oldrule="$(vboxmanage showvminfo minikube | grep 'NIC\s[0-9]\sRule' \
         | awk '{print $6}' |tr -d ',' |grep landing)"
     vboxmanage controlvm "minikube" natpf1 delete "$oldrule" 2> /dev/null

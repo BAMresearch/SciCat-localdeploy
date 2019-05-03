@@ -63,7 +63,8 @@ for ((i=0;i<${#envarray[@]};i++)); do
   oldrule="$(vboxmanage showvminfo minikube | grep 'NIC\s[0-9]\sRule' \
                 | awk '{print $6}' |tr -d ',' |grep catamel)"
   vboxmanage controlvm "minikube" natpf1 delete "$oldrule" 2> /dev/null
-  if ! $($MAP_INGRESS_PORTS); then # forward service ports to the outside
+  if true; then # forward service ports to the outside
+      echo "Mapping service ports directly!"
       kubectl -ndev expose deployment catamel-dacat-api-server-dev --name=catamel-out --type=NodePort
       rule="catamel-$LOCAL_ENV"
       nodeport="$(kubectl get service catamel-out -n$LOCAL_ENV -o yaml | awk '/nodePort/ {print $NF}')"
