@@ -22,7 +22,7 @@ else
   cat > "$YAMLFN" << EOF
 ingress:
   enabled: true
-  host:  catamel.$(hostname).local
+  host:  catamel.$(hostname --fqdn)
 EOF
 fi
 

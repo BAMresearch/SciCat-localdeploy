@@ -3,6 +3,18 @@
 REPO="https://github.com/garethcmurphy/minitornado.git"
 envarray=(dev)
 
+INGRESS_NAME=" "
+if true; then
+    YAMLFN="./fileserver/$(hostname).yaml"
+    INGRESS_NAME="-f $YAMLFN"
+    # generate yaml file with appropriate hostname here
+    cat > "$YAMLFN" << EOF
+ingress:
+    enabled: true
+    host: files.$(hostname --fqdn)
+EOF
+fi
+
 echo $1
 
 export LOCAL_ENV="${envarray[i]}"
@@ -32,7 +44,7 @@ echo "Deploying to Kubernetes"
 cd ..
 cd ..
 pwd
-cmd="helm install fileserver --name fileserver --namespace $LOCAL_ENV --set image.tag=$FILESERVER_IMAGE_VERSION$LOCAL_ENV --set image.repository=$4"
+cmd="helm install fileserver --name fileserver --namespace $LOCAL_ENV --set image.tag=$FILESERVER_IMAGE_VERSION$LOCAL_ENV --set image.repository=$4 ${INGRESS_NAME}"
 echo "$cmd"; eval $cmd
 # envsubst < ../catanie-deployment.yaml | kubectl apply -f - --validate=false
 

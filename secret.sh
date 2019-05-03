@@ -20,10 +20,15 @@ elif  [ "$(hostname)" == "k8-lrg-serv-prod.esss.dk" ]; then
   openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout landingserver.key -out landingserver.crt -subj "/CN=scicatlandingpageserver.esss.dk" -days 3650
   openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout fileserver.key -out fileserver.crt  -subj "/CN=scicatfileserver.esss.dk" -days 3650
 else
-  openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout catanie.key -out catanie.crt -subj "/CN=catanie.$(hostname).local" -days 3650
-  openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout catamel.key -out catamel.crt -subj "/CN=catamel.$(hostname).local" -days 3650
-  openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout landingserver.key -out landingserver.crt -subj "/CN=landing.$(hostname).local" -days 3650
-  openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout fileserver.key -out fileserver.crt -subj "/CN=files.$(hostname).local" -days 3650
+  FQDN="$(hostname --fqdn)"
+  if [ -z "$FQDN" ]; then
+    echo "Fully qualified domain name could not be found, aborting!"
+    exit 1
+  fi
+  openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout catanie.key -out catanie.crt -subj "/CN=catanie.$FQDN" -days 3650
+  openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout catamel.key -out catamel.crt -subj "/CN=catamel.$FQDN" -days 3650
+  openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout landingserver.key -out landingserver.crt -subj "/CN=landing.$FQDN" -days 3650
+  openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout fileserver.key -out fileserver.crt -subj "/CN=files.$FQDN" -days 3650
 fi
 
 for tmpns in dev $NS; do

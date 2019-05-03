@@ -26,7 +26,7 @@ else
     cat > "$YAMLFN" << EOF
 ingress:
     enabled: true
-    host: landing.$(hostname).local
+    host: landing.$(hostname --fqdn)
 EOF
 fi
 
