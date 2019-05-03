@@ -60,12 +60,15 @@ for ((i=0;i<${#envarray[@]};i++)); do
   # envsubst < ../catanie-deployment.yaml | kubectl apply -f - --validate=false
 
   kubectl -ndev delete svc catamel-out
-  kubectl -ndev expose deployment catamel-dacat-api-server-dev --name=catamel-out --type=NodePort
-  oldrule="$(vboxmanage showvminfo minikube | grep 'NIC\s[0-9]\sRule' | awk '{print $6}' |tr -d ',' |grep catamel)"
+  oldrule="$(vboxmanage showvminfo minikube | grep 'NIC\s[0-9]\sRule' \
+                | awk '{print $6}' |tr -d ',' |grep catamel)"
   vboxmanage controlvm "minikube" natpf1 delete "$oldrule" 2> /dev/null
-  rule="catamel-$LOCAL_ENV"
-  nodeport="$(kubectl get service catamel-out -n$LOCAL_ENV -o yaml | awk '/nodePort/ {print $NF}')"
-  vboxmanage controlvm "minikube" natpf1 "$rule,tcp,,3000,,$nodeport"
+  if ! $($MAP_INGRESS_PORTS); then # forward service ports to the outside
+      kubectl -ndev expose deployment catamel-dacat-api-server-dev --name=catamel-out --type=NodePort
+      rule="catamel-$LOCAL_ENV"
+      nodeport="$(kubectl get service catamel-out -n$LOCAL_ENV -o yaml | awk '/nodePort/ {print $NF}')"
+      vboxmanage controlvm "minikube" natpf1 "$rule,tcp,,3000,,$nodeport"
+  fi
 done
 
 # vim: set ts=4 sw=4 sts=4 tw=0 et:

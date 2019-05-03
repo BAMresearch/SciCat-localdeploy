@@ -49,9 +49,11 @@ cmd="helm install fileserver --name fileserver --namespace $LOCAL_ENV \
 echo "$cmd"; eval $cmd
 # envsubst < ../catanie-deployment.yaml | kubectl apply -f - --validate=false
 
-rule="fileserver-$LOCAL_ENV"
-vboxmanage controlvm "minikube" natpf1 delete "$rule" 2> /dev/null
-nodeport="$(kubectl get service fileserver-fileserver -ndev -o yaml | awk '/nodePort/ {print $NF}')"
-vboxmanage controlvm "minikube" natpf1 "$rule,tcp,,8888,,$nodeport"
+if ! $($MAP_INGRESS_PORTS); then # forward service ports to the outside
+    rule="fileserver-$LOCAL_ENV"
+    vboxmanage controlvm "minikube" natpf1 delete "$rule" 2> /dev/null
+    nodeport="$(kubectl get service fileserver-fileserver -ndev -o yaml | awk '/nodePort/ {print $NF}')"
+    vboxmanage controlvm "minikube" natpf1 "$rule,tcp,,8888,,$nodeport"
+fi
 
 # vim: set ts=4 sw=4 sts=4 tw=0 et:
