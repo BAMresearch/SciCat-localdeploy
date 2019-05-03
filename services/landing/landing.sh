@@ -30,8 +30,6 @@ ingress:
 EOF
 fi
 
-echo $1
-
 hostaddr="$(getHostAddr)"
 
 read -r -d '' angEnv <<EOF
@@ -137,7 +135,8 @@ fi
 echo "Deploying to Kubernetes"
 cd ..
 pwd
-cmd="helm install landingserver --name landingserver --namespace $LOCAL_ENV --set image.tag=$LANDING_IMAGE_VERSION$LOCAL_ENV --set image.repository=$5 ${INGRESS_NAME}"
+cmd="helm install landingserver --name landingserver --namespace $LOCAL_ENV \
+    --set image.tag=$LANDING_IMAGE_VERSION$LOCAL_ENV --set image.repository=$5 ${INGRESS_NAME}"
 echo "$cmd"; eval $cmd
 # envsubst < ../catanie-deployment.yaml | kubectl apply -f - --validate=false
 

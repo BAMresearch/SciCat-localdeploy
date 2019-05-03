@@ -44,7 +44,8 @@ echo "Deploying to Kubernetes"
 cd ..
 cd ..
 pwd
-cmd="helm install fileserver --name fileserver --namespace $LOCAL_ENV --set image.tag=$FILESERVER_IMAGE_VERSION$LOCAL_ENV --set image.repository=$4 ${INGRESS_NAME}"
+cmd="helm install fileserver --name fileserver --namespace $LOCAL_ENV \
+    --set image.tag=$FILESERVER_IMAGE_VERSION$LOCAL_ENV --set image.repository=$4 ${INGRESS_NAME}"
 echo "$cmd"; eval $cmd
 # envsubst < ../catanie-deployment.yaml | kubectl apply -f - --validate=false
 

@@ -55,7 +55,8 @@ for ((i=0;i<${#envarray[@]};i++)); do
   fi
   echo "Deploying to Kubernetes"
   cd ..
-  helm install dacat-api-server --name catamel --namespace $LOCAL_ENV --set image.tag=$CATAMEL_IMAGE_VERSION$LOCAL_ENV --set image.repository=$3 ${INGRESS_NAME}
+  helm install dacat-api-server --name catamel --namespace $LOCAL_ENV \
+      --set image.tag=$CATAMEL_IMAGE_VERSION$LOCAL_ENV --set image.repository=$3 ${INGRESS_NAME}
   # envsubst < ../catanie-deployment.yaml | kubectl apply -f - --validate=false
 
   kubectl -ndev delete svc catamel-out

@@ -119,7 +119,8 @@ for ((i=0;i<${#envarray[@]};i++)); do
   fi
   echo "Deploying to Kubernetes"
   cd ..
-  helm install dacat-gui --name catanie --namespace $LOCAL_ENV --set image.tag=$CATANIE_IMAGE_VERSION$LOCAL_ENV --set image.repository=$2 ${INGRESS_NAME}
+  helm install dacat-gui --name catanie --namespace $LOCAL_ENV \
+      --set image.tag=$CATANIE_IMAGE_VERSION$LOCAL_ENV --set image.repository=$2 ${INGRESS_NAME}
 
   svcname="$(kubectl get svc --no-headers=true -n$LOCAL_ENV | awk '{print $1}')"
   guestport="$(kubectl get service $svcname -n$LOCAL_ENV -o yaml | awk '/nodePort:/ {print $NF}')"
