@@ -35,7 +35,7 @@ hostaddr="$(getHostAddr)"
 read -r -d '' angEnv <<EOF
 export const environment = {
     production: true,
-    lbBaseURL: "http://${hostaddr}:3000",
+    lbBaseURL: "http://$(hostname --fqdn):3000",
     facility: "BAM"
 };
 EOF

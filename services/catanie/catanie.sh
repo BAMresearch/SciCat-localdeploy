@@ -36,8 +36,8 @@ hostaddr="$(getHostAddr)"
 read -r -d '' angEnv <<EOF
 export const environment = {
   production: true,
-  lbBaseURL: "http://${hostaddr}:3000",
-  fileserverBaseURL: "http://${hostaddr}:8888",
+  lbBaseURL: "http://$(hostname --fqdn):3000",
+  fileserverBaseURL: "http://$(hostname --fqdn):8888",
   externalAuthEndpoint: "/auth/msad",
   archiveWorkflowEnabled: true,
   editMetadataEnabled: true,
