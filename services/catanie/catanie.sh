@@ -78,7 +78,7 @@ copyimages()
         return
     fi
     local logosrc; logosrc="$(find $mediaPath -maxdepth 1 -iname '*logo*.png' | head -n1)"
-    local sitesrc; sitesrc="$(find $mediaPath -maxdepth 1 -iname '*site*.png' | head -n1)"
+    local sitesrc; sitesrc="$(find $mediaPath -maxdepth 1 -iname '*site*.png' | grep -v banner | head -n1)"
     local favicon="$mediaPath/favicon.ico"
     [ -f "$logosrc" ] && cp "$logosrc" src/assets/images/esslogo.png
     [ -f "$sitesrc" ] && cp "$sitesrc" src/assets/images/ess-site.png
