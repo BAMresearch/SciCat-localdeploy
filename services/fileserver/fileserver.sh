@@ -5,6 +5,7 @@ envarray=(dev)
 
 INGRESS_NAME=" "
 if true; then
+    mkdir -p fileserver
     YAMLFN="./fileserver/$(hostname).yaml"
     INGRESS_NAME="-f $YAMLFN"
     # generate yaml file with appropriate hostname here
