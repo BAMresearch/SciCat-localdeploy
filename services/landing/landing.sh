@@ -4,7 +4,7 @@ source ./services/deploytools
 REPO="https://github.com/SciCatProject/LandingPageServer.git"
 cd ./services/landing/
 
-envarray=(dev)
+envarray=($KUBE_NAMESPACE)
 INGRESS_NAME=" "
 DOCKERNAME="-f ./Dockerfile"
 if [ "$(hostname)" == "kubetest01.dm.esss.dk" ]; then

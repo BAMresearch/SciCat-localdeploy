@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-NS=dev
+NS="$1" # provide namespace as command line argument
 if [ "$(hostname)" == "kubetest01.dm.esss.dk" ]; then
   NS=dmsc
   openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout catanie.key -out catanie.crt -subj "/CN=kubetest01.dm.esss.dk" -days 3650

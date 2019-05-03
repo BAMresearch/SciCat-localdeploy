@@ -2,7 +2,7 @@
 
 source ./services/deploytools
 export REPO=https://github.com/SciCatProject/catanie.git
-envarray=(bam2) # selects angular configuration in subrepo component
+envarray=($KUBE_NAMESPACE) # selects angular configuration in subrepo component
 cd ./services/catanie/
 
 INGRESS_NAME=" "
@@ -92,7 +92,6 @@ for ((i=0;i<${#envarray[@]};i++)); do
   export CERTNAME="${certarray[i]}"
   export LOCAL_IP="$1"
   echo $LOCAL_ENV $PORTOFFSET $HOST_EXT
-  echo $LOCAL_ENV
   helm del --purge catanie
   if [ ! -d "./component" ]; then
     git clone $REPO component

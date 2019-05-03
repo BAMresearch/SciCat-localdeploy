@@ -53,7 +53,8 @@ for file in $NS_DIR; do
   helm install stable/rabbitmq --version 0.6.3 --namespace $LOCAL_ENV --name local-rabbit --set rabbitmqUsername=admin,rabbitmqPassword=admin
   helm install services/node-red --namespace $LOCAL_ENV --name local-node
 done
-./secret.sh
+export KUBE_NAMESPACE=yourns
+./secret.sh "$KUBE_NAMESPACE"
 
 # Deploy services
 
