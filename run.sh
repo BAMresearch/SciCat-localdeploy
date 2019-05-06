@@ -60,8 +60,10 @@ export KUBE_NAMESPACE=yourns
 
 SERVICES_DIR=./services/*/*.sh
 
+answer=""
 for file in $SERVICES_DIR; do
-  read -p "Press <enter> to deploy the next service: $file (any input skips)" answer
+  [ "$1" = "nopause" ] || \
+      read -p "Press <enter> to deploy the next service: $file (any input skips)" answer
   [ -z "$answer" ] || continue
   bash $file $LOCAL_IP $CATANIE_REPO $CATAMEL_REPO $DOCKER_REPO/fs $DOCKER_REPO/ls
 done
