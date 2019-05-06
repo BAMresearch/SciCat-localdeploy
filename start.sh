@@ -65,8 +65,8 @@ done
 
 # let docker context point to minikube
 eval $(minikube docker-env)
-# set up a local registry
-if [ ! -z "$(docker image ls -q registry)" ]; then
+# set up a local registry if not running
+if ! curl -s -X GET http://docker.local:5000/v2/_catalog | grep -q repositories; then
     # https://hackernoon.com/local-kubernetes-setup-with-minikube-on-mac-os-x-eeeb1cbdc0b
     # start local docker registry
     docker run -d -p 5000:5000 --restart=always --name registry registry:2
