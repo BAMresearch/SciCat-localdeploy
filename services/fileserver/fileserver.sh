@@ -2,6 +2,7 @@
 
 REPO="https://github.com/garethcmurphy/minitornado.git"
 envarray=(dev)
+cd services/fileserver/
 
 INGRESS_NAME=" "
 if true; then
@@ -21,7 +22,6 @@ echo $1
 export LOCAL_ENV="${envarray[i]}"
 echo $LOCAL_ENV
 helm del --purge fileserver
-cd services/fileserver/
 if [ ! -d "./component/" ]; then
   git clone $REPO component
 fi
