@@ -63,11 +63,11 @@ for file in $NS_DIR; do
     kubectl delete namespace $ns 2> /dev/null
 done
 
+# let docker context point to minikube
+eval $(minikube docker-env)
 # set up a local registry
 if [ ! -z "$(docker image ls -q registry)" ]; then
     # https://hackernoon.com/local-kubernetes-setup-with-minikube-on-mac-os-x-eeeb1cbdc0b
-    # let docker context point to minikube
-    eval $(minikube docker-env)
     # start local docker registry
     docker run -d -p 5000:5000 --restart=always --name registry registry:2
 fi
