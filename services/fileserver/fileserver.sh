@@ -43,7 +43,6 @@ docker build . -t $4:$FILESERVER_IMAGE_VERSION$LOCAL_ENV
 docker push $4:$FILESERVER_IMAGE_VERSION$LOCAL_ENV
 echo "Deploying to Kubernetes"
 cd ..
-cd ..
 pwd
 cmd="helm install fileserver --name fileserver --namespace $LOCAL_ENV \
     --set image.tag=$FILESERVER_IMAGE_VERSION$LOCAL_ENV --set image.repository=$4 ${INGRESS_NAME}"
