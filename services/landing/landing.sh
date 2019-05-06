@@ -2,9 +2,9 @@
 
 source ./services/deploytools
 REPO="https://github.com/SciCatProject/LandingPageServer.git"
+envarray=($KUBE_NAMESPACE) # selects angular configuration in subrepo component
 cd ./services/landing/
 
-envarray=($KUBE_NAMESPACE)
 INGRESS_NAME=" "
 DOCKERNAME="-f ./Dockerfile"
 if [ "$(hostname)" == "kubetest01.dm.esss.dk" ]; then
@@ -78,7 +78,7 @@ git pull
 git checkout -f develop
 git clean -f
 # update angular config
-injectEnvConfig LandingPageServer $LOCAL_ENV "$angEnv" "$angCfg" "$angCfg2"
+injectEnvConfig LandingPageServer "$LOCAL_ENV" "$angEnv" "$angCfg" "$angCfg2"
 
 # use own Dockerfile
 cat <<EOF > Dockerfile
