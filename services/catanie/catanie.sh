@@ -72,7 +72,7 @@ copyimages()
         echo "$0 not in directory 'component', aborting!"
         return
     fi
-    local mediaPath="$HOME/media"
+    local mediaPath="$HOME/media/"
     if [ ! -d "$mediaPath" ]; then
         echo "No media/images found, not copying site specific media."
         return
