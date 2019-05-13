@@ -55,13 +55,15 @@ if false; then # forward ingress ports to the outside
         done"
 fi
 
-NS_DIR=./namespaces/*.yaml
-
-for file in $NS_DIR; do
-    f="$(basename $file)"
-    ns="${f%.*}"
-    kubectl delete namespace $ns 2> /dev/null
-done
+# do not delete the dev namespace
+if false; then
+    NS_DIR=./namespaces/*.yaml
+    for file in $NS_DIR; do
+        f="$(basename $file)"
+        ns="${f%.*}"
+        kubectl delete namespace $ns 2> /dev/null
+    done
+fi
 
 # let docker context point to minikube
 eval $(minikube docker-env)
