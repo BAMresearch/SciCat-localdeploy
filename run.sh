@@ -65,7 +65,10 @@ for file in $SERVICES_DIR; do
   [ "$1" = "nopause" ] || \
       read -p "Press <enter> to deploy the next service: $file (any input skips)" answer
   [ -z "$answer" ] || continue
-  bash $file $LOCAL_IP $CATANIE_REPO $CATAMEL_REPO $DOCKER_REPO/fs $DOCKER_REPO/ls
+  cmd="bash $file $LOCAL_IP $CATANIE_REPO $CATAMEL_REPO $DOCKER_REPO/fs $DOCKER_REPO/ls"
+  echo "Calling now $file:"
+  echo " => $cmd"
+  eval $cmd
 done
 
 # vim: set ts=4 sw=4 sts=4 tw=0 et:
