@@ -30,10 +30,13 @@ Running this will install:
 * Kubectl 
 * Helm 
 
-2. Start.sh
+2. Start.sh [nopause]
 
 Running this will start minikube and set up helm access.
-It will also deploy a registry for docker images and an nginx ingress controller. 
+It will also deploy a registry for docker images and an nginx ingress controller.
+
+The script will pause before launching each service and continues after *enter* was pressed.
+This can be skipped by providing the *[nopause]* command line argument.
 
 NOTE: If you are using OS X, you cannot use a local registry as Docker is running inside a VM and you need to forward the port from within there. 
 If you are running a local docker registry, you will need to port forward this connection and these can be found in `proxies.sh`
