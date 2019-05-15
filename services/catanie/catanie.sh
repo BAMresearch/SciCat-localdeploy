@@ -123,7 +123,7 @@ for ((i=0;i<${#envarray[@]};i++)); do
 
   if true; then # forward service ports to the outside
       echo "Mapping service ports directly!"
-      svcname="$(kubectl get svc --no-headers=true -n$LOCAL_ENV | awk '{print $1}')"
+      svcname="$(kubectl get svc --no-headers=true -n$LOCAL_ENV | awk '{print $1}' | grep catanie)"
       guestport="$(kubectl get service $svcname -n$LOCAL_ENV -o yaml | awk '/nodePort:/ {print $NF}')"
       ipaddr="$(minikube ip)"
       sudo killall ssh 2>/dev/null
