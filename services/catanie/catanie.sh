@@ -120,19 +120,6 @@ for ((i=0;i<${#envarray[@]};i++)); do
   cd ..
   helm install dacat-gui --name catanie --namespace $LOCAL_ENV \
       --set image.tag=$CATANIE_IMAGE_VERSION$LOCAL_ENV --set image.repository=$2 ${INGRESS_NAME}
-
-  if true; then # forward service ports to the outside
-      echo "Mapping service ports directly!"
-      svcname="$(kubectl get svc --no-headers=true -n$LOCAL_ENV | awk '{print $1}' | grep catanie)"
-      guestport="$(kubectl get service $svcname -n$LOCAL_ENV -o yaml | awk '/nodePort:/ {print $NF}')"
-      ipaddr="$(minikube ip)"
-      sudo killall ssh 2>/dev/null
-      sudo sh -c "\
-        fn=\$(eval echo ~\$(whoami)/.ssh/known_hosts);
-        ssh-keygen -f \$fn -R '$ipaddr'; \
-        ssh-keyscan -H '$ipaddr' >> \$fn; \
-        ssh -N -i ~/.minikube/machines/minikube/id_rsa -L 0.0.0.0:80:$ipaddr:$guestport docker@$ipaddr &"
-  fi
 done
 
 # vim: set ts=4 sw=4 sts=4 tw=0 et:

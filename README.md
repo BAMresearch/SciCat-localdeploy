@@ -55,6 +55,10 @@ The services directory contains all custom code and this is deployed through hel
 * The image is then pushed to your docker regsitry and tagged
 * Once pushed, the helm script starts and pulls down the image and deploys it into the `dev` namespace
 
+3.1. forwardPorts.sh
+
+Forwards exposed service ports from minikube ports to the host machine ports.
+
 4. `kubectl proxy`
 
 Running the above command will allow you to view the Kubernetes dashboard at 127.0.0.1:8001/ui and you should see all services under the dev namespace.
