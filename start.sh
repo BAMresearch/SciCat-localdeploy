@@ -26,7 +26,7 @@ registerDockerIP # docker.local points always to the same local registry
 kubectl create -f rbac-config.yaml
 helm init --service-account tiller
 helm repo update
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/mandatory.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.24.1/deploy/mandatory.yaml
 sleep 5
 
 kubectl apply -f service-nodeport.yaml
