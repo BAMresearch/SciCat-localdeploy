@@ -7,6 +7,7 @@ registerDockerIP()
     local ipaddr; ipaddr="$(minikube ip)"
     sudo sed -i "/$dname/d" "$hostsfn"
     sudo sh -c "echo '$ipaddr\t$dname' >> '$hostsfn'"
+#    sudo sh -c "echo '{ \"insecure-registries\": [\"$dname:5000\"] }' > /etc/docker/daemon.json"
     sudo service docker restart
 }
 
@@ -18,7 +19,7 @@ fi
 echo $LOCAL_IP
 #minikube start -v7    --insecure-registry localhost:5000 --extra-config=apiserver.GenericServerRunOptions.AuthorizationMode=RBAC
 
-minikube start --insecure-registry docker.local:5000
+minikube start --insecure-registry=docker.local:5000
 #kubectl config use-context minikube #should auto set, but added in case
 registerDockerIP # docker.local points always to the same local registry
 

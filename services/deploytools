@@ -35,8 +35,8 @@ injectEnvConfig()
         jq --arg envfn "$envfn" \
             ".projects.$prj.architect.server.configurations.$LOCAL_ENV = $angCfgServer" \
             "$angularCfg" > "$tmpcfg"
+        mv "$tmpcfg" "$angularCfg"
     fi
-    mv "$tmpcfg" "$angularCfg"
 }
 
 # vim: set ts=4 sw=4 sts=4 tw=0 et:

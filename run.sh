@@ -37,6 +37,7 @@ helm del --purge local-node 2> /dev/null
 if [[ "KAFKA" -eq "1" ]]; then
   helm del --purge local-kafka 2> /dev/null
 fi
+sleep 5 # or sync? let it purge the data before creating new ones
 
 for file in $NS_DIR; do
   f="$(basename $file)"
