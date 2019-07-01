@@ -13,6 +13,9 @@ Description=minikube startup script
 ExecStart=/usr/bin/screen -d -m bash -l -c "/usr/local/bin/start_minikube_services.sh; bash"
 Type=oneshot
 RemainAfterExit=yes
+#User=USERNAME
+#Group=GROUPNAME
+ExecStartPre=/bin/sleep 30
 
 [Install]
 WantedBy=default.target
