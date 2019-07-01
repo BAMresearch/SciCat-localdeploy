@@ -74,6 +74,7 @@ if [ ! -d "./component/" ]; then
     git clone $REPO component
 fi
 cd component
+git checkout . # revert any changes so that pull succeeds
 git pull
 git checkout -f develop
 git clean -f
