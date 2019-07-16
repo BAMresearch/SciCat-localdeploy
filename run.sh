@@ -39,7 +39,7 @@ if [ "$answer" != "y" ]; then
   helm del --purge local-rabbit 2> /dev/null
   helm del --purge local-node 2> /dev/null
   helm del --purge heapster 2> /dev/null
-  if [[ "KAFKA" -eq "1" ]]; then
+  if [[ "$KAFKA" -eq "1" ]]; then
     helm del --purge local-kafka 2> /dev/null
   fi
   sleep 5; sync # let it purge the data before creating new ones
@@ -51,7 +51,7 @@ if [ "$answer" != "y" ]; then
     export LOCAL_ENV="$ns"
     kubectl apply -f mongo.yaml
     helm install stable/mongodb --version 0.4.15 --namespace $LOCAL_ENV --name local-mongodb
-    if [[ "KAFKA" -eq "1" ]]; then
+    if [[ "$KAFKA" -eq "1" ]]; then
       helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
       helm install --name local-kafka incubator/kafka --namespace $LOCAL_ENV
     fi
