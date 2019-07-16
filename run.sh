@@ -38,6 +38,7 @@ if [ "$answer" != "y" ]; then
   helm del --purge local-mongodb 2> /dev/null
   helm del --purge local-rabbit 2> /dev/null
   helm del --purge local-node 2> /dev/null
+  helm del --purge heapster 2> /dev/null
   if [[ "KAFKA" -eq "1" ]]; then
     helm del --purge local-kafka 2> /dev/null
   fi
@@ -58,6 +59,8 @@ if [ "$answer" != "y" ]; then
     helm install stable/rabbitmq --version 0.6.3 --namespace $LOCAL_ENV --name local-rabbit --set rabbitmqUsername=admin,rabbitmqPassword=admin
     helm install services/node-red --namespace $LOCAL_ENV --name local-node
   done
+  # make 'kubectl top pod -A && kubectl top node' working
+  helm install --name heapster stable/heapster --namespace kube-system
 fi
 
 export KUBE_NAMESPACE=yourns
