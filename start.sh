@@ -11,15 +11,32 @@ registerDockerIP()
     sudo service docker restart
 }
 
+start_minikube()
+{
+    #minikube start -v7    --insecure-registry localhost:5000 --extra-config=apiserver.GenericServerRunOptions.AuthorizationMode=RBAC
+    minikube start --insecure-registry=docker.local:5000
+}
+
 if [ "$(uname)" == "Darwin" ]; then
     LOCAL_IP=`ipconfig getifaddr en0`
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     LOCAL_IP=`hostname --ip-address`
 fi
 echo $LOCAL_IP
-#minikube start -v7    --insecure-registry localhost:5000 --extra-config=apiserver.GenericServerRunOptions.AuthorizationMode=RBAC
 
-minikube start --insecure-registry=docker.local:5000
+if [ -z "$(VBoxManage list vms)" ]; then
+    echo "No minikube VM exists yet."
+    echo "Starting/Stopping it to be able to configure it ..."
+    start_minikube; sleep 5; minikube stop
+    echo "Done ensuring that a minikube VM exists."
+fi
+
+# configure the minikube VM before it is started
+cpucount="$(grep -c '^processor' /proc/cpuinfo)"
+memratio=0.8 # how much phys. memory to use for minikube (the k8s cluster)
+mem="$(awk "/MemTotal/{print int(\$2*$memratio/1024)}" /proc/meminfo)"
+VBoxManage modifyvm minikube --memory $mem --cpus $cpucount
+start_minikube
 #kubectl config use-context minikube #should auto set, but added in case
 registerDockerIP # docker.local points always to the same local registry
 
