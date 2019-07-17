@@ -10,7 +10,7 @@ codename="$(grep ^UBUNTU_CODENAME= /etc/os-release | awk -F= '{print $2}')"
 [ -z "$codename" ] && codename="$(grep ^VERSION= /etc/os-release | grep -oE '\w+' | tail -n1)"
 # prepare for docker and other required packages
 sudo apt-get update
-sudo apt-get install -y git curl jq vim apt-transport-https ca-certificates curl software-properties-common g++
+sudo apt-get install -y git curl jq vim apt-transport-https ca-certificates curl software-properties-common g++ net-tools
 
 # install docker
 curl -fsSL "https://download.docker.com/linux/${distrib}/gpg" | sudo apt-key add -
