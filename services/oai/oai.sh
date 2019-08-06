@@ -1,24 +1,34 @@
 #!/bin/bash
 
-envarray=(dmsc)
+source ./services/deploytools
+export REPO=https://github.com/SciCatProject/oai-provider-service.git
+envarray=($KUBE_NAMESPACE) # selects angular configuration in subrepo component
+cd ./services/oai
 
 INGRESS_NAME=" "
 BUILD="true"
 if [ "$(hostname)" == "kubetest01.dm.esss.dk" ]; then
     envarray=(dmsc)
-    INGRESS_NAME="-f ./dacat-gui/dmsc.yaml"
+    INGRESS_NAME="-f ./oai/dmsc.yaml"
     BUILD="false"
-    elif  [ "$(hostname)" == "scicat01.esss.lu.se" ]; then
+elif  [ "$(hostname)" == "scicat01.esss.lu.se" ]; then
     envarray=(ess)
-    INGRESS_NAME="-f ./dacat-gui/lund.yaml"
+    INGRESS_NAME="-f ./oai/lund.yaml"
     BUILD="false"
-    elif  [ "$(hostname)" == "k8-lrg-serv-prod.esss.dk" ]; then
+elif  [ "$(hostname)" == "k8-lrg-serv-prod.esss.dk" ]; then
     envarray=(dmscprod)
-    INGRESS_NAME="-f ./dacat-gui/dmscprod.yaml"
+    INGRESS_NAME="-f ./oai/dmscprod.yaml"
     BUILD="false"
+else
+    YAMLFN="./oai/$(hostname).yaml"
+    INGRESS_NAME="-f $YAMLFN"
+    # generate yaml file with appropriate hostname here
+    cat > "$YAMLFN" << EOF
+ingress:
+  enabled: true
+  host:  oai.$(hostname --fqdn)
+EOF
 fi
-
-export REPO=https://github.com/SciCatProject/oai-provider-service.git
 
 echo $1
 
@@ -28,21 +38,16 @@ for ((i=0;i<${#envarray[@]};i++)); do
     echo $LOCAL_ENV $PORTOFFSET $HOST_EXT
     echo $LOCAL_ENV
     helm del --purge oai
-    cd ./services/oai/
-    if [ -d "./component/" ]; then
-        cd component/
-        git checkout develop
-        git pull
-    else
+    if [ ! -d "./component" ]; then
         git clone $REPO component
-        cd component/
-        git checkout develop
-        git pull
     fi
-    export CATANIE_IMAGE_VERSION=$(git rev-parse HEAD)
+    cd component
+    git checkout develop
+    git clean -f
+    git pull
+    export OAI_IMAGE_VERSION=$(git rev-parse HEAD)
     echo "Deploying to Kubernetes"
     cd ..
-    helm install oai --name oai --namespace $LOCAL_ENV --set image.tag=$CATANIE_IMAGE_VERSION$LOCAL_ENV --set image.repository=$2 ${INGRESS_NAME}
-    echo helm install oai --name oai --namespace $LOCAL_ENV --set image.tag=$CATANIE_IMAGE_VERSION$LOCAL_ENV --set image.repository=$2
-    # envsubst < ../catanie-deployment.yaml | kubectl apply -f - --validate=false
+    helm install oai --name oai --namespace $LOCAL_ENV \
+	--set image.tag=$OAI_IMAGE_VERSION$LOCAL_ENV --set image.repository=$2 ${INGRESS_NAME}
 done

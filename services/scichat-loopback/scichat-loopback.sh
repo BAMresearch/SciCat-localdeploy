@@ -1,6 +1,9 @@
 #!/bin/bash
 
-envarray=(dev)
+source ./services/deploytools
+export REPO=https://github.com/SciCatProject/scichat-loopback.git
+envarray=($KUBE_NAMESPACE) # selects angular configuration in subrepo component
+cd ./services/scichat-loopback/
 
 INGRESS_NAME=" "
 BUILD="true"
@@ -8,22 +11,28 @@ if [ "$(hostname)" == "kubetest01.dm.esss.dk" ]; then
     envarray=(dev)
     INGRESS_NAME="-f ./scichat/dmsc.yaml"
     BUILD="false"
-    elif  [ "$(hostname)" == "scicat01.esss.lu.se" ]; then
+elif  [ "$(hostname)" == "scicat01.esss.lu.se" ]; then
     envarray=(dev)
     INGRESS_NAME="-f ./scichat/lund.yaml"
     BUILD="false"
-    elif  [ "$(hostname)" == "k8-lrg-serv-prod.esss.dk" ]; then
+elif  [ "$(hostname)" == "k8-lrg-serv-prod.esss.dk" ]; then
     envarray=(dev)
     INGRESS_NAME="-f ./scichat/dmscprod.yaml"
     BUILD="false"
+else
+    YAMLFN="./scichat/$(hostname).yaml"
+    INGRESS_NAME="-f $YAMLFN"
+    # generate yaml file with appropriate hostname here
+    cat > "$YAMLFN" << EOF
+ingress:
+  enabled: true
+  host: scichat.$(hostname --fqdn)
+EOF
 fi
 
-export DACATHOME=/home/encima/dev/psi
-export REPO=https://github.com/SciCatProject/scichat-loopback.git
 portarray=(30021 30023)
 hostextarray=('-qa' '')
 certarray=('discovery' 'discovery')
-
 echo $1
 
 for ((i=0;i<${#envarray[@]};i++)); do
@@ -35,36 +44,29 @@ for ((i=0;i<${#envarray[@]};i++)); do
     echo $LOCAL_ENV $PORTOFFSET $HOST_EXT
     echo $LOCAL_ENV
     helm del --purge scichat-loopback
-    cd ./services/scichat-loopback/
-    if [ -d "./component/" ]; then
-        cd component/
-        git checkout master
-        git pull
-        if  [[ $BUILD == "true" ]]; then
-            npm install
-        fi
-    else
+    if [ ! -d "./component" ]; then
         git clone $REPO component
-        cd component/
-        git checkout master
-        git pull
-        
+    fi
+    cd component
+    git checkout develop
+    git clean -f
+    git pull
+    if  [[ $BUILD == "true" ]]; then
         echo "Building release"
-        if  [[ $BUILD == "true" ]]; then
-            npm install
-        fi
+        npm install
     fi
     export SCICHAT_IMAGE_VERSION=$(git rev-parse HEAD)
-	repo="dacat/scichat-loopback"
+    repo="dacat/scichat-loopback"
     if  [[ $BUILD == "true" ]]; then
-        docker build -t ${repo}:$SCICHAT_IMAGE_VERSION$LOCAL_ENV -t ${repo}:latest --build-arg env=$LOCAL_ENV .
-        echo docker build -t ${repo}:$SCICHAT_IMAGE_VERSION$LOCAL_ENV --build-arg env=$LOCAL_ENV .
-        docker push ${repo}:$SCICHAT_IMAGE_VERSION$LOCAL_ENV
-        echo docker push ${repo}:$SCICHAT_IMAGE_VERSION$LOCAL_ENV
+        cmd="docker build -t ${repo}:$SCICHAT_IMAGE_VERSION$LOCAL_ENV -t ${repo}:latest --build-arg env=$LOCAL_ENV ."
+	echo "$cmd"; eval $cmd
+        cmd="docker push ${repo}:$SCICHAT_IMAGE_VERSION$LOCAL_ENV"
+	echo "$cmd"; eval $cmd
     fi
     echo "Deploying to Kubernetes"
     cd ..
-    helm install scichat --name scichat-loopback --namespace $LOCAL_ENV --set image.tag=$SCICHAT_IMAGE_VERSION$LOCAL_ENV --set image.repository=${repo} ${INGRESS_NAME}
-
-    echo helm install scichat --name scichat-loopback --namespace $LOCAL_ENV --set image.tag=$SCICHAT_IMAGE_VERSION$LOCAL_ENV --set image.repository=${repo}
+    helm install scichat --name scichat-loopback --namespace $LOCAL_ENV \
+	--set image.tag=$SCICHAT_IMAGE_VERSION$LOCAL_ENV --set image.repository=${repo} ${INGRESS_NAME}
 done
+
+# vim: set ts=4 sw=4 sts=4 tw=0 et:
