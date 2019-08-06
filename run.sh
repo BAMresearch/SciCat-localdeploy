@@ -36,6 +36,7 @@ if [ "$answer" != "y" ]; then
   kubectl delete -f rabbit.yaml
 
   helm del --purge local-mongodb 2> /dev/null
+  helm del --purge local-postgresql 2> /dev/null
   helm del --purge local-rabbit 2> /dev/null
   helm del --purge local-node 2> /dev/null
   helm del --purge heapster 2> /dev/null
@@ -51,12 +52,15 @@ if [ "$answer" != "y" ]; then
     export LOCAL_ENV="$ns"
     kubectl apply -f mongo.yaml
     helm install stable/mongodb --version 0.4.15 --namespace $LOCAL_ENV --name local-mongodb
+    kubectl apply -f postgres.yaml
+    helm install stable/postgresql --namespace $LOCAL_ENV --name local-postgresql
     if [[ "$KAFKA" -eq "1" ]]; then
       helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
       helm install --name local-kafka incubator/kafka --namespace $LOCAL_ENV
     fi
     kubectl apply -f rabbit.yaml
-    helm install stable/rabbitmq --version 0.6.3 --namespace $LOCAL_ENV --name local-rabbit --set rabbitmqUsername=admin,rabbitmqPassword=admin
+    helm install stable/rabbitmq --version 0.6.3 --namespace $LOCAL_ENV \
+        --name local-rabbit --set rabbitmqUsername=admin,rabbitmqPassword=admin
     helm install services/node-red --namespace $LOCAL_ENV --name local-node
   done
   # make 'kubectl top pod -A && kubectl top node' working

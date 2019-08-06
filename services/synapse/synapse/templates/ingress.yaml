@@ -3,7 +3,6 @@
 {{- $servicePort := .Values.service.externalPort -}}
 {{- $namespace := .Release.Namespace -}}
 {{- $host := .Values.ingress.host -}}
-{{- $path := .Values.ingress.path -}}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -18,21 +17,16 @@ metadata:
       {{ $key }}: {{ $value | quote }}
     {{- end }}
     ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   tls:
-  - secretName: landingserverservice
+  - secretName: catanieservice
     hosts:
     - {{ $host }}
   rules:
     - host: {{ $host }}
       http:
         paths:
-          - path: {{ $path }}
-            backend:
-              serviceName: {{ $serviceName }}
-              servicePort: {{ $servicePort }}
-          - path: /detail/(.*)
+          - path: /
             backend:
               serviceName: {{ $serviceName }}
               servicePort: {{ $servicePort }}
