@@ -52,11 +52,35 @@ cd; mkdir -p code; cd code
 if [ ! -d localdeploy ]; then
 	git clone https://github.com/SciCatBAM/localdeploy.git
 fi
-if cd localdeploy; then
-	git pull
-	bash ./install.sh # installs helm
-	helm init
-	echo "Please reboot and continue by running the *start.sh* script, followed by *run.sh*."
+if ! cd localdeploy; then
+    echo "Could not change to *localdeploy* repo clone from '$(pwd)'! Stopping."
+    exit 1
 fi
+# now in localdeploy repo
+git pull --rebase
+
+# Setup minikube and kubectl
+kubever="$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)"
+if [ "$(uname)" = "Darwin" ]; then
+    brew cask install minikube
+    curl -LO https://storage.googleapis.com/kubernetes-release/release/$kubever/bin/darwin/amd64/kubectl \
+        && chmod +x ./kubectl \
+        && sudo mv ./kubectl /usr/local/bin/
+    brew install kubernetes-helm
+elif [ "$(expr substr $(uname -s) 1 5)" = "Linux" ]; then
+    curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 \
+        && chmod +x minikube \
+        && sudo mv minikube /usr/local/bin/
+    curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/$kubever/bin/linux/amd64/kubectl \
+        && chmod +x ./kubectl \
+        && sudo mv ./kubectl /usr/local/bin/
+    mkdir -p scripts
+    curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > scripts/get_helm.sh
+    chmod +x scripts/get_helm.sh
+    bash scripts/get_helm.sh
+fi
+
+helm init
+echo "Please reboot and continue by running the *start.sh* script, followed by *run.sh*."
 
 # vim: set ts=4 sw=4 sts=4 tw=0 et:
