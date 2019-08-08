@@ -1,8 +1,8 @@
-# Localdeploy
+# SciCat localdeploy
 
 ## What?
 
-The purpose of this repo is to create a minimal install of the Data Catalog project into a minikube cluster on your machine, with a configurable number of namespaces
+The purpose of this repo is to create a minimal install of the SciCat Data Catalog into a minikube cluster on your machine.
 
 ### Software required:
 
