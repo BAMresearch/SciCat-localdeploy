@@ -4,35 +4,22 @@
 
 The purpose of this repo is to create a minimal install of the SciCat Data Catalog into a minikube cluster on your machine.
 
-### Software required:
-
-* Docker
-* MongoDB - running locally is easiest, but this will be installed by Helm
-* RabbitMQ - running locally is easiest, but this will be installed by Helm
-* Homebrew (OS X only)
-
-### Software auto installed;
-
-* Minkube
-* Kubectl
-* Helm
-
 ## How? 
 
 ```
-curl -L https://github.com/scicatbam/localdeploy/raw/develop/preinst_linux.sh | sh
+curl -L https://github.com/scicatbam/localdeploy/raw/develop/install.sh | sh
 ```
 
 Running this will install:
-* docker
+* Docker
 * VirtualBox
 * Minikube
 * Kubectl 
 * Helm 
 
-2. Start.sh [nopause]
+2. start.sh [nopause]
 
-Running this will start minikube and set up helm access.
+Running this script will start minikube and set up helm access.
 It will also deploy a registry for docker images and an nginx ingress controller.
 
 The script will pause before launching each service and continues after *enter* was pressed.
@@ -43,7 +30,7 @@ If you are running a local docker registry, you will need to port forward this c
 
 3. run.sh -d {DOCKER_REPO}
 
-This looks inside the namespaces directory and creates them (default is only to make `dev`.
+This looks inside the namespaces directory and creates them (default is only to make `dev`).
 
 You will need to provide a docker repo (defaulting to localhost) if, for example, you are using a different registry. It needs to be the **full qualified address**.
 
@@ -55,20 +42,13 @@ The services directory contains all custom code and this is deployed through hel
 * The image is then pushed to your docker regsitry and tagged
 * Once pushed, the helm script starts and pulls down the image and deploys it into the `dev` namespace
 
-3.1. forwardPorts.sh
+4. forwardPorts.sh
 
 Forwards exposed service ports from minikube ports to the host machine ports.
 
-4. `kubectl proxy`
+5. `kubectl proxy`
 
 Running the above command will allow you to view the Kubernetes dashboard at 127.0.0.1:8001/ui and you should see all services under the dev namespace.
-
-5. Proxies for Catanie and Catamel
-
-```
-kubectl port-forward --namespace dev $(kubectl get po -n dev | grep catanie | awk '{print $1;}') 8000:80
-kubectl port-forward --namespace dev $(kubectl get po -n dev | grep catamel | awk '{print $1;}') 3000:3000
-```
 
 ### Setup
 
