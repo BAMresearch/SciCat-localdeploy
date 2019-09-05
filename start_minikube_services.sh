@@ -1,12 +1,12 @@
 #!/bin/sh
 
-sleep 10
 SCRIPTPATH=/home/ingo/code/localdeploy
-export HOME=/root/
+username="$(whoami)"
+export HOME="$(eval echo "~$username")"
 cd $SCRIPTPATH
-echo "USER: $(whoami), HOME: '$HOME'"
+echo "USER: $username, HOME: '$HOME'"
 export KUBE_NAMESPACE=yourns
 $SCRIPTPATH/start.sh
-sleep 5
-$SCRIPTPATH/forwardPorts.sh
+#sleep 5
+#$SCRIPTPATH/forwardPorts.sh
 
