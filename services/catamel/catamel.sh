@@ -33,19 +33,17 @@ for ((i=0;i<${#envarray[@]};i++)); do
   export LOCAL_IP="$1"
   echo $LOCAL_ENV
   helm del --purge catamel
-  if [ -d "./component/" ]; then
-    cd component/
-    git checkout develop
-    git pull 
-  else
+  if [ ! -d "./component/" ]; then
     git clone $REPO component
-    cd component/
-    git checkout develop
-    if  [ "$(hostname)" != "k8-lrg-serv-prod.esss.dk" ]; then
-      npm install
-    fi
-    echo "Building release"
   fi
+  cd component/
+  git checkout develop
+  git checkout .
+  git pull
+  if  [ "$(hostname)" != "k8-lrg-serv-prod.esss.dk" ]; then
+    npm install
+  fi
+  echo "Building release"
   export CATAMEL_IMAGE_VERSION=$(git rev-parse HEAD)
   if  [ "$(hostname)" != "k8-lrg-serv-prod.esss.dk" ]; then
     cmd="docker build ${DOCKERNAME} -t $3:$CATAMEL_IMAGE_VERSION$LOCAL_ENV -t $3:latest ."

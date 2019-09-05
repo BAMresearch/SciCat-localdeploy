@@ -102,6 +102,7 @@ for ((i=0;i<${#envarray[@]};i++)); do
     fi
     cd component
     git checkout develop
+    git checkout .
     git clean -f
     git pull
     injectEnvConfig catanie $LOCAL_ENV "$angEnv" "$angCfg"

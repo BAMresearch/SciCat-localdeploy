@@ -49,6 +49,7 @@ for ((i=0;i<${#envarray[@]};i++)); do
     fi
     cd component
     git checkout develop
+    git checkout . # revert any changes so that pull succeeds
     git clean -f
     git pull
     export SYNAPSE_IMAGE_VERSION=$(git rev-parse HEAD)

@@ -26,6 +26,7 @@ if [ ! -d "./component/" ]; then
   git clone $REPO component
 fi
 cd component
+git checkout .
 git pull
 
 # create own site-specific Dockerfile (no proxy needed, as in $REPO)
