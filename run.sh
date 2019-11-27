@@ -64,7 +64,16 @@ if [ "$answer" != "y" ]; then
     helm install services/node-red --namespace $LOCAL_ENV --name local-node
   done
   # make 'kubectl top pod -A && kubectl top node' working
-  helm install --name heapster stable/heapster --namespace kube-system
+  helm install --name heapster stable/heapster --set=command='{/heapster,--source=kubernetes:https://kubernetes.default?kubeletHttps=true&kubeletPort=10250&insecure=true}' --namespace kube-system
+  # manually add - nodes/stats under resources:
+  # kubectl edit clusterrole -n kube-system system:heapster
+  # - apiGroups:
+  #   - ""
+  #   resources:
+  #   - nodes/stats
+  #   verbs:
+  #   - get
+  #   - create
 fi
 
 export KUBE_NAMESPACE=yourns
