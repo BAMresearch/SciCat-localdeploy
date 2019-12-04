@@ -38,11 +38,21 @@ if [ ! -f "$dcompose" ]; then
 fi
 
 # install virtualbox
-sudo add-apt-repository "deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian ${codename} contrib"
-wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
-wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
-sudo apt-get update
-sudo apt-get install -y virtualbox-6.0
+#sudo add-apt-repository "deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian ${codename} contrib"
+#wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
+#wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
+#sudo apt-get update
+#sudo apt-get install -y virtualbox-6.0
+
+# install KVM for minikube
+# https://cravencode.com/post/kubernetes/setup-minikube-on-ubuntu-kvm2/
+sudo apt install -y qemu-kvm libvirt-clients libvirt-daemon-system bridge-utils virt-manager
+sudo usermod -a -G libvirt $(whoami)
+newgrp libvirt
+drvbin="/tmp/docker-machine-driver-kvm2"
+curl -Lo "$drvbin" https://storage.googleapis.com/minikube/releases/latest/docker-machine-driver-kvm2 \
+	&& chmod +x "$drvbin" \
+	&& sudo mv "$drvbin" /usr/local/bin/
 
 # install nodejs/npm (some scripts need this)
 curl -sL https://deb.nodesource.com/setup_10.x | sudo bash -

@@ -14,7 +14,7 @@ registerDockerIP()
 start_minikube()
 {
     #minikube start -v7    --insecure-registry localhost:5000 --extra-config=apiserver.GenericServerRunOptions.AuthorizationMode=RBAC
-    minikube start --insecure-registry=docker.local:5000
+    minikube start --vm-driver kvm2 --insecure-registry=docker.local:5000 $@
 }
 
 if [ "$(uname)" == "Darwin" ]; then
@@ -24,25 +24,25 @@ elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
 fi
 echo $LOCAL_IP
 
-if [ -z "$(VBoxManage list vms)" ]; then
-    echo "No minikube VM exists yet."
-    echo "Starting/Stopping it to be able to configure it ..."
-    start_minikube; sleep 5; minikube stop
-    echo "Done ensuring that a minikube VM exists."
-fi
+#if [ -z "$(VBoxManage list vms)" ]; then
+#    echo "No minikube VM exists yet."
+#    echo "Starting/Stopping it to be able to configure it ..."
+#    start_minikube; sleep 5; minikube stop
+#    echo "Done ensuring that a minikube VM exists."
+#fi
 
 # how to fix massive delays an start?
-VBoxManage storagectl minikube --name SATA --hostiocache on
-VBoxManage modifyvm minikube --audio none
+#VBoxManage storagectl minikube --name SATA --hostiocache on
+#VBoxManage modifyvm minikube --audio none
 # disable shared folders, not needed, security issue possibly
-VBoxManage sharedfolder remove minikube --name hosthome
+#VBoxManage sharedfolder remove minikube --name hosthome
 # configure the minikube VM before it is started
 cpucount="$(grep -c '^processor' /proc/cpuinfo)"
 cpucount="$(python -c "print(int($cpucount * 0.8))")"
 memratio=0.8 # how much phys. memory to use for minikube (the k8s cluster)
 mem="$(awk "/MemTotal/{print int(\$2*$memratio/1024)}" /proc/meminfo)"
-VBoxManage modifyvm minikube --memory $mem --cpus $cpucount
-start_minikube
+#VBoxManage modifyvm minikube --memory $mem --cpus $cpucount
+start_minikube --cpus="$cpucount" --memory="$mem"
 #kubectl config use-context minikube #should auto set, but added in case
 registerDockerIP # docker.local points always to the same local registry
 
