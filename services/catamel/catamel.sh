@@ -28,6 +28,21 @@ fi
 
 echo $1
 
+fix_nan_package_version()
+{
+  nan_json="$(mktemp)"
+  curl -s https://registry.npmjs.org/nan/ > "$nan_json"
+  nan_ver="$(jq '."dist-tags".latest' "$nan_json")"
+  nan_url="$(jq ".versions.$nan_ver.dist.tarball" "$nan_json")"
+  nan_sha="$(jq ".versions.$nan_ver.dist.integrity" "$nan_json")"
+  nan_path='.dependencies."loopback-connector-kafka".dependencies.nan'
+  jq --indent 4 \
+     "$nan_path.version = $nan_ver \
+    | $nan_path.resolved = $nan_url \
+    | $nan_path.integrity = $nan_sha" package-lock.json > "$nan_json"
+  mv "$nan_json" package-lock.json
+}
+
 for ((i=0;i<${#envarray[@]};i++)); do
   export LOCAL_ENV="${envarray[i]}"
   export LOCAL_IP="$1"
@@ -40,6 +55,7 @@ for ((i=0;i<${#envarray[@]};i++)); do
   git checkout develop
   git checkout .
   git pull
+  fix_nan_package_version
   if  [ "$(hostname)" != "k8-lrg-serv-prod.esss.dk" ]; then
     npm install
   fi
