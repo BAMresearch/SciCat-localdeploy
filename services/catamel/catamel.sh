@@ -72,6 +72,18 @@ for ((i=0;i<${#envarray[@]};i++)); do
     cd ..
     helm install dacat-api-server --name catamel --namespace $LOCAL_ENV \
         --set image.tag=$CATAMEL_IMAGE_VERSION$LOCAL_ENV --set image.repository=$3 ${INGRESS_NAME}
+    continue # stop here
+
+    function docker_tag_exists() {
+        curl --silent -f -lSL https://index.docker.io/v1/repositories/$1/tags/$2 > /dev/null
+    }
+    
+    if docker_tag_exists dacat/catamel $CATAMEL_IMAGE_VERSION$LOCAL_ENV; then
+        echo exists
+        helm install dacat-api-server --name catamel --namespace $LOCAL_ENV --set image.tag=$CATAMEL_IMAGE_VERSION$LOCAL_ENV --set image.repository=$3 ${INGRESS_NAME}
+    else
+        echo not exists
+    fi
     # envsubst < ../catanie-deployment.yaml | kubectl apply -f - --validate=false
 done
 
