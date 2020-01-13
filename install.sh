@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 distrib="$(grep ^ID= /etc/os-release | awk -F= '{print $2}')"
 [ -z "$distrib" ] && distrib="$(grep ^ID_LIKE= /etc/os-release | awk -F= '{print $2}')"

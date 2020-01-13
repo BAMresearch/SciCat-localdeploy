@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 NS_DIR=./namespaces/*.yaml
 
