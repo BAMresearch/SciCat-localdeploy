@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 export REPO=https://github.com/SciCatProject/catamel.git
 envarray=(dev)
@@ -31,17 +31,17 @@ echo $1
 
 fix_nan_package_version()
 {
-  nan_json="$(mktemp)"
-  curl -s https://registry.npmjs.org/nan/ > "$nan_json"
-  nan_ver="$(jq '."dist-tags".latest' "$nan_json")"
-  nan_url="$(jq ".versions.$nan_ver.dist.tarball" "$nan_json")"
-  nan_sha="$(jq ".versions.$nan_ver.dist.integrity" "$nan_json")"
-  nan_path='.dependencies."loopback-connector-kafka".dependencies.nan'
-  jq --indent 4 \
-     "$nan_path.version = $nan_ver \
-    | $nan_path.resolved = $nan_url \
-    | $nan_path.integrity = $nan_sha" package-lock.json > "$nan_json"
-  mv "$nan_json" package-lock.json
+    nan_json="$(mktemp)"
+    curl -s https://registry.npmjs.org/nan/ > "$nan_json"
+    nan_ver="$(jq '."dist-tags".latest' "$nan_json")"
+    nan_url="$(jq ".versions.$nan_ver.dist.tarball" "$nan_json")"
+    nan_sha="$(jq ".versions.$nan_ver.dist.integrity" "$nan_json")"
+    nan_path='.dependencies."loopback-connector-kafka".dependencies.nan'
+    jq --indent 4 \
+       "$nan_path.version = $nan_ver \
+      | $nan_path.resolved = $nan_url \
+      | $nan_path.integrity = $nan_sha" package-lock.json > "$nan_json"
+    mv "$nan_json" package-lock.json
 }
 
 for ((i=0;i<${#envarray[@]};i++)); do
@@ -67,12 +67,12 @@ for ((i=0;i<${#envarray[@]};i++)); do
         echo "$cmd"; eval $cmd
         cmd="docker push $3:$CATAMEL_IMAGE_VERSION$LOCAL_ENV"
         echo "$cmd"; eval "$cmd"
-      fi
-  echo "Deploying to Kubernetes"
-  cd ..
-  helm install dacat-api-server --name catamel --namespace $LOCAL_ENV \
-      --set image.tag=$CATAMEL_IMAGE_VERSION$LOCAL_ENV --set image.repository=$3 ${INGRESS_NAME}
-  # envsubst < ../catanie-deployment.yaml | kubectl apply -f - --validate=false
+    fi
+    echo "Deploying to Kubernetes"
+    cd ..
+    helm install dacat-api-server --name catamel --namespace $LOCAL_ENV \
+        --set image.tag=$CATAMEL_IMAGE_VERSION$LOCAL_ENV --set image.repository=$3 ${INGRESS_NAME}
+    # envsubst < ../catanie-deployment.yaml | kubectl apply -f - --validate=false
 done
 
 # vim: set ts=4 sw=4 sts=4 tw=0 et:

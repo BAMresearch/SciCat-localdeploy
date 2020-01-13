@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 source ./services/deploytools
-export REPO=https://github.com/SciCatProject/catanie.git
 envarray=($KUBE_NAMESPACE) # selects angular configuration in subrepo component
+export REPO=https://github.com/SciCatProject/catanie.git
 cd ./services/catanie/
 
 INGRESS_NAME=" "
@@ -30,9 +30,6 @@ ingress:
 EOF
 fi
 
-portarray=(30021 30023)
-hostextarray=('-qa' '')
-certarray=('discovery' 'discovery')
 echo $1
 
 hostaddr="$(getHostAddr)"
@@ -91,11 +88,8 @@ copyimages()
 
 for ((i=0;i<${#envarray[@]};i++)); do
     export LOCAL_ENV="${envarray[i]}"
-    export PORTOFFSET="${portarray[i]}"
-    export HOST_EXT="${hostextarray[i]}"
-    export CERTNAME="${certarray[i]}"
     export LOCAL_IP="$1"
-    echo $LOCAL_ENV $PORTOFFSET $HOST_EXT
+    echo $LOCAL_ENV
     helm del --purge catanie
     if [ ! -d "./component" ]; then
         git clone $REPO component
@@ -108,7 +102,7 @@ for ((i=0;i<${#envarray[@]};i++)); do
     injectEnvConfig catanie $LOCAL_ENV "$angEnv" "$angCfg"
     ./CI/ESS/copyimages.sh
     copyimages
-    if  [[ $BUILD == "true" ]]; then
+    if  [ "$BUILD" == "true" ]; then
         echo "Building release"
         npm install
         ./node_modules/@angular/cli/bin/ng build --configuration $LOCAL_ENV --output-path dist/$LOCAL_ENV
@@ -116,7 +110,7 @@ for ((i=0;i<${#envarray[@]};i++)); do
     echo STATUS:
     kubectl cluster-info
     export CATANIE_IMAGE_VERSION=$(git rev-parse HEAD)
-    if  [[ $BUILD == "true" ]]; then
+    if  [ "$BUILD" == "true" ]; then
         cmd="docker build -t $2:$CATANIE_IMAGE_VERSION$LOCAL_ENV -t $2:latest --build-arg env=$LOCAL_ENV ."
         echo "$cmd"; eval $cmd
         cmd="docker push $2:$CATANIE_IMAGE_VERSION$LOCAL_ENV"
