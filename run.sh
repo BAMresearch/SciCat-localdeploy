@@ -3,9 +3,9 @@
 NS_DIR=./namespaces/*.yaml
 
 if [ "$(uname)" == "Darwin" ]; then
-        LOCAL_IP=`ipconfig getifaddr en0`
+    LOCAL_IP=`ipconfig getifaddr en0`
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-        LOCAL_IP=`hostname --ip-address`
+    LOCAL_IP=`hostname --ip-address`
 fi
 # using minikube
 eval $(minikube docker-env)
@@ -15,12 +15,12 @@ DOCKER_REPO="$LOCAL_IP:5000"
 KAFKA=0 
 
 while getopts 'fhkd:' flag; do
-  case "${flag}" in
-    d) DOCKER_REPO=${OPTARG} ;;
-    h) echo "-d for Docker Repo prefix"; exit 1 ;;
-    k) KAFKA=1 ;;
-    f) FILESERVER=1 ;;
-  esac
+    case "${flag}" in
+        d) DOCKER_REPO=${OPTARG} ;;
+        h) echo "-d for Docker Repo prefix"; exit 1 ;;
+        k) KAFKA=1 ;;
+        f) FILESERVER=1 ;;
+    esac
 done
 
 CATANIE_REPO=$DOCKER_REPO/catanie
@@ -84,14 +84,14 @@ export KUBE_NAMESPACE=yourns
 SERVICES_DIR=./services/*/*.sh
 
 for file in $SERVICES_DIR; do
-  answer=
-  [ "$1" = "nopause" ] || \
-    read -p "Skip restarting $file? [yN] " answer
-  [ "$answer" = "y" ] && continue
-  cmd="bash $file $LOCAL_IP $CATANIE_REPO $CATAMEL_REPO $DOCKER_REPO/fs $DOCKER_REPO/ls"
-  echo "Calling now $file:"
-  echo " => $cmd"
-  eval $cmd
+    answer=
+    [ "$1" = "nopause" ] || \
+        read -p "Skip restarting $file? [yN] " answer
+    [ "$answer" = "y" ] && continue
+    cmd="bash $file $LOCAL_IP $CATANIE_REPO $CATAMEL_REPO $DOCKER_REPO/fs $DOCKER_REPO/ls"
+    echo "Calling now $file:"
+    echo " => $cmd"
+    eval $cmd
 done
 
 # vim: set ts=4 sw=4 sts=4 tw=0 et:

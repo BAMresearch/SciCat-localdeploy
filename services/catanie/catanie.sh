@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 
 source ./services/deploytools
-if [ "$#" -ne 1 ]; then
-  echo "Usage ./catanie.sh ENVIRONMENT" >&2
+if [ -z "$KUBE_NAMESPACE" ]; then
+  echo "KUBE_NAMESPACE not defined!" >&2
   exit 1
 fi
-export env=$1
+export env=$KUBE_NAMESPACE
 
-#envarray=(dmsc)
 export REPO=https://github.com/SciCatProject/catanie.git
 cd ./services/catanie/
 
@@ -132,7 +131,7 @@ function docker_tag_exists() {
 
 if docker_tag_exists dacat/catanie latest; then
     echo exists
-    helm upgrade catanie-${env} dacat-gui --wait --recreate-pods --namespace=${env} --set image.tag=$tag$env
+    helm upgrade catanie-${env} dacat-gui --wait --recreate-pods --namespace=${env} --set image.tag=$tag$env ${INGRESS_NAME}
     helm history catanie-${env}
 else
     echo not exists
