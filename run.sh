@@ -51,7 +51,7 @@ if [ "$answer" != "y" ]; then
     kubectl create -f $file
     export LOCAL_ENV="$ns"
     kubectl apply -f mongo.yaml
-    helm install stable/mongodb --version 0.4.15 --namespace $LOCAL_ENV --name local-mongodb
+    helm install stable/mongodb --namespace $LOCAL_ENV --name local-mongodb
     kubectl apply -f postgres.yaml
     helm install stable/postgresql --namespace $LOCAL_ENV --name local-postgresql
     if [[ "$KAFKA" -eq "1" ]]; then
@@ -59,9 +59,9 @@ if [ "$answer" != "y" ]; then
       helm install --name local-kafka incubator/kafka --namespace $LOCAL_ENV
     fi
     kubectl apply -f rabbit.yaml
-    helm install stable/rabbitmq --version 0.6.3 --namespace $LOCAL_ENV \
+    helm install stable/rabbitmq --namespace $LOCAL_ENV \
         --name local-rabbit --set rabbitmqUsername=admin,rabbitmqPassword=admin
-    helm install services/node-red --namespace $LOCAL_ENV --name local-node
+    helm install stable/node-red --namespace $LOCAL_ENV --name local-node
   done
   # make 'kubectl top pod -A && kubectl top node' working
   helm install --name heapster stable/heapster --set=command='{/heapster,--source=kubernetes:https://kubernetes.default?kubeletHttps=true&kubeletPort=10250&insecure=true}' --namespace kube-system
