@@ -1,12 +1,8 @@
 #!/usr/bin/env bash
 
+export KUBE_NAMESPACE=yourns
 NS_DIR=./namespaces/*.yaml
 
-if [ "$(uname)" == "Darwin" ]; then
-    LOCAL_IP=`ipconfig getifaddr en0`
-elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-    LOCAL_IP=`hostname --ip-address`
-fi
 # using minikube
 eval $(minikube docker-env)
 
@@ -76,7 +72,6 @@ if [ "$answer" != "y" ]; then
   #   - create
 fi
 
-export KUBE_NAMESPACE=yourns
 [ "$1" = "nopause" ] || \
   read -p "Skip generating secrets? [yN] " answer
 if [ "$answer" != "y" ]; then
