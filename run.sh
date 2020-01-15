@@ -77,7 +77,11 @@ if [ "$answer" != "y" ]; then
 fi
 
 export KUBE_NAMESPACE=yourns
-./secret.sh "$KUBE_NAMESPACE"
+[ "$1" = "nopause" ] || \
+  read -p "Skip generating secrets? [yN] " answer
+if [ "$answer" != "y" ]; then
+    ./secret.sh "$KUBE_NAMESPACE"
+fi
 
 # Deploy services
 
