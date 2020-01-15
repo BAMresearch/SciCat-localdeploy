@@ -54,7 +54,7 @@ if [ "$answer" != "y" ]; then
     helm install stable/mongodb --namespace $LOCAL_ENV --name local-mongodb
     kubectl apply -f postgres.yaml
     helm install stable/postgresql --namespace $LOCAL_ENV --name local-postgresql
-    if [[ "$KAFKA" -eq "1" ]]; then
+    if [ "$KAFKA" == "1" ]; then
       helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
       helm install --name local-kafka incubator/kafka --namespace $LOCAL_ENV
     fi
