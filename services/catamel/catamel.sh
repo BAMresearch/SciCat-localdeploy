@@ -58,6 +58,9 @@ git checkout develop
 git checkout .
 git pull
 fix_nan_package_version
+# using the ESS Dockerfile without ESS specific stuff
+cp CI/ESS/Dockerfile .
+sed -i -e '/COPY CI\/ESS/d' Dockerfile
 if  [ "$BUILD" == "true" ]; then
     npm install
 fi
