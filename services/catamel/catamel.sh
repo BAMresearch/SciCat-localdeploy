@@ -39,12 +39,14 @@ fix_nan_package_version()
     nan_ver="$(jq '."dist-tags".latest' "$nan_json")"
     nan_url="$(jq ".versions.$nan_ver.dist.tarball" "$nan_json")"
     nan_sha="$(jq ".versions.$nan_ver.dist.integrity" "$nan_json")"
-    nan_path='.dependencies."loopback-connector-kafka".dependencies.nan'
+    dep_path='.dependencies."loopback-connector-kafka".dependencies'
     jq --indent 4 \
-       "$nan_path.version = $nan_ver \
-      | $nan_path.resolved = $nan_url \
-      | $nan_path.integrity = $nan_sha" package-lock.json > "$nan_json"
+       "$dep_path.nan.version = $nan_ver \
+      | $dep_path.nan.resolved = $nan_url \
+      | $dep_path.nan.integrity = $nan_sha \
+      | $dep_path.snappy.requires.nan = $nan_ver" package-lock.json > "$nan_json"
     mv "$nan_json" package-lock.json
+    chmod 644 package-lock.json
 }
 
 helm del --purge catamel
