@@ -47,7 +47,11 @@ if [ "$answer" != "y" ]; then
     kubectl create -f $file
     export LOCAL_ENV="$ns"
     kubectl apply -f mongo.yaml
-    helm install stable/mongodb --namespace $LOCAL_ENV --name local-mongodb
+    mongocreds=""
+    [ -f "siteconfig/mongodb/credentials.yaml" ] && \
+        mongocreds="-f 'siteconfig/mongodb/credentials.yaml'"
+    mongocmd="helm install stable/mongodb --namespace $LOCAL_ENV --name local-mongodb $mongocreds"
+    echo "$mongocmd"; eval $mongocmd
     kubectl apply -f postgres.yaml
     helm install stable/postgresql --namespace $LOCAL_ENV --name local-postgresql
     if [ "$KAFKA" == "1" ]; then
