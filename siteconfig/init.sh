@@ -9,7 +9,7 @@ newpwd()
 }
 
 mongousr=dacatuser
-mongopwd=$(newpwd | tr -d /)
+mongopwd=$(newpwd | tr -d '+=/')
 
 mongodb()
 {
