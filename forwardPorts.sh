@@ -7,10 +7,11 @@ fi
 
 # remove all port forwardings first
 pids=$(ps ax | grep port-forward | grep kubectl | awk '{print $1}')
-[ -z "$pids" ] || kill $pids
+[ -z "$pids" ] || sudo kill $pids
 # catamel
 NS=$KUBE_NAMESPACE
 kubectl port-forward --address 0.0.0.0 --namespace $NS $(kubectl get po -n $NS | grep catamel | awk '{print $1;}') 3000:3000 >/dev/null 2>&1 &
+sudo kubectl port-forward --address 0.0.0.0 --namespace $NS $(kubectl get po -n $NS | grep catanie | awk '{print $1;}') 80:80 >/dev/null 2>&1 &
 exit
 
 # namespaces
