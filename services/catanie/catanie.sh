@@ -73,7 +73,7 @@ copyimages()
         echo "$0 not in directory 'component', aborting!"
         return
     fi
-    local mediaPath="$HOME/media/"
+    local mediaPath="../../../media/catanie"
     if [ ! -d "$mediaPath" ]; then
         echo "No media/images found, not copying site specific media."
         return
@@ -102,7 +102,6 @@ git checkout .
 git clean -f
 git pull
 injectEnvConfig catanie $env "$angEnv" "$angCfg"
-./CI/ESS/copyimages.sh
 copyimages
 if  [ "$BUILD" == "true" ]; then
     echo "Building release"
