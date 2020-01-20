@@ -3,9 +3,9 @@
 getHostAddr()
 {
     local devpath devname hostaddr
-    devpath="$(readlink -f /sys/class/net/* | awk '{print $NF}' | grep -v virtual)"
+    devpath="$(readlink -f /sys/class/net/* | awk '{print $NF}' | grep -v vir)"
     devname="${devpath##*/}"
-    hostaddr="$(ifconfig "$devname" | awk '/inet\s/ {print $2}')"
+    hostaddr="$(ifconfig "$devname" | awk '/inet / {print $2}')"
     echo "$hostaddr"
 }
 
