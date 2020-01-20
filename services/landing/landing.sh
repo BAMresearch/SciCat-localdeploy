@@ -98,15 +98,31 @@ copyimages()
         echo "$0 not in directory 'component', aborting!"
         return
     fi
-    local mediaPath="$HOME/media/"
+    local mediaPath="../../../media"
     if [ ! -d "$mediaPath" ]; then
         echo "No media/images found, not copying site specific media."
         return
     fi
-    local bannersrc; bannersrc="$(find $mediaPath -maxdepth 1 -iname '*banner*.png' | head -n1)"
+    # get favicon
     local favicon="$mediaPath/favicon.ico"
-    [ -f "$bannersrc" ] && cp "$bannersrc" src/assets/site_banner.png
+    if [ ! -f "$favicon" ]; then
+        (cd "$mediaPath" && convert src/icon.svg -define icon:auto-resize="64,48,32,16" favicon.ico)
+    fi
     [ -f "$favicon" ] && cp "$favicon" src/favicon.ico
+    if [ -f "$mediaPath/src/icon.svg" ]; then
+        convert "$mediaPath/src/icon.svg" -resize 16 src/favicon-16x16.png
+        convert "$mediaPath/src/icon.svg" -resize 32 src/favicon-32x32.png
+    fi
+    if [ -f "$mediaPath/src/logo.svg" ]; then
+        convert "$mediaPath/src/logo.svg" -resize 192 src/android-chrome-192x192.png
+        convert "$mediaPath/src/logo.svg" -resize 384 src/android-chrome-384x384.png
+        convert "$mediaPath/src/logo.svg" -resize 180 src/apple-touch-icon.png
+        convert "$mediaPath/src/logo.svg" -resize 150 src/mstile-150x150.png
+        cp "$mediaPath/src/logo.svg" src/safari-pinned-tab.svg
+    fi
+    mediaPath="$mediaPath/landing"
+    local bannersrc; bannersrc="$(find $mediaPath -maxdepth 1 -iname '*banner*.png' | head -n1)"
+    [ -f "$bannersrc" ] && cp "$bannersrc" src/assets/site_banner.png
 }
 
 export LANDING_IMAGE_VERSION=$(git rev-parse HEAD)
