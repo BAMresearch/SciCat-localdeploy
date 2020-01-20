@@ -81,31 +81,16 @@ git clean -f
 # update angular config
 injectEnvConfig LandingPageServer "$LOCAL_ENV" "$angEnv" "$angCfg" "$angCfg2"
 
-# use own Dockerfile
-cat <<EOF > Dockerfile
-    FROM mhart/alpine-node:12
-    RUN mkdir /usr/html
-    RUN mkdir /landing
-    WORKDIR /landing
-    COPY package.json .
-    RUN npm install http-server -g
-    RUN npm install -g @angular/cli
-    RUN npm install
-    COPY src src
-    COPY angular.json .
-    COPY tsconfig.json .
-    COPY ngsw-config.json .
-    COPY webpack.server.config.js .
-    COPY server.ts .
-    COPY karma.conf.js .
-    ARG APP_PROD='true'
-    ARG LB_BASE_URL='http://$hostaddr:3000/api'
-    ARG LB_API_VERSION=''
-    RUN ng build --configuration=$LOCAL_ENV && ng run LandingPageServer:server:$LOCAL_ENV && npm run webpack:server
-    WORKDIR /landing/
-    EXPOSE 4000
-    CMD ["node", "dist/server.js"]
-EOF
+# using ESS Dockerfile and modify it to our needs
+# using Alpine v12 due to this error: https://stackoverflow.com/q/52196518
+grep -v '^$' CI/ESS/Dockerfile.dmscprod \
+    | grep -v proxy \
+    | grep -v 'npm config set' \
+    | grep -v 'COPY CI/ESS/' \
+    | sed -e '/LB_BASE_URL=/ s#\(http://\)[^\]\+\(/.*\)#\1'$hostaddr:3000'\2#' \
+          -e "/RUN ng build/ s/dmscprod/$LOCAL_ENV/g" \
+          -e '/mhart\/alpine/ s#\(alpine-node:\)[0-9]\+#\112#' \
+    > Dockerfile
 
 copyimages()
 {
