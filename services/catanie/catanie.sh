@@ -73,17 +73,22 @@ copyimages()
         echo "$0 not in directory 'component', aborting!"
         return
     fi
-    local mediaPath="../../../media/catanie"
+    local mediaPath="../../../media"
     if [ ! -d "$mediaPath" ]; then
         echo "No media/images found, not copying site specific media."
         return
     fi
-    local logosrc; logosrc="$(find $mediaPath -maxdepth 1 -iname '*logo*.png' | head -n1)"
-    local sitesrc; sitesrc="$(find $mediaPath -maxdepth 1 -iname '*site*.png' | grep -v banner | head -n1)"
+    # get favicon
     local favicon="$mediaPath/favicon.ico"
-    [ -f "$logosrc" ] && cp "$logosrc" src/assets/images/esslogo.png
-    [ -f "$sitesrc" ] && cp "$sitesrc" src/assets/images/ess-site.png
+    if [ ! -f "$favicon" ]; then
+        (cd "$mediaPath" && convert src/icon.svg -define icon:auto-resize="64,48,32,16" favicon.ico)
+    fi
     [ -f "$favicon" ] && cp "$favicon" src/favicon.ico
+    mediaPath="$mediaPath/catanie"
+    local logosrc; logosrc="$(find $mediaPath -maxdepth 1 -iname '*logo*.png' | head -n1)"
+    [ -f "$logosrc" ] && cp "$logosrc" src/assets/images/esslogo.png
+    local sitesrc; sitesrc="$(find $mediaPath -maxdepth 1 -iname '*site*.png' | grep -v banner | head -n1)"
+    [ -f "$sitesrc" ] && cp "$sitesrc" src/assets/images/ess-site.png
 }
 
 #echo $1
