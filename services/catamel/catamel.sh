@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+source ./services/deploytools
 if [ -z "$KUBE_NAMESPACE" ]; then
   echo "KUBE_NAMESPACE not defined!" >&2
   exit 1
@@ -49,18 +50,6 @@ fix_nan_package_version()
     chmod 644 package-lock.json
 }
 
-update_envfiles()
-{
-    [ -d "dacat-api-server" ] || return # make sure we're in the correct path
-    local src; src="../../siteconfig/catamel/envfiles"
-    [ -d "$src" ] || return
-    cp "$src"/* "dacat-api-server/envfiles"
-}
-reset_envfiles()
-{
-    git checkout "dacat-api-server/envfiles"
-}
-
 helm del --purge catamel
 if [ ! -d "./component/" ]; then
     git clone $REPO component
@@ -87,10 +76,10 @@ fi
 tag=$(git rev-parse HEAD)
 echo "Deploying to Kubernetes"
 cd ..
-update_envfiles
+update_envfiles dacat-api-server
 helm install dacat-api-server --name catamel --namespace $env \
     --set image.tag=$CATAMEL_IMAGE_VERSION$env --set image.repository=$3 ${INGRESS_NAME}
-reset_envfiles
+reset_envfiles dacat-api-server
 exit 0
 
 function docker_tag_exists() {
