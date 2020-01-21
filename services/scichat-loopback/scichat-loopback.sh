@@ -55,6 +55,7 @@ fi
 echo "Deploying to Kubernetes"
 cd ..
 update_envfiles scichat
+create_dbuser scichat
 helm install scichat --name scichat-loopback --namespace $LOCAL_ENV \
     --set image.tag=$SCICHAT_IMAGE_VERSION$LOCAL_ENV --set image.repository=$docker_repo ${INGRESS_NAME}
 reset_envfiles scichat

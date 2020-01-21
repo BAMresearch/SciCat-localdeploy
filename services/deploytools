@@ -62,4 +62,17 @@ reset_envfiles()
     git checkout "$service/envfiles"
 }
 
+create_dbuser()
+{
+    local service="$1"
+    local sitecfgpath="../../siteconfig"
+    local rootpwd; rootpwd="$(awk '/mongodbRootPassword/ {print $2}' \
+        "$sitecfgpath"/mongodb/credentials.yaml)"
+    local mongopod; mongopod=$(kubectl get pods --all-namespaces | awk '/mongo/ {print $2}')
+    local dbname; dbname="$(awk '/db:/ {gsub("^\"|\"$,?","",$2); print $2}' \
+        "$sitecfgpath"/mongodb/${service}.js)"
+    kubectl -n dev exec -i $mongopod \
+        -- mongo -u root -p "$rootpwd" admin < "$sitecfgpath"/mongodb/${service}.js
+}
+
 # vim: set ts=4 sw=4 sts=4 tw=0 et:

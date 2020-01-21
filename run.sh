@@ -21,6 +21,9 @@ done
 # make sure following scripts know about our registry
 export DOCKER_REG
 
+# generate some passwords before starting any services
+./siteconfig/init.sh
+
 answer=
 [ "$1" = "nopause" ] || \
   read -p "Skip restarting base services (mongodb, rabbit, node)? [yN] " answer

@@ -81,6 +81,7 @@ tag=$(git rev-parse HEAD)
 echo "Deploying to Kubernetes"
 cd ..
 update_envfiles dacat-api-server
+create_dbuser catamel
 helm install dacat-api-server --name catamel --namespace $env \
     --set image.tag=$CATAMEL_IMAGE_VERSION$env --set image.repository=$docker_repo ${INGRESS_NAME}
 reset_envfiles dacat-api-server
