@@ -26,7 +26,7 @@ EOF
 
 catamel()
 {
-    local path; path="catamel/envfiles"
+    local path; path="dacat-api-server/envfiles"
     mkdir -p "$path"
     cp ../services/catamel/dacat-api-server/envfiles/datasources.json "$path"/
     sed -i -e '/"user":/ s/"[^"]*"\(,\?\)\s*$/"'$mongousr'"\1/' \
