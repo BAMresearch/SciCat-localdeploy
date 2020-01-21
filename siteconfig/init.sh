@@ -26,15 +26,26 @@ EOF
 
 catamel()
 {
-    mkdir -p catamel/envfiles/
-    cp ../services/catamel/dacat-api-server/envfiles/datasources.json \
-        catamel/envfiles/
+    local path; path="catamel/envfiles"
+    mkdir -p "$path"
+    cp ../services/catamel/dacat-api-server/envfiles/datasources.json "$path"/
     sed -i -e '/"user":/ s/"[^"]*"\(,\?\)\s*$/"'$mongousr'"\1/' \
         -e '/"password":/ s/"[^"]*"\(,\?\)\s*$/"'$mongopwd'"\1/' \
-        catamel/envfiles/datasources.json
+        "$path"/datasources.json
+}
+
+scichat()
+{
+    local path; path="scichat/envfiles"
+    mkdir -p "$path"
+    cp ../services/scichat-loopback/scichat/envfiles/datasources.json "$path"/
+    sed -i -e '/"user":/ s/"[^"]*"\(,\?\)\s*$/"'$mongousr'"\1/' \
+        -e '/"password":/ s/"[^"]*"\(,\?\)\s*$/"'$mongopwd'"\1/' \
+        "$path"/datasources.json
 }
 
 mongodb
 catamel
+scichat
 
 # vim: set ts=4 sw=4 sts=4 tw=0 et:
