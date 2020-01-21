@@ -44,6 +44,11 @@ scichat()
         "$path"/datasources.json
 }
 
+# go to the script directory before creating any files
+scriptpath="$(readlink -f "$0")"
+scriptdir="$(dirname "$scriptpath")"
+cd "$scriptdir"
+
 mongodb
 catamel
 scichat
