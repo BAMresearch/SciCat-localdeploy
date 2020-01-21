@@ -7,6 +7,10 @@ if [ -z "$KUBE_NAMESPACE" ]; then
 fi
 export env=$KUBE_NAMESPACE
 
+[ -z "$DOCKER_REG" ] && \
+    echo "WARNING: Docker registry not defined, using default (docker.io?)!"
+docker_repo="$DOCKER_REG/catamel"
+
 export REPO=https://github.com/SciCatProject/catamel.git
 cd ./services/catamel/
 
@@ -68,9 +72,9 @@ fi
 echo "Building release"
 export CATAMEL_IMAGE_VERSION=$(git rev-parse HEAD)
 if  [ "$BUILD" == "true" ]; then
-    cmd="docker build ${DOCKERNAME} -t $3:$CATAMEL_IMAGE_VERSION$env -t $3:latest ."
+    cmd="docker build ${DOCKERNAME} -t $docker_repo:$CATAMEL_IMAGE_VERSION$env -t $docker_repo:latest ."
     echo "$cmd"; eval $cmd
-    cmd="docker push $3:$CATAMEL_IMAGE_VERSION$env"
+    cmd="docker push $docker_repo:$CATAMEL_IMAGE_VERSION$env"
     echo "$cmd"; eval "$cmd"
 fi
 tag=$(git rev-parse HEAD)
@@ -78,7 +82,7 @@ echo "Deploying to Kubernetes"
 cd ..
 update_envfiles dacat-api-server
 helm install dacat-api-server --name catamel --namespace $env \
-    --set image.tag=$CATAMEL_IMAGE_VERSION$env --set image.repository=$3 ${INGRESS_NAME}
+    --set image.tag=$CATAMEL_IMAGE_VERSION$env --set image.repository=$docker_repo ${INGRESS_NAME}
 reset_envfiles dacat-api-server
 exit 0
 
@@ -88,7 +92,7 @@ function docker_tag_exists() {
 
 if docker_tag_exists dacat/catamel $CATAMEL_IMAGE_VERSION$env; then
     echo exists
-    #helm install dacat-api-server --name catamel --namespace $env --set image.tag=$CATAMEL_IMAGE_VERSION$env --set image.repository=$3 ${INGRESS_NAME}
+    #helm install dacat-api-server --name catamel --namespace $env --set image.tag=$CATAMEL_IMAGE_VERSION$env --set image.repository=$docker_repo ${INGRESS_NAME}
     helm upgrade dacat-api-server-${env} dacat-api-server --namespace=${env} --set image.tag=$tag
     helm history catamel-${env}
     echo "To roll back do: helm rollback --wait --recreate-pods dacat-api-server-${env} revision-number"

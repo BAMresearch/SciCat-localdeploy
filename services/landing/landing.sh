@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 
 source ./services/deploytools
+
+[ -z "$DOCKER_REG" ] && \
+    echo "WARNING: Docker registry not defined, using default (docker.io?)!"
+docker_repo="$DOCKER_REG/ls"
+
 REPO="https://github.com/SciCatProject/LandingPageServer.git"
 envarray=($KUBE_NAMESPACE) # selects angular configuration in subrepo component
 cd ./services/landing/
@@ -129,16 +134,16 @@ export LANDING_IMAGE_VERSION=$(git rev-parse HEAD)
 echo $DOCKERNAME
 copyimages
 if [ "$(hostname)" != "k8-lrg-serv-prod.esss.dk" ]; then
-    cmd="docker build $DOCKERNAME . -t $5:$LANDING_IMAGE_VERSION$LOCAL_ENV"
+    cmd="docker build $DOCKERNAME . -t $docker_repo:$LANDING_IMAGE_VERSION$LOCAL_ENV"
     echo "$cmd"; eval $cmd
-    cmd="docker push $5:$LANDING_IMAGE_VERSION$LOCAL_ENV"
+    cmd="docker push $docker_repo:$LANDING_IMAGE_VERSION$LOCAL_ENV"
     echo "$cmd"; eval $cmd
 fi
 echo "Deploying to Kubernetes"
 cd ..
 pwd
 cmd="helm install landingserver --name landingserver --namespace $LOCAL_ENV \
-    --set image.tag=$LANDING_IMAGE_VERSION$LOCAL_ENV --set image.repository=$5 ${INGRESS_NAME}"
+    --set image.tag=$LANDING_IMAGE_VERSION$LOCAL_ENV --set image.repository=$docker_repo ${INGRESS_NAME}"
 echo "$cmd"; eval $cmd
 # envsubst < ../catanie-deployment.yaml | kubectl apply -f - --validate=false
 

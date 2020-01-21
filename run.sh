@@ -7,22 +7,19 @@ NS_DIR=./namespaces/*.yaml
 eval $(minikube docker-env)
 
 LOCAL_IP=docker.local
-DOCKER_REPO="$LOCAL_IP:5000"
+DOCKER_REG="$LOCAL_IP:5000"
 KAFKA=0 
 
 while getopts 'fhkd:' flag; do
     case "${flag}" in
-        d) DOCKER_REPO=${OPTARG} ;;
+        d) DOCKER_REG=${OPTARG} ;;
         h) echo "-d for Docker Repo prefix"; exit 1 ;;
         k) KAFKA=1 ;;
         f) FILESERVER=1 ;;
     esac
 done
-
-CATANIE_REPO=$DOCKER_REPO/catanie
-CATAMEL_REPO=$DOCKER_REPO/catamel
-
-echo $CATANIE_REPO
+# make sure following scripts know about our registry
+export DOCKER_REG
 
 answer=
 [ "$1" = "nopause" ] || \
@@ -91,10 +88,8 @@ for file in $SERVICES_DIR; do
     [ "$1" = "nopause" ] || \
         read -p "Skip restarting $file? [yN] " answer
     [ "$answer" = "y" ] && continue
-    cmd="bash $file $LOCAL_IP $CATANIE_REPO $CATAMEL_REPO $DOCKER_REPO/fs $DOCKER_REPO/ls"
-    echo "Calling now $file:"
-    echo " => $cmd"
-    eval $cmd
+    echo "# Running now '$file' ..."
+    bash "$file"
 done
 
 # vim: set ts=4 sw=4 sts=4 tw=0 et:

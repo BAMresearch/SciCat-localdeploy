@@ -1,5 +1,9 @@
 #!/bin/bash
 
+[ -z "$DOCKER_REG" ] && \
+    echo "WARNING: Docker registry not defined, using default (docker.io?)!"
+docker_repo="$DOCKER_REG/fs"
+
 REPO="https://github.com/garethcmurphy/minitornado.git"
 envarray=(dev)
 cd services/fileserver/
@@ -40,13 +44,13 @@ CMD ["python3","app2.py"]
 EOF
 
 export FILESERVER_IMAGE_VERSION=$(git rev-parse HEAD)
-docker build . -t $4:$FILESERVER_IMAGE_VERSION$LOCAL_ENV
-docker push $4:$FILESERVER_IMAGE_VERSION$LOCAL_ENV
+docker build . -t $docker_repo:$FILESERVER_IMAGE_VERSION$LOCAL_ENV
+docker push $docker_repo:$FILESERVER_IMAGE_VERSION$LOCAL_ENV
 echo "Deploying to Kubernetes"
 cd ..
 pwd
 cmd="helm install fileserver --name fileserver --namespace $LOCAL_ENV \
-    --set image.tag=$FILESERVER_IMAGE_VERSION$LOCAL_ENV --set image.repository=$4 ${INGRESS_NAME}"
+    --set image.tag=$FILESERVER_IMAGE_VERSION$LOCAL_ENV --set image.repository=$docker_repo ${INGRESS_NAME}"
 echo "$cmd"; eval $cmd
 # envsubst < ../catanie-deployment.yaml | kubectl apply -f - --validate=false
 

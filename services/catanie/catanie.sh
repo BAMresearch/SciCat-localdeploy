@@ -7,6 +7,10 @@ if [ -z "$KUBE_NAMESPACE" ]; then
 fi
 export env=$KUBE_NAMESPACE
 
+[ -z "$DOCKER_REG" ] && \
+    echo "WARNING: Docker registry not defined, using default (docker.io?)!"
+docker_repo="$DOCKER_REG/catanie"
+
 export REPO=https://github.com/SciCatProject/catanie.git
 cd ./services/catanie/
 
@@ -117,16 +121,16 @@ echo STATUS:
 kubectl cluster-info
 export CATANIE_IMAGE_VERSION=$(git rev-parse HEAD)
 if  [ "$BUILD" == "true" ]; then
-    cmd="docker build -t $2:$CATANIE_IMAGE_VERSION$env -t $2:latest --build-arg env=$env ."
+    cmd="docker build -t $docker_repo:$CATANIE_IMAGE_VERSION$env -t $docker_repo:latest --build-arg env=$env ."
     echo "$cmd"; eval $cmd
-    cmd="docker push $2:$CATANIE_IMAGE_VERSION$env"
+    cmd="docker push $docker_repo:$CATANIE_IMAGE_VERSION$env"
     echo "$cmd"; eval $cmd
 fi
 export tag=$(git rev-parse HEAD)
 echo "Deploying to Kubernetes"
 cd ..
 helm install dacat-gui --name catanie --namespace $env \
-    --set image.tag=$CATANIE_IMAGE_VERSION$env --set image.repository=$2 ${INGRESS_NAME}
+    --set image.tag=$CATANIE_IMAGE_VERSION$env --set image.repository=$docker_repo ${INGRESS_NAME}
 exit 0
 
 function docker_tag_exists() {
