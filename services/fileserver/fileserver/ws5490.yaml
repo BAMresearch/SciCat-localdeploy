@@ -1,3 +1,0 @@
-ingress:
-    enabled: true
-    host: files.ws5490.zit.bam.de
