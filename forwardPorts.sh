@@ -1,9 +1,21 @@
 #!/bin/bash
 
-if [ -z "$KUBE_NAMESPACE" ]; then
-    echo "\$KUBE_NAMESPACE not defined! giving up."
-    exit 1
-fi
+#if [ -z "$KUBE_NAMESPACE" ]; then
+#    echo "\$KUBE_NAMESPACE not defined! giving up."
+#    exit 1
+#fi
+
+ipaddr="$(minikube ip)"
+sudo killall ssh 2>/dev/null
+sudo sh -c "
+    mkdir -p ~\$(whoami)/.ssh;
+    fn=\$(eval echo ~\$(whoami)/.ssh/known_hosts);
+    ssh-keygen -f \$fn -R '$ipaddr';
+    ssh-keyscan -H '$ipaddr' >> \$fn;
+    ssh -N -i ~/.minikube/machines/minikube/id_rsa -L 0.0.0.0:80:$ipaddr:80 docker@$ipaddr & \
+    ssh -N -i ~/.minikube/machines/minikube/id_rsa -L 0.0.0.0:443:$ipaddr:443 docker@$ipaddr &"
+
+exit 0
 
 # remove all port forwardings first
 pids=$(ps ax | grep port-forward | grep kubectl | awk '{print $1}')
