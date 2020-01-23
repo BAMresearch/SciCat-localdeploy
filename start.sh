@@ -1,20 +1,28 @@
 #!/bin/bash
 
+DNAME=docker.local
+
 registerDockerIP()
 {
     local hostsfn="/etc/hosts"
-    local dname="docker.local"
     local ipaddr; ipaddr="$(minikube ip)"
-    sudo sed -i "/$dname/d" "$hostsfn"
-    sudo sh -c "echo '$ipaddr\t$dname' >> '$hostsfn'"
-#    sudo sh -c "echo '{ \"insecure-registries\": [\"$dname:5000\"] }' > /etc/docker/daemon.json"
+    sudo sed -i "/$DNAME/d" "$hostsfn"
+    sudo sh -c "echo '$ipaddr\t$DNAME' >> '$hostsfn'"
+#    sudo sh -c "echo '{ \"insecure-registries\": [\"$DNAME:5000\"] }' > /etc/docker/daemon.json"
     sudo service docker restart
 }
 
 start_minikube()
 {
     #minikube start -v7    --insecure-registry localhost:5000 --extra-config=apiserver.GenericServerRunOptions.AuthorizationMode=RBAC
-    minikube start --vm-driver kvm2 --insecure-registry=docker.local:5000 $@
+    echo "Cleaning some KVM ressources first:"
+    #virsh undefine minikube
+    #virsh net-undefine minikube-net
+    virsh net-destroy minikube-net \
+        && virsh net-destroy default # stop dnsmasq and old DNS values for 'docker.local'
+    sudo sed -i "/$DNAME/d" /etc/hosts # remove docker.local
+    echo "Starting minikube now:"
+    minikube start --vm-driver kvm2 --insecure-registry=$DNAME:5000 $@
 }
 
 if [ "$(uname)" == "Darwin" ]; then
