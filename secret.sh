@@ -41,6 +41,7 @@ done
 kubectl create ns $NS
 kubectl create secret -n$NS tls catanieservice --key catanie.key --cert catanie.crt
 kubectl create secret -n$NS tls landingserverservice --key landingserver.key --cert landingserver.crt
-kubectl create secret -ndev tls catamelservice --key catamel.key --cert catamel.crt
+kubectl create secret -n$NS tls catamelservice --key catamel.key --cert catamel.crt
 kubectl create secret -ndev tls fileserverservice --key fileserver.key --cert fileserver.crt
 
+# vim: set ts=2 sw=2 sts=2 tw=0 et:
