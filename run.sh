@@ -39,7 +39,7 @@ if [ "$answer" != "y" ]; then
   if [[ "$KAFKA" -eq "1" ]]; then
     helm del --purge local-kafka 2> /dev/null
   fi
-  sleep 5; sync # let it purge the data before creating new ones
+  sleep 7; sync # let it purge the data before creating new ones
 
   for file in $NS_DIR; do
     f="$(basename $file)"
