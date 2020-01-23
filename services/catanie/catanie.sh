@@ -36,13 +36,11 @@ ingress:
 EOF
 fi
 
-hostaddr="$(getHostAddr)"
-
 read -r -d '' angEnv <<EOF
 export const environment = {
   production: true,
-  lbBaseURL: "http://$(hostname --fqdn):3000",
-  fileserverBaseURL: "http://$(hostname --fqdn):8888",
+  lbBaseURL: "https://catamel.$(hostname --fqdn)",
+  fileserverBaseURL: "https://files.$(hostname --fqdn)",
   externalAuthEndpoint: "/auth/msad",
   archiveWorkflowEnabled: true,
   editMetadataEnabled: true,
@@ -132,6 +130,7 @@ cd ..
 helm install dacat-gui --name catanie --namespace $env \
     --set image.tag=$CATANIE_IMAGE_VERSION$env --set image.repository=$docker_repo ${INGRESS_NAME}
 exit 0
+# disabled the lower part as we do not have a build server yet and don't use public repos
 
 function docker_tag_exists() {
     curl --silent -f -lSL https://index.docker.io/v1/repositories/$1/tags/$2 > /dev/null

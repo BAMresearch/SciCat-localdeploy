@@ -40,7 +40,7 @@ hostaddr="$(getHostAddr)"
 read -r -d '' angEnv <<EOF
 export const environment = {
     production: true,
-    lbBaseURL: "http://$(hostname --fqdn):3000",
+    lbBaseURL: "http://catamel.$(hostname --fqdn)",
     facility: "BAM"
 };
 EOF
