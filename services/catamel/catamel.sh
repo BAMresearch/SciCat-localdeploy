@@ -86,6 +86,7 @@ helm install dacat-api-server --name catamel --namespace $env \
     --set image.tag=$CATAMEL_IMAGE_VERSION$env --set image.repository=$docker_repo ${INGRESS_NAME}
 reset_envfiles dacat-api-server
 exit 0
+# disabled the lower part as we do not have a build server yet and don't use public repos
 
 function docker_tag_exists() {
     curl --silent -f -lSL https://index.docker.io/v1/repositories/$1/tags/$2 > /dev/null
