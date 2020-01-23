@@ -69,6 +69,10 @@ create_dbuser()
     local rootpwd; rootpwd="$(awk '/mongodbRootPassword/ {print $2}' \
         "$sitecfgpath"/mongodb/credentials.yaml)"
     local mongopod; mongopod=$(kubectl get pods --all-namespaces | awk '/mongo/ {print $2}')
+    if [ -z "$mongopod" ]; then
+        echo "No mongodb k8s pod found, can't create db user, giving up!"
+        return
+    fi
     local dbname; dbname="$(awk '/db:/ {gsub("^\"|\"$,?","",$2); print $2}' \
         "$sitecfgpath"/mongodb/${service}.js)"
     kubectl -n dev exec -i $mongopod \
