@@ -7,21 +7,21 @@ source ./services/deploytools
 docker_repo="$DOCKER_REG/ls"
 
 REPO="https://github.com/SciCatProject/LandingPageServer.git"
-envarray=($KUBE_NAMESPACE) # selects angular configuration in subrepo component
+export LOCAL_ENV=$KUBE_NAMESPACE # selects angular configuration in subrepo component
 cd ./services/landing/
 
 INGRESS_NAME=" "
 DOCKERNAME="-f ./Dockerfile"
 if [ "$(hostname)" == "kubetest01.dm.esss.dk" ]; then
-    envarray=(dmsc)
+    LOCAL_ENV=dmsc
     INGRESS_NAME="-f ./landingserver/dmsc.yaml"
     DOCKERNAME="-f ./CI/ESS/Dockerfile.dmsc"
 elif    [ "$(hostname)" == "scicat01.esss.lu.se" ]; then
-    envarray=(ess)
+    LOCAL_ENV=ess
     INGRESS_NAME="-f ./landingserver/lund.yaml"
     DOCKERNAME="-f ./CI/ESS/Dockerfile.ess"
 elif    [ "$(hostname)" == "k8-lrg-serv-prod.esss.dk" ]; then
-    envarray=(dmscprod)
+    LOCAL_ENV=dmscprod
     INGRESS_NAME="-f ./landingserver/dmscprod.yaml"
     DOCKERNAME="-f ./CI/ESS/Dockerfile.dmscprod"
 else
@@ -40,7 +40,7 @@ hostaddr="$(getHostAddr)"
 read -r -d '' angEnv <<EOF
 export const environment = {
     production: true,
-    lbBaseURL: "http://catamel.$(hostname --fqdn)",
+    lbBaseURL: "https://catamel.$(hostname --fqdn)",
     facility: "BAM"
 };
 EOF
@@ -70,9 +70,6 @@ read -r -d '' angCfg2 <<EOF
         "with": \$envfn } ]
 }
 EOF
-
-export LOCAL_ENV="${envarray[i]}"
-echo $LOCAL_ENV
 
 helm del --purge landingserver
 if [ ! -d "./component/" ]; then
