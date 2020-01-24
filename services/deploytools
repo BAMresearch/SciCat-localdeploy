@@ -79,4 +79,87 @@ create_dbuser()
         -- mongo -u root -p "$rootpwd" admin < "$sitecfgpath"/mongodb/${service}.js
 }
 
+#
+# functions for generating database/site credentials.
+# Should be run before the database is deployed (with empty tables)
+# It creates a directory structure in *siteconfig*
+# with files included in the helm charts of the services.
+#
+
+newpwd()
+{
+    openssl rand -base64 16 | tr -d '+=/'
+}
+
+gen_mongodb_credentials()
+{
+    local oldpath; oldpath=$(pwd) # pushd
+    # provide the working directory 'siteconfig' as first argument
+    cd "$1" || return
+    mkdir -p mongodb
+    cat > mongodb/credentials.yaml <<EOF
+mongodbRootPassword: $(newpwd)
+# MongoDB custom user and database
+# ref: https://github.com/bitnami/bitnami-docker-mongodb/blob/master/README.md#creating-a-user-and-database-on-first-run
+# and here: https://github.com/helm/charts/blob/master/stable/mongodb/README.md
+#mongodbUsername: <disabled>
+#mongodbPassword: <disabled>
+#mongodbDatabase: <disabled>
+EOF
+    cd "$oldpath" # popd
+}
+
+mongodb_createUserCmd()
+{
+    cat > "$1" <<EOF
+use $4
+db.createUser({
+    user: "$2",
+    pwd: "$3",
+    roles: [{
+        role: "readWrite",
+        db: "$4"
+    }]
+});
+EOF
+}
+
+gen_catamel_credentials()
+{
+    local oldpath; oldpath=$(pwd) # pushd
+    # provide the working directory 'siteconfig' as first argument
+    cd "$1" || return
+    local dbusr=dacat
+    local dbpwd=$(newpwd)
+    local dbname=dacatdb
+    local path; path="dacat-api-server/envfiles"
+    mkdir -p "$path"
+    cp ../services/catamel/dacat-api-server/envfiles/datasources.json "$path"/
+    sed -i -e '/"user":/ s/"[^"]*"\(,\?\)\s*$/"'$dbusr'"\1/' \
+        -e '/"password":/ s/"[^"]*"\(,\?\)\s*$/"'$dbpwd'"\1/' \
+        -e '/"database":/ s/"[^"]*"\(,\?\)\s*$/"'$dbname'"\1/' \
+        "$path"/datasources.json
+    mongodb_createUserCmd mongodb/catamel.js "$dbusr" "$dbpwd" "$dbname"
+    cd "$oldpath" # popd
+}
+
+gen_scichat_credentials()
+{
+    local oldpath; oldpath=$(pwd) # pushd
+    # provide the working directory 'siteconfig' as first argument
+    cd "$1" || return
+    local dbusr=scichat
+    local dbpwd=$(newpwd)
+    local dbname=scichatdb
+    local path; path="scichat/envfiles"
+    mkdir -p "$path"
+    cp ../services/scichat-loopback/scichat/envfiles/datasources.json "$path"/
+    sed -i -e '/"user":/ s/"[^"]*"\(,\?\)\s*$/"'$dbusr'"\1/' \
+        -e '/"password":/ s/"[^"]*"\(,\?\)\s*$/"'$dbpwd'"\1/' \
+        -e '/"database":/ s/"[^"]*"\(,\?\)\s*$/"'$dbname'"\1/' \
+        "$path"/datasources.json
+    mongodb_createUserCmd mongodb/scichat.js "$dbusr" "$dbpwd" "$dbname"
+    cd "$oldpath" # popd
+}
+
 # vim: set ts=4 sw=4 sts=4 tw=0 et:

@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# get the script directory before creating any files
+scriptpath="$(readlink -f "$0")"
+scriptdir="$(dirname "$scriptpath")"
+cd "$scriptdir"
+. ./services/deploytools
+
 export KUBE_NAMESPACE=yourns
 NS_DIR=./namespaces/*.yaml
 
@@ -21,9 +27,6 @@ done
 # make sure following scripts know about our registry
 export DOCKER_REG
 
-# generate some passwords before starting any services
-./siteconfig/init.sh
-
 answer=
 [ "$1" = "nopause" ] || \
   read -p "Skip restarting base services (mongodb, rabbit, node)? [yN] " answer
@@ -39,7 +42,15 @@ if [ "$answer" != "y" ]; then
   if [[ "$KAFKA" -eq "1" ]]; then
     helm del --purge local-kafka 2> /dev/null
   fi
-  sleep 7; sync # let it purge the data before creating new ones
+  # generate some passwords before starting any services
+  mkdir -p siteconfig
+  gen_mongodb_credentials siteconfig
+  gen_catamel_credentials siteconfig
+  gen_scichat_credentials siteconfig
+
+  echo -n "Waiting for mongodb persistentvolume being removed ... "
+  while kubectl -n dev get pv | grep -q mongo; do sleep 1; done
+  echo "done."
 
   for file in $NS_DIR; do
     f="$(basename $file)"
@@ -77,7 +88,7 @@ if [ "$answer" != "y" ]; then
 fi
 
 [ "$1" = "nopause" ] || \
-  read -p "Skip generating secrets? [yN] " answer
+  read -p "Skip generating certificates? [yN] " answer
 if [ "$answer" != "y" ]; then
     ./secret.sh "$KUBE_NAMESPACE"
 fi
