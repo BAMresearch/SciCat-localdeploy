@@ -18,8 +18,9 @@ start_minikube()
     echo "Cleaning some KVM ressources first:"
     #virsh undefine minikube
     #virsh net-undefine minikube-net
-    virsh net-destroy minikube-net \
-        && virsh net-destroy default # stop dnsmasq and old DNS values for 'docker.local'
+    virsh net-list --name | grep -q minikube \
+        && virsh net-destroy minikube-net
+    virsh net-destroy default # stop dnsmasq and old DNS values for 'docker.local'
     sudo sed -i "/$DNAME/d" /etc/hosts # remove docker.local
     echo "Starting minikube now:"
     minikube start --vm-driver kvm2 --insecure-registry=$DNAME:5000 $@
