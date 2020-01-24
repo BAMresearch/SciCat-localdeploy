@@ -85,6 +85,12 @@ create_dbuser catamel
 helm install dacat-api-server --name catamel --namespace $env \
     --set image.tag=$CATAMEL_IMAGE_VERSION$env --set image.repository=$docker_repo ${INGRESS_NAME}
 reset_envfiles dacat-api-server
+# expose catamel, seems to be missing in helm config
+svcname=catamel
+kubectl -n$env delete svc ${svcname}-${svcname} 2>/dev/null
+kubectl -n$env expose deployment catamel-dacat-api-server-dev \
+    --name=${svcname}-${svcname} --type=NodePort
+
 exit 0
 # disabled the lower part as we do not have a build server yet and don't use public repos
 
