@@ -39,14 +39,15 @@ registerDockerIP # docker.local points always to the same local registry
 kubectl create -f rbac-config.yaml
 helm init --service-account tiller
 helm repo update
+
+# get nginx-ingress-controller with hostNetwork=true
+tmpyaml=$(mktemp -p .) # yq does not like files in /tmp/ for unknown reasons
+curl -o "$tmpyaml" https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/mandatory.yaml
 # https://skryvets.com/blog/2019/04/09/exposing-tcp-and-udp-services-via-ingress-on-minikube/
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/mandatory.yaml
-# add 'spec.template.spec.hostNetwork = true' to this controller
-kubectl get deploy nginx-ingress-controller -n ingress-nginx -o yaml > temp.yaml
-[ -f "temp.yaml" ] \
-	&& yq w -i temp.yaml spec.template.spec.hostNetwork true \
-	&& kubectl apply -f temp.yaml \
-	&& rm temp.yaml
+# add 'spec.template.spec.hostNetwork = true' to Deployment of this controller config
+yq w -i -d 9 "$tmpyaml" spec.template.spec.hostNetwork true
+echo "Applying ingress config from "$tmpyaml"!"
+kubectl apply -f "$tmpyaml"
 sleep 5
 
 kubectl apply -f service-nodeport.yaml
