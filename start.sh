@@ -53,29 +53,6 @@ sleep 5
 kubectl apply -f service-nodeport.yaml
 kubectl apply -f configmap.yaml
 
-if false; then # forward ingress ports to the outside
-    ns=ingress-nginx
-    ipaddr="$(minikube ip)"
-    portmapping="$(kubectl get svc --no-headers=true -ningress-nginx -o yaml | \
-                    awk '/nodePort:/ {ORS=":"; print $NF} /targetPort:/ {ORS=" "; print $NF}')"
-    echo "port mapping found: '$portmapping'"
-    sudo killall ssh > /dev/null 2>&1
-    sudo sh -x -c "
-        fn=\$(eval echo ~\$(whoami)/.ssh/known_hosts)
-        ssh-keygen -f \$fn -R '$ipaddr'
-        ssh-keyscan -H '$ipaddr' >> \$fn
-        for mapping in $portmapping; do
-            inp=\${mapping%:*}; outp=\${mapping#*:}
-            echo \"mapping \$mapping: \$inp -> \$outp\"
-	    if [ -z \"\$inp\" ] || [ -z \"\$outp\" ]; then
-                echo \"Input or output port could not be determined! Skipping.\"
-		continue
-            fi
-            ssh -N -i ~/.minikube/machines/minikube/id_rsa \
-                -L 0.0.0.0:\$outp:$ipaddr:\$inp docker@$ipaddr &
-        done"
-fi
-
 # do not delete the dev namespace
 if false; then
     NS_DIR=./namespaces/*.yaml
