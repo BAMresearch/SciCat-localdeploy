@@ -48,6 +48,7 @@ curl -o "$tmpyaml" https://raw.githubusercontent.com/kubernetes/ingress-nginx/ma
 yq w -i -d 9 "$tmpyaml" spec.template.spec.hostNetwork true
 echo "Applying ingress config from "$tmpyaml"!"
 kubectl apply -f "$tmpyaml"
+rm "$tmpyaml"
 sleep 5
 
 kubectl apply -f service-nodeport.yaml
