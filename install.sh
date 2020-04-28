@@ -48,7 +48,7 @@ fi
 # https://cravencode.com/post/kubernetes/setup-minikube-on-ubuntu-kvm2/
 sudo apt install -y qemu-kvm libvirt-clients libvirt-daemon-system bridge-utils virt-manager
 sudo usermod -a -G libvirt $(whoami)
-newgrp libvirt
+#newgrp libvirt # stops the install script here
 drvbin="/tmp/docker-machine-driver-kvm2"
 curl -Lo "$drvbin" https://storage.googleapis.com/minikube/releases/latest/docker-machine-driver-kvm2 \
 	&& chmod +x "$drvbin" \
