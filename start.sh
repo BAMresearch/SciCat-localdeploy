@@ -42,7 +42,7 @@ helm repo update
 
 # get nginx-ingress-controller with hostNetwork=true
 tmpyaml=$(mktemp -p .) # yq does not like files in /tmp/ for unknown reasons
-curl -o "$tmpyaml" https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/mandatory.yaml
+curl -o "$tmpyaml" https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.30.0/deploy/static/mandatory.yaml
 # https://skryvets.com/blog/2019/04/09/exposing-tcp-and-udp-services-via-ingress-on-minikube/
 # add 'spec.template.spec.hostNetwork = true' to Deployment of this controller config
 yq w -i -d 9 "$tmpyaml" spec.template.spec.hostNetwork true
