@@ -61,17 +61,17 @@ if [ "$answer" != "y" ]; then
     mongocreds=""
     [ -f "siteconfig/mongodb/credentials.yaml" ] && \
         mongocreds="-f 'siteconfig/mongodb/credentials.yaml'"
-    mongocmd="helm install stable/mongodb --namespace $LOCAL_ENV --name local-mongodb $mongocreds"
+    mongocmd="helm install bitnami/mongodb --namespace $LOCAL_ENV --name local-mongodb $mongocreds"
     echo "$mongocmd"; eval $mongocmd
     kubectl apply -f postgres.yaml
-    helm install stable/postgresql --namespace $LOCAL_ENV --name local-postgresql
+    helm install bitnami/postgresql --namespace $LOCAL_ENV --name local-postgresql
     if [ "$KAFKA" == "1" ]; then
       helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
       helm install --name local-kafka incubator/kafka --namespace $LOCAL_ENV
     fi
     kubectl apply -f rabbit.yaml
-    helm install stable/rabbitmq --namespace $LOCAL_ENV \
-        --name local-rabbit --set rabbitmqUsername=admin,rabbitmqPassword=admin
+    helm install bitnami/rabbitmq --namespace $LOCAL_ENV \
+        --name local-rabbit --set rabbitmq.username=admin,rabbitmq.password=admin
     helm install stable/node-red --namespace $LOCAL_ENV --name local-node
   done
   # make 'kubectl top pod -A && kubectl top node' working

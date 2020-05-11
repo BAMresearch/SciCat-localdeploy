@@ -38,6 +38,7 @@ registerDockerIP # docker.local points always to the same local registry
 #kubectl -n kube-system create sa tiller # handled by rbac-config.yaml
 kubectl create -f rbac-config.yaml
 helm init --service-account tiller
+helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
 
 # get nginx-ingress-controller with hostNetwork=true
