@@ -17,10 +17,6 @@ metadata:
     ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
-  tls:
-  - secretName: landingserverservice
-    hosts:
-    - {{ $host }}
   rules:
     - host: {{ $host }}
       http:

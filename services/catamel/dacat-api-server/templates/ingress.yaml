@@ -14,10 +14,6 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  tls:
-  - secretName: catamelservice
-    hosts:
-    - {{ $host }}
   rules:
     - host: {{ $host }}
       http:

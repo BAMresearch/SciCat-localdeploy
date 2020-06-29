@@ -39,8 +39,8 @@ fi
 read -r -d '' angEnv <<EOF
 export const environment = {
   production: true,
-  lbBaseURL: "https://catamel.$(hostname --fqdn)",
-  fileserverBaseURL: "https://files.$(hostname --fqdn)",
+  lbBaseURL: "http://catamel.$(hostname --fqdn)",
+  fileserverBaseURL: "http://files.$(hostname --fqdn)",
   externalAuthEndpoint: "/auth/msad",
   archiveWorkflowEnabled: true,
   editMetadataEnabled: true,
