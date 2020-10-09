@@ -66,8 +66,8 @@ create_dbuser()
 {
     local service="$1"
     local sitecfgpath="../../siteconfig"
-    local rootpwd; rootpwd="$(awk '/mongodbRootPassword/ {print $2}' \
-        "$sitecfgpath"/mongodb/credentials.yaml)"
+    local rootpwd; rootpwd="$(kubectl get secret -n dev local-mongodb \
+        -o jsonpath="{.data.mongodb-root-password}" | base64 --decode)"
     local mongopod; mongopod=$(kubectl get pods --all-namespaces | awk '/mongo/ {print $2}')
     if [ -z "$mongopod" ]; then
         echo "No mongodb k8s pod found, can't create db user, giving up!"
@@ -89,24 +89,6 @@ create_dbuser()
 newpwd()
 {
     openssl rand -base64 16 | tr -d '+=/'
-}
-
-gen_mongodb_credentials()
-{
-    local oldpath; oldpath=$(pwd) # pushd
-    # provide the working directory 'siteconfig' as first argument
-    cd "$1" || return
-    mkdir -p mongodb
-    cat > mongodb/credentials.yaml <<EOF
-mongodbRootPassword: $(newpwd)
-# MongoDB custom user and database
-# ref: https://github.com/bitnami/bitnami-docker-mongodb/blob/master/README.md#creating-a-user-and-database-on-first-run
-# and here: https://github.com/helm/charts/blob/master/stable/mongodb/README.md
-#mongodbUsername: <disabled>
-#mongodbPassword: <disabled>
-#mongodbDatabase: <disabled>
-EOF
-    cd "$oldpath" # popd
 }
 
 mongodb_createUserCmd()

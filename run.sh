@@ -44,7 +44,6 @@ if [ "$answer" != "y" ]; then
   fi
   # generate some passwords before starting any services
   mkdir -p siteconfig
-  gen_mongodb_credentials siteconfig
   gen_catamel_credentials siteconfig
   gen_scichat_credentials siteconfig
 
@@ -58,10 +57,7 @@ if [ "$answer" != "y" ]; then
     kubectl create -f $file
     export LOCAL_ENV="$ns"
     kubectl apply -f mongo.yaml
-    mongocreds=""
-    [ -f "siteconfig/mongodb/credentials.yaml" ] && \
-        mongocreds="-f 'siteconfig/mongodb/credentials.yaml'"
-    mongocmd="helm install bitnami/mongodb --namespace $LOCAL_ENV --name local-mongodb $mongocreds"
+    mongocmd="helm install bitnami/mongodb --namespace $LOCAL_ENV --name local-mongodb"
     echo "$mongocmd"; eval $mongocmd
     kubectl apply -f postgres.yaml
     helm install bitnami/postgresql --namespace $LOCAL_ENV --name local-postgresql
