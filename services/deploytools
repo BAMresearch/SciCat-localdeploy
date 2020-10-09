@@ -31,12 +31,10 @@ injectEnvConfig()
         ".projects.$prj.architect.build.configurations.$LOCAL_ENV = $angCfgBuild" \
         > "$tmpcfg"
     mv "$tmpcfg" "$angularCfg"
-    if [ ! -z "$angCfgServer" ]; then
-        jq --arg envfn "$envfn" \
-            ".projects.$prj.architect.server.configurations.$LOCAL_ENV = $angCfgServer" \
-            "$angularCfg" > "$tmpcfg"
-        mv "$tmpcfg" "$angularCfg"
-    fi
+    jq \
+        ".projects.$prj.architect.serve.configurations.$LOCAL_ENV.browserTarget = \"$prj:build:$LOCAL_ENV\"" \
+        "$angularCfg" > "$tmpcfg"
+    mv "$tmpcfg" "$angularCfg"
 }
 
 update_envfiles()

@@ -37,14 +37,6 @@ fi
 
 hostaddr="$(getHostAddr)"
 
-read -r -d '' angEnv <<EOF
-export const environment = {
-    production: true,
-    lbBaseURL: "http://catamel.$(hostname --fqdn)",
-    facility: "BAM"
-};
-EOF
-
 read -r -d '' angCfg <<EOF
 {
     "optimization": true,
@@ -56,15 +48,6 @@ read -r -d '' angCfg <<EOF
     "extractLicenses": true,
     "vendorChunk": false,
     "buildOptimizer": true,
-    "fileReplacements": [ {
-        "replace": "src/environments/environment.ts",
-        "with": \$envfn } ],
-    "serviceWorker": true
-}
-EOF
-
-read -r -d '' angCfg2 <<EOF
-{
     "fileReplacements": [ {
         "replace": "src/environments/environment.ts",
         "with": \$envfn } ]
@@ -81,7 +64,11 @@ git pull
 git checkout -f develop
 git clean -f
 # update angular config
-injectEnvConfig LandingPageServer "$LOCAL_ENV" "$angEnv" "$angCfg" "$angCfg2"
+lbBaseURL="http://catamel.$(hostname --fqdn)"
+angEnv=$(sed -e "/facility/ s/'[^']\+',/'BAM',/" \
+             -e "/lbBaseURL/ s#'[^']\+',#'$lbBaseURL',#" \
+             src/environments/environment.dmscprod.ts)
+injectEnvConfig LandingPageServer "$LOCAL_ENV" "$angEnv" "$angCfg"
 
 # using ESS Dockerfile and modify it to our needs
 # using Alpine v12 due to this error: https://stackoverflow.com/q/52196518
