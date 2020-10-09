@@ -71,7 +71,6 @@ angEnv=$(sed -e "/facility/ s/'[^']\+',/'BAM',/" \
 injectEnvConfig LandingPageServer "$LOCAL_ENV" "$angEnv" "$angCfg"
 
 # using ESS Dockerfile and modify it to our needs
-# using Alpine v12 due to this error: https://stackoverflow.com/q/52196518
 grep -v '^$' CI/ESS/Dockerfile.dmscprod \
     | grep -v proxy \
     | grep -v 'npm config set' \
