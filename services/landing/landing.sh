@@ -77,8 +77,8 @@ grep -v '^$' CI/ESS/Dockerfile.dmscprod \
     | grep -v 'npm config set' \
     | grep -v 'COPY CI/ESS/' \
     | sed -e '/LB_BASE_URL=/ s#\(http://\)[^\]\+\(/.*\)#\1'$hostaddr:3000'\2#' \
-          -e "/RUN ng build/ s/dmscprod/$LOCAL_ENV/g" \
-          -e '/mhart\/alpine/ s#\(alpine-node:\)[0-9]\+#\112#' \
+          -e "/RUN ng build/ s/dmscprod/$LOCAL_ENV/" \
+          -e "/ARG env/ s/env=\\s*[a-zA-Z0-9]\+/env=$LOCAL_ENV/" \
     > Dockerfile
 
 copyimages()
