@@ -64,8 +64,7 @@ read -r -d '' angCfg <<EOF
     "buildOptimizer": true,
     "fileReplacements": [ {
       "replace": "src/environments/environment.ts",
-      "with": \$envfn } ],
-    "serviceWorker": true
+      "with": \$envfn } ]
   }
 EOF
 
