@@ -45,6 +45,8 @@ if  [ $BUILD = "true" ]; then
     echo "Building release"
     npm install
 fi
+sed -i -e "/npm config set/d" Dockerfile
+
 export SCICHAT_IMAGE_VERSION=$(git rev-parse HEAD)
 if  [ $BUILD = "true" ]; then
     cmd="docker build -t $docker_repo:$SCICHAT_IMAGE_VERSION$LOCAL_ENV -t $docker_repo:latest --build-arg env=$LOCAL_ENV ."
