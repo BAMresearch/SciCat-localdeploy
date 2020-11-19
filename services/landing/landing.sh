@@ -54,7 +54,7 @@ read -r -d '' angCfg <<EOF
 }
 EOF
 
-helm del landingserver -n$env
+helm del landingserver -n$LOCAL_ENV
 if [ ! -d "./component/" ]; then
     git clone $REPO component
 fi
