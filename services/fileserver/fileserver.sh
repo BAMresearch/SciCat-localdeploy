@@ -25,7 +25,7 @@ echo $1
 
 export LOCAL_ENV="${envarray[i]}"
 echo $LOCAL_ENV
-helm del -n$env fileserver
+helm del fileserver -n$LOCAL_ENV
 if [ ! -d "./component/" ]; then
   git clone $REPO component
 fi

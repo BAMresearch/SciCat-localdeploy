@@ -98,7 +98,7 @@ copyimages()
 #export LOCAL_ENV="${envarray[i]}"
 #export LOCAL_IP="$1"
 #echo $LOCAL_ENV
-helm del -n$env catanie
+helm del catanie -n$env
 if [ ! -d "./component" ]; then
     git clone $REPO component
 fi

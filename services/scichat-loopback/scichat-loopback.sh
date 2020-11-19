@@ -32,7 +32,7 @@ ingress:
 EOF
 fi
 
-helm del -n$env scichat-loopback
+helm del scichat-loopback -n$env
 if [ ! -d "./component" ]; then
     git clone $REPO component
 fi

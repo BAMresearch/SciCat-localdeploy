@@ -54,7 +54,7 @@ fix_nan_package_version()
     chmod 644 package-lock.json
 }
 
-helm del -n$env catamel
+helm del catamel -n$env
 if [ ! -d "./component/" ]; then
     git clone $REPO component
 fi
