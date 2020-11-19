@@ -31,13 +31,12 @@ cpucount="$(grep -c '^processor' /proc/cpuinfo)"
 cpucount="$(python -c "print(int($cpucount * 0.8))")"
 memratio=0.8 # how much phys. memory to use for minikube (the k8s cluster)
 mem="$(awk "/MemTotal/{print int(\$2*$memratio/1024)}" /proc/meminfo)"
-start_minikube --cpus="$cpucount" --memory="$mem"
+start_minikube --cpus="$cpucount" --memory="$mem" --disk-size=100g
 #kubectl config use-context minikube #should auto set, but added in case
 registerDockerIP # docker.local points always to the same local registry
 
 #kubectl -n kube-system create sa tiller # handled by rbac-config.yaml
 kubectl create -f rbac-config.yaml
-helm init --service-account tiller
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
 

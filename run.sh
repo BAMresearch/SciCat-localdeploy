@@ -7,7 +7,11 @@ cd "$scriptdir"
 . ./services/deploytools
 
 export KUBE_NAMESPACE=yourns
-NS_DIR=./namespaces/*.yaml
+NS_FILE=./namespaces/*.yaml
+fn="$(basename $NS_FILE)"
+ns="${fn%.*}"
+kubectl create -f $NS_FILE
+export LOCAL_ENV="$ns"
 
 # using minikube
 eval $(minikube docker-env)
@@ -34,12 +38,12 @@ if [ "$answer" != "y" ]; then
   kubectl delete -f mongo.yaml
   kubectl delete -f rabbit.yaml
 
-  helm del --purge local-mongodb 2> /dev/null
-  helm del --purge local-postgresql 2> /dev/null
-  helm del --purge local-rabbit 2> /dev/null
-  helm del --purge local-node 2> /dev/null
+  helm del local-mongodb --namespace $LOCAL_ENV
+  helm del local-postgresql --namespace $LOCAL_ENV
+  helm del local-rabbit --namespace $LOCAL_ENV
+  helm del local-node --namespace $LOCAL_ENV
   if [[ "$KAFKA" -eq "1" ]]; then
-    helm del --purge local-kafka 2> /dev/null
+    helm del local-kafka
   fi
   # generate some passwords before starting any services
   mkdir -p siteconfig
@@ -47,28 +51,28 @@ if [ "$answer" != "y" ]; then
   gen_scichat_credentials siteconfig
 
   echo -n "Waiting for mongodb persistentvolume being removed ... "
-  while kubectl -n dev get pv | grep -q mongo; do sleep 1; done
+  while kubectl -n $LOCAL_ENV get pv | grep -q mongo; do
+      sleep 1;
+      pvname="$(kubectl -n $LOCAL_ENV get pv | grep mongo | awk '{print $1}')"
+      # https://github.com/kubernetes/kubernetes/issues/77258#issuecomment-502209800
+      kubectl patch pv $pvname -p '{"metadata":{"finalizers":null}}'
+      kubectl delete pv $pvname
+  done
   echo "done."
 
-  for file in $NS_DIR; do
-    f="$(basename $file)"
-    ns="${f%.*}"
-    kubectl create -f $file
-    export LOCAL_ENV="$ns"
-    kubectl apply -f mongo.yaml
-    mongocmd="helm install bitnami/mongodb --namespace $LOCAL_ENV --name local-mongodb"
-    echo "$mongocmd"; eval $mongocmd
-    kubectl apply -f postgres.yaml
-    helm install bitnami/postgresql --namespace $LOCAL_ENV --name local-postgresql
-    if [ "$KAFKA" == "1" ]; then
-      helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
-      helm install --name local-kafka incubator/kafka --namespace $LOCAL_ENV
-    fi
-    kubectl apply -f rabbit.yaml
-    helm install bitnami/rabbitmq --namespace $LOCAL_ENV \
-        --name local-rabbit --set rabbitmq.username=admin,rabbitmq.password=admin
-    helm install stable/node-red --namespace $LOCAL_ENV --name local-node
-  done
+  kubectl apply -f mongo.yaml
+  mongocmd="helm install local-mongodb bitnami/mongodb --namespace $LOCAL_ENV"
+  echo "$mongocmd"; eval $mongocmd
+  kubectl apply -f postgres.yaml
+  helm install local-postgresql bitnami/postgresql --namespace $LOCAL_ENV
+  if [ "$KAFKA" == "1" ]; then
+    helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
+    helm install local-kafka incubator/kafka --namespace $LOCAL_ENV
+  fi
+  kubectl apply -f rabbit.yaml
+  helm install local-rabbit bitnami/rabbitmq --namespace $LOCAL_ENV \
+             --set rabbitmq.username=admin,rabbitmq.password=admin
+  helm install local-node k8s-at-home/node-red --namespace $LOCAL_ENV
 fi
 
 [ "$1" = "nopause" ] || \

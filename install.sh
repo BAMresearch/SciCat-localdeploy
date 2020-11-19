@@ -86,12 +86,12 @@ elif [ "$(expr substr $(uname -s) 1 5)" = "Linux" ]; then
         && chmod +x ./kubectl \
         && sudo mv ./kubectl /usr/local/bin/
     mkdir -p scripts
-    curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > scripts/get_helm.sh
+    curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get-helm-3 > scripts/get_helm.sh
     chmod +x scripts/get_helm.sh
     bash scripts/get_helm.sh
 fi
 
-helm init
+helm repo add k8s-at-home https://k8s-at-home.com/charts/
 echo "Please reboot and continue by running the *start.sh* script, followed by *run.sh*."
 
 # vim: set ts=4 sw=4 sts=4 tw=0 et:

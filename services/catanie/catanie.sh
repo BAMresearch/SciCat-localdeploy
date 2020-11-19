@@ -98,7 +98,7 @@ copyimages()
 #export LOCAL_ENV="${envarray[i]}"
 #export LOCAL_IP="$1"
 #echo $LOCAL_ENV
-helm del --purge catanie
+helm del -n$env catanie
 if [ ! -d "./component" ]; then
     git clone $REPO component
 fi
@@ -126,7 +126,7 @@ fi
 export tag=$(git rev-parse HEAD)
 echo "Deploying to Kubernetes"
 cd ..
-helm install dacat-gui --name catanie --namespace $env \
+helm install catanie dacat-gui --namespace $env \
     --set image.tag=$CATANIE_IMAGE_VERSION$env --set image.repository=$docker_repo ${INGRESS_NAME}
 exit 0
 # disabled the lower part as we do not have a build server yet and don't use public repos

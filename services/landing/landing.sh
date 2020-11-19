@@ -54,7 +54,7 @@ read -r -d '' angCfg <<EOF
 }
 EOF
 
-helm del --purge landingserver
+helm del -n$env landingserver
 if [ ! -d "./component/" ]; then
     git clone $REPO component
 fi
@@ -125,7 +125,7 @@ fi
 echo "Deploying to Kubernetes"
 cd ..
 pwd
-cmd="helm install landingserver --name landingserver --namespace $LOCAL_ENV \
+cmd="helm install landingserver landingserver --namespace $LOCAL_ENV \
     --set image.tag=$LANDING_IMAGE_VERSION$LOCAL_ENV --set image.repository=$docker_repo ${INGRESS_NAME}"
 echo "$cmd"; eval $cmd
 # envsubst < ../catanie-deployment.yaml | kubectl apply -f - --validate=false

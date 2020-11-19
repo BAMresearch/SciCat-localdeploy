@@ -54,7 +54,7 @@ fix_nan_package_version()
     chmod 644 package-lock.json
 }
 
-helm del --purge catamel
+helm del -n$env catamel
 if [ ! -d "./component/" ]; then
     git clone $REPO component
 fi
@@ -65,7 +65,8 @@ git pull
 fix_nan_package_version
 # using the ESS Dockerfile without ESS specific stuff
 cp CI/ESS/Dockerfile .
-sed -i -e '/COPY CI\/ESS/d' Dockerfile
+sed -i -e '/COPY .*CI\/ESS/d' Dockerfile
+(cd ../.. && update_envfiles catamel component/server)
 if  [ "$BUILD" == "true" ]; then
     npm install
 fi
@@ -78,13 +79,12 @@ if  [ "$BUILD" == "true" ]; then
     echo "$cmd"; eval "$cmd"
 fi
 tag=$(git rev-parse HEAD)
-echo "Deploying to Kubernetes"
-cd ..
-update_envfiles dacat-api-server
 create_dbuser catamel
-helm install dacat-api-server --name catamel --namespace $env \
+echo "Deploying to Kubernetes"
+(cd .. && helm install catamel dacat-api-server --namespace $env \
     --set image.tag=$CATAMEL_IMAGE_VERSION$env --set image.repository=$docker_repo ${INGRESS_NAME}
-reset_envfiles dacat-api-server
+)
+reset_envfiles server
 exit 0
 # disabled the lower part as we do not have a build server yet and don't use public repos
 
@@ -94,7 +94,6 @@ function docker_tag_exists() {
 
 if docker_tag_exists dacat/catamel $CATAMEL_IMAGE_VERSION$env; then
     echo exists
-    #helm install dacat-api-server --name catamel --namespace $env --set image.tag=$CATAMEL_IMAGE_VERSION$env --set image.repository=$docker_repo ${INGRESS_NAME}
     helm upgrade dacat-api-server-${env} dacat-api-server --namespace=${env} --set image.tag=$tag
     helm history catamel-${env}
     echo "To roll back do: helm rollback --wait --recreate-pods dacat-api-server-${env} revision-number"

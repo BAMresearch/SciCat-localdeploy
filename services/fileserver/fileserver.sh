@@ -25,7 +25,7 @@ echo $1
 
 export LOCAL_ENV="${envarray[i]}"
 echo $LOCAL_ENV
-helm del --purge fileserver
+helm del -n$env fileserver
 if [ ! -d "./component/" ]; then
   git clone $REPO component
 fi
@@ -49,7 +49,7 @@ docker push $docker_repo:$FILESERVER_IMAGE_VERSION$LOCAL_ENV
 echo "Deploying to Kubernetes"
 cd ..
 pwd
-cmd="helm install fileserver --name fileserver --namespace $LOCAL_ENV \
+cmd="helm install fileserver fileserver --namespace $LOCAL_ENV \
     --set image.tag=$FILESERVER_IMAGE_VERSION$LOCAL_ENV --set image.repository=$docker_repo ${INGRESS_NAME}"
 echo "$cmd"; eval $cmd
 # envsubst < ../catanie-deployment.yaml | kubectl apply -f - --validate=false
