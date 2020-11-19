@@ -38,7 +38,6 @@ if [ "$answer" != "y" ]; then
   helm del --purge local-postgresql 2> /dev/null
   helm del --purge local-rabbit 2> /dev/null
   helm del --purge local-node 2> /dev/null
-  helm del --purge heapster 2> /dev/null
   if [[ "$KAFKA" -eq "1" ]]; then
     helm del --purge local-kafka 2> /dev/null
   fi
@@ -70,17 +69,6 @@ if [ "$answer" != "y" ]; then
         --name local-rabbit --set rabbitmq.username=admin,rabbitmq.password=admin
     helm install stable/node-red --namespace $LOCAL_ENV --name local-node
   done
-  # make 'kubectl top pod -A && kubectl top node' working
-  helm install --name heapster stable/heapster --set=command='{/heapster,--source=kubernetes:https://kubernetes.default?kubeletHttps=true&kubeletPort=10250&insecure=true}' --namespace kube-system
-  # manually add - nodes/stats under resources:
-  # kubectl edit clusterrole -n kube-system system:heapster
-  # - apiGroups:
-  #   - ""
-  #   resources:
-  #   - nodes/stats
-  #   verbs:
-  #   - get
-  #   - create
 fi
 
 [ "$1" = "nopause" ] || \
