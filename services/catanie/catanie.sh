@@ -36,12 +36,12 @@ ingress:
 EOF
 fi
 
+#externalAuthEndpoint: "/auth/msad",
 read -r -d '' angEnv <<EOF
 export const environment = {
   production: true,
   lbBaseURL: "http://catamel.$(hostname --fqdn)",
   fileserverBaseURL: "http://files.$(hostname --fqdn)",
-  externalAuthEndpoint: "/auth/msad",
   archiveWorkflowEnabled: true,
   editMetadataEnabled: true,
   columnSelectEnabled: true,
