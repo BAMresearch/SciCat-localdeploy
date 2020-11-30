@@ -65,7 +65,13 @@ git pull
 fix_nan_package_version
 # using the ESS Dockerfile without ESS specific stuff
 cp CI/ESS/Dockerfile .
-sed -i -e '/COPY .*CI\/ESS/d' Dockerfile
+# https://stackoverflow.com/questions/54428608/docker-node-alpine-image-build-fails-on-node-gyp#59538284
+sed -i -e '/COPY .*CI\/ESS/d' \
+    -e '/FROM/s/^.*$/FROM node:15.1-alpine/' \
+    -e '/RUN apk/a\    apk add --no-cache python make g++ && \\' \
+    -e '/USER/a\USER node' \
+    Dockerfile
+echo '*.json-sample' >> .dockerignore
 (cd ../.. && update_envfiles catamel component/server)
 if  [ "$BUILD" == "true" ]; then
     npm install
