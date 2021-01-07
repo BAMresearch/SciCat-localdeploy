@@ -45,7 +45,7 @@ tmpyaml=$(mktemp -p .) # yq does not like files in /tmp/ for unknown reasons
 curl -o "$tmpyaml" https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.30.0/deploy/static/mandatory.yaml
 # https://skryvets.com/blog/2019/04/09/exposing-tcp-and-udp-services-via-ingress-on-minikube/
 # add 'spec.template.spec.hostNetwork = true' to Deployment of this controller config
-yq w -i -d 9 "$tmpyaml" spec.template.spec.hostNetwork true
+sed -i -E 's/((\s+)spec:)/\1\n\2  hostNetwork: true/' "$tmpyaml"
 echo "Applying ingress config from "$tmpyaml"!"
 kubectl apply -f "$tmpyaml"
 rm "$tmpyaml"
