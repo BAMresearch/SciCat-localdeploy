@@ -28,7 +28,7 @@ start_minikube()
 
 # configure the minikube VM before it is started
 cpucount="$(grep -c '^processor' /proc/cpuinfo)"
-cpucount="$(python -c "print(int($cpucount * 0.8))")"
+cpucount="$(python3 -c "print(int($cpucount * 0.8))")"
 memratio=0.8 # how much phys. memory to use for minikube (the k8s cluster)
 mem="$(awk "/MemTotal/{print int(\$2*$memratio/1024)}" /proc/meminfo)"
 start_minikube --cpus="$cpucount" --memory="$mem" --disk-size=100g
