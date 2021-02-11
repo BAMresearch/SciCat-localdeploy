@@ -125,6 +125,7 @@ gen_catamel_credentials()
         -e '/"password":/ s/"[^"]*"\(,\?\)\s*$/"'$dbpwd'"\1/' \
         -e '/"database":/ s/"[^"]*"\(,\?\)\s*$/"'$dbname'"\1/' \
         "$path"/datasources.json
+    mkdir -p mongodb
     mongodb_createUserCmd mongodb/catamel.js "$dbusr" "$dbpwd" "$dbname"
     cd "$oldpath" # popd
 }
