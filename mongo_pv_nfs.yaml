@@ -1,0 +1,20 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: pvmongo
+  labels:
+    type: local
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+#    - ReadWriteMany
+#  storageClassName: nfs
+  mountOptions:
+    - hard
+    - sync
+    - vers=4.1
+  nfs:
+    path: /nfs/mongodb
+    server: 10.0.9.1
