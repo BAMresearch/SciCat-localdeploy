@@ -42,7 +42,7 @@ if [ "$answer" != "y" ]; then
   helm del local-postgresql --namespace $LOCAL_ENV
   helm del local-rabbit --namespace $LOCAL_ENV
   helm del local-node --namespace $LOCAL_ENV
-  if [[ "$KAFKA" -eq "1" ]]; then
+  if [ "$KAFKA" == "1" ]; then
     helm del local-kafka
   fi
   # generate some passwords before starting any services
