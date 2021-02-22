@@ -48,7 +48,7 @@ if [ "$answer" != "y" ]; then
     gen_catamel_credentials siteconfig
 
     kubectl apply -f "$mongopvcfg"
-    mongocmd="helm install local-mongodb bitnami/mongodb --namespace $LOCAL_ENV
+    mongocmd="helm install local-mongodb bitnami/mongodb --namespace $LOCAL_ENV --version '8'"
     echo "$mongocmd"; eval $mongocmd
   fi
 fi
