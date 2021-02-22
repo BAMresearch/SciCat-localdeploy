@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # run.sh - set up and start SciCat services and their dependencies
-# USAGE: run.sh [pause|nopause] [bare]
+# USAGE: run.sh [pause|nopause] [bare] [clean]
 # 1st arg: 'nopause' does not ask user to confirm or skip single steps
 #          runs everything in one go
 # 2nd arg: 'bare' sets up services in a 'pure' k8s scenario
 #          while using minikube is the default
+# 3rd arg: 'clean' runs cleanup procedures only, skips starting services again
 
 # get the script directory before creating any files
 scriptpath="$(readlink -f "$0")"
@@ -35,19 +36,21 @@ if [ "$answer" != "y" ]; then
       pvname="$(kubectl -n $LOCAL_ENV get pv | grep mongo | awk '{print $1}')"
       # https://github.com/kubernetes/kubernetes/issues/77258#issuecomment-502209800
       kubectl patch pv $pvname -p '{"metadata":{"finalizers":null}}'
-      kubectl delete pv $pvname
+      timeout 6 kubectl delete pv $pvname
   done
   echo "done."
   kubectl delete -f "$mongopvcfg"
   helm del local-mongodb --namespace $LOCAL_ENV
 
-  # generate some passwords before starting any services
-  mkdir -p siteconfig
-  gen_catamel_credentials siteconfig
+  if [ "$3" != "clean" ]; then
+    # generate some passwords before starting any services
+    mkdir -p siteconfig
+    gen_catamel_credentials siteconfig
 
-  kubectl apply -f "$mongopvcfg"
-  mongocmd="helm install local-mongodb bitnami/mongodb --namespace $LOCAL_ENV"
-  echo "$mongocmd"; eval $mongocmd
+    kubectl apply -f "$mongopvcfg"
+    mongocmd="helm install local-mongodb bitnami/mongodb --namespace $LOCAL_ENV
+    echo "$mongocmd"; eval $mongocmd
+  fi
 fi
 
 [ "$1" = "nopause" ] || \
