@@ -84,7 +84,6 @@ if  [ "$BUILD" == "true" ]; then
     cmd="docker push $docker_repo:$CATAMEL_IMAGE_VERSION$env"
     echo "$cmd"; eval "$cmd"
 fi
-tag=$(git rev-parse HEAD)
 create_dbuser catamel
 echo "Deploying to Kubernetes"
 (cd .. && helm install catamel dacat-api-server --namespace $env \
@@ -98,6 +97,7 @@ function docker_tag_exists() {
     curl --silent -f -lSL https://index.docker.io/v1/repositories/$1/tags/$2 > /dev/null
 }
 
+tag=$(git rev-parse HEAD)
 if docker_tag_exists dacat/catamel $CATAMEL_IMAGE_VERSION$env; then
     echo exists
     helm upgrade dacat-api-server-${env} dacat-api-server --namespace=${env} --set image.tag=$tag
