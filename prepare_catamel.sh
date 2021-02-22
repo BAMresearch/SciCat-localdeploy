@@ -19,7 +19,8 @@ ns="${fn%.*}"
 kubectl create -f $NS_FILE
 export LOCAL_ENV="$ns"
 
-mongopvcfg="mongo_pv_hostpath.yaml"
+#mongopvcfg="mongopv_hostpath.yaml"
+mongopvcfg="mongopv.yaml"
 [ "$2" = "bare" ] && mongopvcfg="mongo_pv_nfs.yaml"
 
 answer=
