@@ -48,6 +48,7 @@ if [ "$answer" != "y" ]; then
     gen_catamel_credentials siteconfig
 
     kubectl apply -f "$mongopvcfg"
+    # using mongodb 4.2.x with chart v8, v4.4 causes fallocate errors with WiredTiger in logs, doesnt start
     mongocmd="helm install local-mongodb bitnami/mongodb --namespace $LOCAL_ENV --version '8'"
     echo "$mongocmd"; eval $mongocmd
   fi
