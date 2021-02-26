@@ -14,7 +14,7 @@ spec:
   mountOptions:
     - hard
     - sync
-    - vers=4.1
+    - vers=4.2
   nfs:
     path: /nfs/mongodb
     server: 10.0.9.1

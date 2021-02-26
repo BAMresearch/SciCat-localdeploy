@@ -26,7 +26,7 @@ mongopvcfg="mongopv.yaml"
 
 answer=
 [ "$1" = "nopause" ] || \
-  read -p "Skip restarting base services (mongodb, rabbit, node)? [yN] " answer
+  read -p "Skip restarting mongodb? [yN] " answer
 if [ "$answer" != "y" ]; then
 
   # delete old volume first
@@ -48,8 +48,7 @@ if [ "$answer" != "y" ]; then
     gen_catamel_credentials siteconfig
 
     kubectl apply -f "$mongopvcfg"
-    # using mongodb 4.2.x with chart v8, v4.4 causes fallocate errors with WiredTiger in logs, doesnt start
-    mongocmd="helm install local-mongodb bitnami/mongodb --namespace $LOCAL_ENV --version '8'"
+    mongocmd="helm install local-mongodb bitnami/mongodb --namespace $LOCAL_ENV"
     echo "$mongocmd"; eval $mongocmd
   fi
 fi
