@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# replace needed docker commands if alternatives are used
+DOCKER_BUILD="docker build"
+DOCKER_PUSH="docker push"
+if ! command -v docker; then
+    DOCKER_BUILD="buildah bud"
+    DOCKER_PUSH="buildah push"
+fi
+
 getHostAddr()
 {
     local devpath devname hostaddr

@@ -79,9 +79,9 @@ fi
 echo "Building release"
 export CATAMEL_IMAGE_VERSION=$(git rev-parse HEAD)
 if  [ "$BUILD" == "true" ]; then
-    cmd="docker build ${DOCKERNAME} -t $docker_repo:$CATAMEL_IMAGE_VERSION$env -t $docker_repo:latest ."
+    cmd="$DOCKER_BUILD ${DOCKERNAME} -t $docker_repo:$CATAMEL_IMAGE_VERSION$env -t $docker_repo:latest ."
     echo "$cmd"; eval $cmd
-    cmd="docker push $docker_repo:$CATAMEL_IMAGE_VERSION$env"
+    cmd="$DOCKER_PUSH $docker_repo:$CATAMEL_IMAGE_VERSION$env"
     echo "$cmd"; eval "$cmd"
 fi
 create_dbuser catamel
