@@ -7,6 +7,8 @@ cd "$scriptdir"
 . ./services/deploytools
 
 export KUBE_NAMESPACE=yourns
+# make sure this namespace exists
+kubectl create namespace $KUBE_NAMESPACE
 NS_FILE=./namespaces/*.yaml
 fn="$(basename $NS_FILE)"
 ns="${fn%.*}"
