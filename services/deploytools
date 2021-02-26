@@ -83,6 +83,24 @@ create_dbuser()
         -- mongo -u root -p "$rootpwd" admin < "$sitecfgpath"/mongodb/${service}.js
 }
 
+delete_dbuser()
+{
+    local service="$1"
+    local username="$2"
+    local sitecfgpath="../../../siteconfig"
+    local rootpwd; rootpwd="$(kubectl get secret -n dev local-mongodb \
+        -o jsonpath="{.data.mongodb-root-password}" | base64 --decode)"
+    local mongopod; mongopod=$(kubectl get pods --all-namespaces | awk '/mongo/ {print $2}')
+    if [ -z "$mongopod" ]; then
+        echo "No mongodb k8s pod found, can't create db user, giving up!"
+        return
+    fi
+    local dbname; dbname="$(awk '/db:/ {gsub("^\"|\"$,?","",$2); print $2}' \
+        "$sitecfgpath"/mongodb/${service}.js)"
+    kubectl -n dev exec -i $mongopod \
+        -- mongo $dbname -u root -p "$rootpwd" --authenticationDatabase admin -eval "db.dropUser(\"$username\")"
+}
+
 #
 # functions for generating database/site credentials.
 # Should be run before the database is deployed (with empty tables)
