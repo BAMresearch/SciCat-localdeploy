@@ -53,6 +53,11 @@ update_envfiles()
     [ -d "$service" ] || return # make sure we're in the correct path
     local src; src="../siteconfig/$service"
     [ -d "$src" ] || return
+    if [ "$service" = "catamel" ]; then
+	# put first-time config files in place to get system running at all
+        [ -f "$src"/config.local.js ] || cp catamel/component/server/config.local.js-sample "$src"/config.local.js
+        [ -f "$src"/providers.json ] || cp catamel/component/server/providers.json-sample "$src"/providers.json
+    fi
     cp -v "$src"/* "$targetDir"
 }
 
@@ -136,9 +141,10 @@ gen_catamel_credentials()
     local dbusr=dacat
     local dbpwd=$(newpwd)
     local dbname=dacatdb
-    local path; path="dacat-api-server/envfiles"
+    local path; path="catamel"
     mkdir -p "$path"
-    cp ../services/catamel/dacat-api-server/envfiles/datasources.json "$path"/
+    local srcpath="../services/catamel/dacat-api-server/envfiles"
+    cp $srcpath/datasources.json "$path"/
     sed -i -e '/"user":/ s/"[^"]*"\(,\?\)\s*$/"'$dbusr'"\1/' \
         -e '/"password":/ s/"[^"]*"\(,\?\)\s*$/"'$dbpwd'"\1/' \
         -e '/"database":/ s/"[^"]*"\(,\?\)\s*$/"'$dbname'"\1/' \
@@ -156,7 +162,7 @@ gen_scichat_credentials()
     local dbusr=scichat
     local dbpwd=$(newpwd)
     local dbname=scichatdb
-    local path; path="scichat/envfiles"
+    local path; path="scichat"
     mkdir -p "$path"
     cp ../services/scichat-loopback/scichat/envfiles/datasources.json "$path"/
     sed -i -e '/"user":/ s/"[^"]*"\(,\?\)\s*$/"'$dbusr'"\1/' \
