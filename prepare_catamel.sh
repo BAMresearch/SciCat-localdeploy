@@ -74,6 +74,7 @@ fi
 
 # Deploy services
 
+export DOCKER_REG="docker.local:31000"
 SERVICES_DIR=./services/*/*.sh
 
 for file in $SERVICES_DIR; do
