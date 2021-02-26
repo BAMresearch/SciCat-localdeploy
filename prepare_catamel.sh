@@ -41,6 +41,10 @@ if [ "$answer" != "y" ]; then
   echo "done."
   kubectl delete -f "$mongopvcfg"
   helm del local-mongodb --namespace $LOCAL_ENV
+  if [ "$2" = "bare" ]; then # delete the underlying data
+    mongodatapath="$(awk -F: '/path/ {sub("^\\s*","",$2); print $2}' "$mongopvcfg")"
+    [ -d "$mongodatapath" ] && rm -R "$mongodatapath/data"
+  fi
 
   if [ "$3" != "clean" ]; then
     # generate some passwords before starting any services
