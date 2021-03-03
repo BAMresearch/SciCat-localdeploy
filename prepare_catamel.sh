@@ -7,6 +7,9 @@
 #          while using minikube is the default
 # 3rd arg: 'clean' runs cleanup procedures only, skips starting services again
 
+export DOCKER_REG="docker.local:31000"
+export SVC_DOMAIN="osd.ddnss.org"
+
 # get the script directory before creating any files
 scriptpath="$(readlink -f "$0")"
 scriptdir="$(dirname "$scriptpath")"
@@ -40,12 +43,13 @@ if [ "$answer" != "y" ]; then
   done
   echo "done."
   kubectl delete -f "$mongopvcfg"
+  # reclaim PV instead?
+  # kubectl patch pv $pvname -p '{"spec":{"claimRef":null}}'
   helm del local-mongodb --namespace $LOCAL_ENV
   if [ "$2" = "bare" ]; then # delete the underlying data
     mongodatapath="$(awk -F: '/path/ {sub("^\\s*","",$2); print $2}' "$mongopvcfg")"
     [ -d "$mongodatapath" ] && rm -R "$mongodatapath/data"
   fi
-
   if [ "$3" != "clean" ]; then
     # generate some passwords before starting any services
     mkdir -p siteconfig
@@ -74,9 +78,7 @@ fi
 
 # Deploy services
 
-export DOCKER_REG="docker.local:31000"
 SERVICES_DIR=./services/*/*.sh
-
 for file in $SERVICES_DIR; do
     answer=
     [ "$1" = "nopause" ] || \
