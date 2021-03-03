@@ -1,4 +1,4 @@
-#!bin/sh
+#!/bin/sh
 # Set up and start a mongodb instance in a kubernetes cluster
 # USAGE: $0 [bare] [clean]
 # 1st arg: 'bare' sets up services in a 'pure' k8s scenario
@@ -35,9 +35,9 @@ if [ "$2" = "clean" ]; then
         kubectl patch pv $pvname -p '{"metadata":{"finalizers":null}}'
         timeout 6 kubectl delete pv $pvname
     done
+    kubectl delete -f "$mongopvcfg"
     echo "done."
 fi
-#kubectl delete -f "$mongopvcfg"
 
 if [ "$1" = "bare" ] && [ "$2" = "clean" ]; then # delete the underlying data
     mongodatapath="$(awk -F: '/path/ {sub("^\\s*","",$2); print $2}' "$mongopvcfg")"

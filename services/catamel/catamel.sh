@@ -86,9 +86,8 @@ if  [ "$BUILD" == "true" ]; then
 fi
 create_dbuser catamel
 echo "Deploying to Kubernetes"
-(cd .. && helm install catamel dacat-api-server --namespace $env \
-    --set image.tag=$CATAMEL_IMAGE_VERSION$env --set image.repository=$docker_repo ${INGRESS_NAME}
-)
+cmd="helm install catamel dacat-api-server --namespace $env --set image.tag=$CATAMEL_IMAGE_VERSION$env --set image.repository=$docker_repo ${INGRESS_NAME}"
+(cd .. && echo "$cmd" && eval "$cmd")
 reset_envfiles server
 exit 0
 # disabled the lower part as we do not have a build server yet and don't use public repos
