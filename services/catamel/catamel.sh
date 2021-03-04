@@ -33,7 +33,7 @@ else
     cat > "$YAMLFN" << EOF
 ingress:
   enabled: true
-  host:  catamel.$(hostname --fqdn)
+  host:  api.$DOMAINBASE
 EOF
 fi
 
