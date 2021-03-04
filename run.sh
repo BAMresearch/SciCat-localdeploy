@@ -19,7 +19,7 @@ export LOCAL_ENV="$ns"
 eval $(minikube docker-env)
 
 LOCAL_IP=docker.local
-DOCKER_REG="$LOCAL_IP:5000"
+DOCKER_REG="$LOCAL_IP:31000"
 KAFKA=0 
 
 while getopts 'fhkd:' flag; do
