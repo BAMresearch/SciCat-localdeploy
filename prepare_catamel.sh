@@ -8,7 +8,7 @@
 # 3rd arg: 'clean' runs cleanup procedures only, skips starting services again
 
 export DOCKER_REG="docker.local:31000"
-export SVC_DOMAIN="osd.ddnss.org"
+export DOMAINBASE="osd.ddnss.org" # for ingress and TLS certs
 
 # get the script directory before creating any files
 scriptpath="$(readlink -f "$0")"

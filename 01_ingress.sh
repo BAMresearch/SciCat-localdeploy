@@ -14,6 +14,15 @@ then
     sleep 2
     # remove completed one-shot pods
     kubectl delete pod -n ingress-nginx --field-selector=status.phase==Succeeded
+    # find public ip address of this node
+    IPADDRESS=$(curl -s http://checkip.dyndns.org | python3 -c 'import sys; data=sys.stdin.readline(); import xml.etree.ElementTree as ET; print(ET.fromstring(data).find("body").text.split(":")[-1].strip())')
+    # port forwarding 80 -> 30080 (behind oracle cloud firewall)
+    # inspired by https://www.karlrupp.net/en/computer/nat_tutorial
+    # TODO: does this survive reboot?
+    sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to-destination $IPADDRESS:30080
+    sudo iptables -t nat -A POSTROUTING -p tcp --dport 30080 -j MASQUERADE
+    sudo iptables -t nat -A PREROUTING -p tcp --dport 443 -j DNAT --to-destination $IPADDRESS:30443
+    sudo iptables -t nat -A POSTROUTING -p tcp --dport 30443 -j MASQUERADE
 else # clean up
     timeout 5 kubectl delete -f "$url"
 fi

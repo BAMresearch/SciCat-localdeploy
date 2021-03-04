@@ -14,8 +14,13 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
+  tls:
+    - secretName: certs-catamel
+      hosts:
+      - {{ $host }}
   rules:
-    - http:
+    - host: {{ $host }}
+      http:
         paths:
           - path: /
             pathType: Prefix

@@ -37,6 +37,16 @@ ingress:
 EOF
 fi
 
+# Updating TLS certificates, assuming letsencrypt provided by acme.sh client
+if [ ! -d "$LE_WORKING_DIR/$DOMAINBASE" ]; then
+    echo "WARNING! Location for TLS certificates not found ('$LE_WORKING_DIR/$DOMAINBASE')."
+else
+    certpath="$LE_WORKING_DIR/$DOMAINBASE"
+    kubectl -n $NS create secret tls certs-catamel \
+        --cert="$certpath/$DOMAINBASE.cer" --key="$certpath/$DOMAINBASE.key" \
+        --dry-run=client -o yaml | kubectl apply -f -
+fi
+
 fix_nan_package_version()
 {
     nan_json="$(mktemp)"
