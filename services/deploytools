@@ -11,6 +11,17 @@ if ! command -v docker; then
     DOCKER_PUSH="buildah push"
 fi
 
+# makes sure required ENV vars exist (supplied by arguments)
+checkVars()
+{
+    for name in $@; do
+        if eval "[ -z \"\$$name\" ]"; then
+            echo "$name not defined! Please run 'export $name=<your value>' first."
+            return 1
+        fi
+    done
+}
+
 getHostAddr()
 {
     local devpath devname hostaddr
