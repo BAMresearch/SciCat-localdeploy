@@ -9,8 +9,6 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteOnce
-#    - ReadWriteMany
-#  storageClassName: nfs
   mountOptions:
     - hard
     - sync
