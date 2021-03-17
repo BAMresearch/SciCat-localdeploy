@@ -101,7 +101,7 @@ fi
 echo "Deploying to Kubernetes"
 cmd="helm install catamel dacat-api-server --namespace $NS --set image.tag=$IMAGE_TAG --set image.repository=$IMG_REPO ${INGRESS_NAME}"
 (echo "$cmd" && eval "$cmd")
-reset_envfiles server
+reset_envfiles component/server
 exit 0
 # this part is disabled as we do not have a build server yet and don't use public repos
 
