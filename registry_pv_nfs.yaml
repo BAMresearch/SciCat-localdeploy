@@ -1,0 +1,18 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: pvregistry
+  labels:
+    type: local
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  mountOptions:
+    - hard
+    - sync
+    - vers=4.2
+  nfs:
+    path: /nfs/registry
+    server: 10.0.9.1
