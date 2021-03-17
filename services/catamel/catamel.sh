@@ -7,9 +7,9 @@ if [ -z "$KUBE_NAMESPACE" ]; then
 fi
 export NS=$KUBE_NAMESPACE
 
-[ -z "$DOCKER_REG" ] && \
-    echo "WARNING: Docker registry not defined, using default (docker.io?)!"
-docker_repo="$DOCKER_REG/catamel"
+[ -z "$REGISTRY_ADDR" ] && \
+    echo "WARNING: Registry not defined in 'REGISTRY_ADDR'!"
+IMG_REPO="$REGISTRY_ADDR/catamel"
 
 export REPO=https://github.com/SciCatProject/catamel.git
 cd ./services/catamel/
@@ -90,16 +90,16 @@ if  [ "$BUILD" == "true" ]; then
     npm install
     echo "Building release"
     IMAGE_TAG="$(git rev-parse HEAD)$NS"
-    cmd="$DOCKER_BUILD ${DOCKERNAME} -t $docker_repo:$IMAGE_TAG -t $docker_repo:latest ."
+    cmd="$DOCKER_BUILD ${DOCKERNAME} -t $IMG_REPO:$IMAGE_TAG -t $IMG_REPO:latest ."
     echo "$cmd"; eval $cmd
-    cmd="$DOCKER_PUSH $docker_repo:$IMAGE_TAG"
+    cmd="$DOCKER_PUSH $IMG_REPO:$IMAGE_TAG"
     echo "$cmd"; eval "$cmd"
     cd .. && create_dbuser ../../siteconfig catamel
 else # BUILD == false
-    IMAGE_TAG="$(curl -s https://$DOCKER_REG/v2/catamel/tags/list | jq -r .tags[0])"
+    IMAGE_TAG="$(curl -s https://$REGISTRY_ADDR/v2/catamel/tags/list | jq -r .tags[0])"
 fi
 echo "Deploying to Kubernetes"
-cmd="helm install catamel dacat-api-server --namespace $NS --set image.tag=$IMAGE_TAG --set image.repository=$docker_repo ${INGRESS_NAME}"
+cmd="helm install catamel dacat-api-server --namespace $NS --set image.tag=$IMAGE_TAG --set image.repository=$IMG_REPO ${INGRESS_NAME}"
 (echo "$cmd" && eval "$cmd")
 reset_envfiles server
 exit 0

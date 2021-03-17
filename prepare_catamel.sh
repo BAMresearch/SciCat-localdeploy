@@ -7,14 +7,18 @@
 #          while using minikube is the default
 # 3rd arg: 'clean' runs cleanup procedures only, skips starting services again
 
-export DOCKER_REG="docker.local:31000"
 export DOMAINBASE="osd.ddnss.org" # for ingress and TLS certs
 
 # get the script directory before creating any files
 scriptpath="$(readlink -f "$0")"
 scriptdir="$(dirname "$scriptpath")"
 cd "$scriptdir"
-. ./services/deploytools
+source ./services/deploytools
+
+if [ -z "$REGISTRY_ADDR" ]; then
+    echo "REGISTRY_ADDR not defined! Please run 'export REGISTRY_ADDR=<name>:<port>' first."
+    exit 1
+fi
 
 export KUBE_NAMESPACE=yourns
 NS_FILE=./namespaces/*.yaml
