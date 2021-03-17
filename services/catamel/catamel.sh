@@ -67,49 +67,50 @@ fix_nan_package_version()
 # remove the existing service
 helm del catamel -n$NS
 
-if [ ! -d "./component/" ]; then
-    git clone $REPO component
-fi
-cd component/
-git checkout develop
-git checkout .
-git pull
-fix_nan_package_version
-# using the ESS Dockerfile without ESS specific stuff
-cp CI/ESS/Dockerfile .
-# https://stackoverflow.com/questions/54428608/docker-node-alpine-image-build-fails-on-node-gyp#59538284
-sed -i -e '/COPY .*CI\/ESS/d' \
-    -e '/FROM/s/^.*$/FROM node:15.1-alpine/' \
-    -e '/RUN apk/a\    apk add --no-cache python make g++ && \\' \
-    -e '/USER/a\USER node' \
-    Dockerfile
-echo '*.json-sample' >> .dockerignore
-(cd ../.. && update_envfiles catamel component/server)
 if  [ "$BUILD" == "true" ]; then
+    if [ ! -d "./component/" ]; then
+        git clone $REPO component
+    fi
+    cd component/
+    git checkout develop
+    git checkout .
+    git pull
+    fix_nan_package_version
+    # using the ESS Dockerfile without ESS specific stuff
+    cp CI/ESS/Dockerfile .
+    # https://stackoverflow.com/questions/54428608/docker-node-alpine-image-build-fails-on-node-gyp#59538284
+    sed -i -e '/COPY .*CI\/ESS/d' \
+        -e '/FROM/s/^.*$/FROM node:15.1-alpine/' \
+        -e '/RUN apk/a\    apk add --no-cache python make g++ curl && \\' \
+        -e '/USER/a\USER node' \
+        Dockerfile
+    echo '*.json-sample' >> .dockerignore
+    (cd ../.. && update_envfiles catamel component/server)
+
     npm install
-fi
-echo "Building release"
-export CATAMEL_IMAGE_VERSION=$(git rev-parse HEAD)
-if  [ "$BUILD" == "true" ]; then
-    cmd="$DOCKER_BUILD ${DOCKERNAME} -t $docker_repo:$CATAMEL_IMAGE_VERSION$NS -t $docker_repo:latest ."
+    echo "Building release"
+    IMAGE_TAG="$(git rev-parse HEAD)$NS"
+    cmd="$DOCKER_BUILD ${DOCKERNAME} -t $docker_repo:$IMAGE_TAG -t $docker_repo:latest ."
     echo "$cmd"; eval $cmd
-    cmd="$DOCKER_PUSH $docker_repo:$CATAMEL_IMAGE_VERSION$NS"
+    cmd="$DOCKER_PUSH $docker_repo:$IMAGE_TAG"
     echo "$cmd"; eval "$cmd"
+    cd .. && create_dbuser ../../siteconfig catamel
+else # BUILD == false
+    IMAGE_TAG="$(curl -s https://$DOCKER_REG/v2/catamel/tags/list | jq -r .tags[0])"
 fi
-create_dbuser catamel
 echo "Deploying to Kubernetes"
-cmd="helm install catamel dacat-api-server --namespace $NS --set image.tag=$CATAMEL_IMAGE_VERSION$NS --set image.repository=$docker_repo ${INGRESS_NAME}"
-(cd .. && echo "$cmd" && eval "$cmd")
+cmd="helm install catamel dacat-api-server --namespace $NS --set image.tag=$IMAGE_TAG --set image.repository=$docker_repo ${INGRESS_NAME}"
+(echo "$cmd" && eval "$cmd")
 reset_envfiles server
 exit 0
-# disabled the lower part as we do not have a build server yet and don't use public repos
+# this part is disabled as we do not have a build server yet and don't use public repos
 
 function docker_tag_exists() {
     curl --silent -f -lSL https://index.docker.io/v1/repositories/$1/tags/$2 > /dev/null
 }
 
 tag=$(git rev-parse HEAD)
-if docker_tag_exists dacat/catamel $CATAMEL_IMAGE_VERSION$NS; then
+if docker_tag_exists dacat/catamel $IMAGE_TAG; then
     echo exists
     helm upgrade dacat-api-server-${NS} dacat-api-server --namespace=${NS} --set image.tag=$tag
     helm history catamel-${NS}
