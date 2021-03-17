@@ -18,7 +18,7 @@ then
     IPADDRESS=$(curl -s http://checkip.dyndns.org | python3 -c 'import sys; data=sys.stdin.readline(); import xml.etree.ElementTree as ET; print(ET.fromstring(data).find("body").text.split(":")[-1].strip())')
     # port forwarding 80 -> 30080 (behind oracle cloud firewall)
     # inspired by https://www.karlrupp.net/en/computer/nat_tutorial
-    # TODO: does this survive reboot?
+    # TODO: put this into rc.local:
     sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to-destination $IPADDRESS:30080
     sudo iptables -t nat -A POSTROUTING -p tcp --dport 30080 -j MASQUERADE
     sudo iptables -t nat -A PREROUTING -p tcp --dport 443 -j DNAT --to-destination $IPADDRESS:30443
