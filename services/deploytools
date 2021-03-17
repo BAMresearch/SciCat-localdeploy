@@ -1,4 +1,7 @@
-#!/bin/bash
+# services/deploytools
+# helper functions for use in several places
+# USAGE:
+#   $ source services/deploytools
 
 # replace needed docker commands if alternatives are used
 DOCKER_BUILD="docker build"
@@ -81,8 +84,9 @@ reset_envfiles()
 
 create_dbuser()
 {
-    local service="$1"
-    local sitecfgpath="../../../siteconfig"
+    local sitecfgpath="$1"
+    local service="$2"
+    local svcjs="$sitecfgpath/mongodb/${service}.js"
     local rootpwd; rootpwd="$(kubectl get secret -n dev local-mongodb \
         -o jsonpath="{.data.mongodb-root-password}" | base64 --decode)"
     local mongopod; mongopod=$(kubectl get pods --all-namespaces | awk '/mongo/ {print $2}')
@@ -90,10 +94,9 @@ create_dbuser()
         echo "No mongodb k8s pod found, can't create db user, giving up!"
         return
     fi
-    local dbname; dbname="$(awk '/db:/ {gsub("^\"|\"$,?","",$2); print $2}' \
-        "$sitecfgpath"/mongodb/${service}.js)"
+    local dbname; dbname="$(awk '/db:/ {gsub("^\"|\"$,?","",$2); print $2}' "$svcjs")"
     kubectl -n dev exec -i $mongopod \
-        -- mongo -u root -p "$rootpwd" admin < "$sitecfgpath"/mongodb/${service}.js
+        -- mongo -u root -p "$rootpwd" admin < "$svcjs"
 }
 
 delete_dbuser()
