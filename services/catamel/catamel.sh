@@ -15,7 +15,7 @@ export REPO=https://github.com/SciCatProject/catamel.git
 cd ./services/catamel/
 
 INGRESS_NAME=" "
-BUILD="false"
+BUILD="true"
 DOCKERNAME="-f ./Dockerfile"
 if [ "$(hostname)" == "kubetest01.dm.esss.dk" ]; then
     INGRESS_NAME="-f ./dacat-api-server/dmsc.yaml"
