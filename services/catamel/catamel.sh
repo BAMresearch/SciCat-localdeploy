@@ -43,7 +43,7 @@ if [ ! -d "$LE_WORKING_DIR/$DOMAINBASE" ]; then
 else
     certpath="$LE_WORKING_DIR/$DOMAINBASE"
     kubectl -n $NS create secret tls certs-catamel \
-        --cert="$certpath/$DOMAINBASE.cer" --key="$certpath/$DOMAINBASE.key" \
+        --cert="$certpath/fullchain.cer" --key="$certpath/$DOMAINBASE.key" \
         --dry-run=client -o yaml | kubectl apply -f -
 fi
 
