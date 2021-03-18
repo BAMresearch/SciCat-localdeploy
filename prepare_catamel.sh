@@ -13,7 +13,7 @@ scriptdir="$(dirname "$scriptpath")"
 cd "$scriptdir"
 source ./services/deploytools
 
-checkVars REGISTRY_NAME REGISTRY_PORT DOMAINBASE || exit 1
+checkVars REGISTRY_NAME REGISTRY_PORT || exit 1
 export REGISTRY_ADDR=$REGISTRY_NAME:$REGISTRY_PORT
 
 export KUBE_NAMESPACE=yourns
@@ -59,21 +59,6 @@ if [ "$answer" != "y" ]; then
     mongocmd="helm install local-mongodb bitnami/mongodb --namespace $LOCAL_ENV"
     echo "$mongocmd"; eval $mongocmd
   fi
-fi
-
-[ "$1" = "nopause" ] || \
-  read -p "Skip generating certificates? [yN] " answer
-if [ "$answer" != "y" ]; then
-    NS="$KUBE_NAMESPACE" # provide namespace as command line argument
-    FQDN="$(hostname --fqdn)"
-    if [ -z "$FQDN" ]; then
-        echo "Fully qualified domain name could not be found, aborting!"
-        exit 1
-    fi
-    openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout catamel.key -out catamel.crt -subj "/CN=catamel.$FQDN" -days 3650
-    kubectl delete secret -n$NS catamelservice 2>/dev/null
-    kubectl create ns $NS
-    kubectl create secret -n$NS tls catamelservice --key catamel.key --cert catamel.crt
 fi
 
 # Deploy services
