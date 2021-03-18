@@ -38,15 +38,18 @@ if [ "$2" = "clean" ]; then
     echo "done."
 fi
 
-if [ "$1" = "bare" ] && [ "$2" = "clean" ]; then # delete the underlying data
+if [ "$1" = "bare" ] && [ "$2" = "clean" ]; then
+    # delete the underlying data
     mongodatapath="$(awk -F: '/path/ {sub("^\\s*","",$2); print $2}' "$mongopvcfg")"
     [ -d "$mongodatapath" ] && rm -R "$mongodatapath/data"
 fi
-SITECFG="$scriptdir/siteconfig"
-if [ ! -d "$SITECFG" ]; then
+
+[ -z "$SITECONFIG" ] && SITECONFIG="$scriptdir/siteconfig"
+export SITECONFIG
+if [ ! -d "$SITECONFIG" ]; then
     # generate some passwords before starting any services
-    mkdir -p "$SITECFG"
-    (cd "$(dirname "$SITECFG")" && gen_catamel_credentials "$(basename "$SITECFG")")
+    mkdir -p "$SITECONFIG"
+    gen_catamel_credentials "$SITECONFIG"
 fi
 
 kubectl apply -f "$mongopvcfg"

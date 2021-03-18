@@ -94,7 +94,7 @@ if  [ "$BUILD" == "true" ]; then
     echo "$cmd"; eval $cmd
     cmd="$DOCKER_PUSH $IMG_REPO:$IMAGE_TAG"
     echo "$cmd"; eval "$cmd"
-    cd .. && create_dbuser ../../siteconfig catamel
+    cd .. && create_dbuser catamel
 else # BUILD == false
     IMAGE_TAG="$(curl -s https://$REGISTRY_ADDR/v2/catamel/tags/list | jq -r .tags[0])"
 fi

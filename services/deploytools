@@ -61,20 +61,17 @@ injectEnvConfig()
 
 update_envfiles()
 {
+    local fx="update_envfiles():"
+    checkVars SITECONFIG || return
     local service; service="$1"
-    if [ -z "$service" ]; then
-        echo "$0: No service name provided! Nothing to do."
-        return
-    fi
+    [ -z "$service" ] && (echo "$fx No service name provided! Nothing to do." && return)
     local targetDir; targetDir="$service/$2"
-    if [ ! -d "$targetDir" ]; then
-        echo "$0: Given target dir does not exist! Nothing to do."
-        echo "targetDir '$targetDir'"
-        return
+    [ -d "$targetDir" ] || (echo "$fx Target dir '$targetDir' not found! Nothing to do." && return)
     fi
-    [ -d "$service" ] || return # make sure we're in the correct path
-    local src; src="../siteconfig/$service"
-    [ -d "$src" ] || return
+    # make sure we're in the correct path
+    [ -d "$service" ] || (echo "$fx Service path '$service' not found!" && return)
+    local src; src="$SITECONFIG/$service"
+    [ -d "$src" ] || (echo "$fx Service path '$src' not found!" && return)
     if [ "$service" = "catamel" ]; then
 	# put first-time config files in place to get system running at all
         [ -f "$src"/config.local.js ] || cp catamel/component/server/config.local.js-sample "$src"/config.local.js
@@ -86,18 +83,15 @@ update_envfiles()
 reset_envfiles()
 {
     local targetDir; targetDir="$1"
-    if [ ! -d "$targetDir" ]; then
-        echo "$0: Given target dir does not exist! Nothing to do."
-        return
-    fi
+    [ -d "$targetDir" ] || (echo "reset_envfiles(): Given target dir does not exist! Nothing to do." && return)
     (cd "$targetDir" && git checkout .)
 }
 
 create_dbuser()
 {
-    local sitecfgpath="$1"
+    checkVars SITECONFIG || return
     local service="$2"
-    local svcjs="$sitecfgpath/mongodb/${service}.js"
+    local svcjs="$SITECONFIG/mongodb/${service}.js"
     local rootpwd; rootpwd="$(kubectl get secret -n dev local-mongodb \
         -o jsonpath="{.data.mongodb-root-password}" | base64 --decode)"
     local mongopod; mongopod=$(kubectl get pods --all-namespaces | awk '/mongo/ {print $2}')
@@ -112,9 +106,9 @@ create_dbuser()
 
 delete_dbuser()
 {
+    checkVars SITECONFIG || return
     local service="$1"
     local username="$2"
-    local sitecfgpath="../../../siteconfig"
     local rootpwd; rootpwd="$(kubectl get secret -n dev local-mongodb \
         -o jsonpath="{.data.mongodb-root-password}" | base64 --decode)"
     local mongopod; mongopod=$(kubectl get pods --all-namespaces | awk '/mongo/ {print $2}')
@@ -123,7 +117,7 @@ delete_dbuser()
         return
     fi
     local dbname; dbname="$(awk '/db:/ {gsub("^\"|\"$,?","",$2); print $2}' \
-        "$sitecfgpath"/mongodb/${service}.js)"
+        "$SITECONFIG/mongodb/${service}.js")"
     kubectl -n dev exec -i $mongopod \
         -- mongo $dbname -u root -p "$rootpwd" --authenticationDatabase admin -eval "db.dropUser(\"$username\")"
 }
@@ -159,13 +153,13 @@ gen_catamel_credentials()
 {
     local oldpath; oldpath=$(pwd) # pushd
     # provide the working directory 'siteconfig' as first argument
-    cd "$1" || return
+    cd "$1" || (echo "gen_catamel_credentials(): Failed to enter '$1'" && return)
     local dbusr=dacat
     local dbpwd=$(newpwd)
     local dbname=dacatdb
     local path; path="catamel"
     mkdir -p "$path"
-    local srcpath="../services/catamel/dacat-api-server/envfiles"
+    local srcpath="$scriptdir/services/catamel/dacat-api-server/envfiles"
     cp $srcpath/datasources.json "$path"/
     sed -i -e '/"user":/ s/"[^"]*"\(,\?\)\s*$/"'$dbusr'"\1/' \
         -e '/"password":/ s/"[^"]*"\(,\?\)\s*$/"'$dbpwd'"\1/' \
@@ -180,13 +174,13 @@ gen_scichat_credentials()
 {
     local oldpath; oldpath=$(pwd) # pushd
     # provide the working directory 'siteconfig' as first argument
-    cd "$1" || return
+    cd "$1" || (echo "gen_scichat_credentials(): Failed to enter '$1'" && return)
     local dbusr=scichat
     local dbpwd=$(newpwd)
     local dbname=scichatdb
     local path; path="scichat"
     mkdir -p "$path"
-    cp ../services/scichat-loopback/scichat/envfiles/datasources.json "$path"/
+    cp "$scriptdir/services/scichat-loopback/scichat/envfiles/datasources.json" "$path"/
     sed -i -e '/"user":/ s/"[^"]*"\(,\?\)\s*$/"'$dbusr'"\1/' \
         -e '/"password":/ s/"[^"]*"\(,\?\)\s*$/"'$dbpwd'"\1/' \
         -e '/"database":/ s/"[^"]*"\(,\?\)\s*$/"'$dbname'"\1/' \
@@ -195,4 +189,4 @@ gen_scichat_credentials()
     cd "$oldpath" # popd
 }
 
-# vim: set ts=4 sw=4 sts=4 tw=0 et:
+# vim: set ts=4 sw=4 sts=4 tw=0 ft=sh et:
