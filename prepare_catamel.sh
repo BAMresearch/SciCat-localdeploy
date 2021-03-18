@@ -23,43 +23,6 @@ ns="${fn%.*}"
 kubectl create -f $NS_FILE
 export LOCAL_ENV="$ns"
 
-mongopvcfg="definitions/mongo_pv_hostpath.yaml"
-[ "$2" = "bare" ] && mongopvcfg="definitions/mongo_pv_nfs.yaml"
-
-answer=
-[ "$1" = "nopause" ] || \
-  read -p "Skip restarting mongodb? [yN] " answer
-if [ "$answer" != "y" ]; then
-
-  # delete old volume first
-  echo -n "Waiting for mongodb persistentvolume being removed ... "
-  while kubectl -n $LOCAL_ENV get pv | grep -q mongo; do
-      sleep 1;
-      pvname="$(kubectl -n $LOCAL_ENV get pv | grep mongo | awk '{print $1}')"
-      # https://github.com/kubernetes/kubernetes/issues/77258#issuecomment-502209800
-      kubectl patch pv $pvname -p '{"metadata":{"finalizers":null}}'
-      timeout 6 kubectl delete pv $pvname
-  done
-  echo "done."
-  kubectl delete -f "$mongopvcfg"
-  # reclaim PV instead?
-  # kubectl patch pv $pvname -p '{"spec":{"claimRef":null}}'
-  helm del local-mongodb --namespace $LOCAL_ENV
-  if [ "$2" = "bare" ]; then # delete the underlying data
-    mongodatapath="$(awk -F: '/path/ {sub("^\\s*","",$2); print $2}' "$mongopvcfg")"
-    [ -d "$mongodatapath" ] && rm -R "$mongodatapath/data"
-  fi
-  if [ "$3" != "clean" ]; then
-    # generate some passwords before starting any services
-    mkdir -p siteconfig
-    gen_catamel_credentials siteconfig
-
-    kubectl apply -f "$mongopvcfg"
-    mongocmd="helm install local-mongodb bitnami/mongodb --namespace $LOCAL_ENV"
-    echo "$mongocmd"; eval $mongocmd
-  fi
-fi
-
 # Deploy services
 
 SERVICES_DIR=./services/*/*.sh

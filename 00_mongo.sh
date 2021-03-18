@@ -16,9 +16,8 @@ kubectl create -f $NS_FILE
 NS="$(sed -n -e '/^metadata/{:a;n;s/^\s\+name:\s*\(\w\+\)/\1/;p;Ta' -e'}' "$NS_FILE")"
 [ -z "$NS" ] && (echo "Could not determine namespace!"; exit 1)
 
-#mongopvcfg="mongopv_hostpath.yaml"
-mongopvcfg="mongopv.yaml"
-[ "$1" = "bare" ] && mongopvcfg="mongo_pv_nfs.yaml"
+mongopvcfg="$scriptdir/definitions/mongo_pv_hostpath.yaml"
+[ "$2" = "bare" ] && mongopvcfg="$scriptdir/definitions/mongo_pv_nfs.yaml"
 
 # remove the pod
 helm del local-mongodb --namespace "$NS"
