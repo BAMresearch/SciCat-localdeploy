@@ -68,7 +68,7 @@ fix_nan_package_version()
 # remove the existing service
 helm del catamel -n$NS
 
-if  [ "$BUILD" == "true" ]; then
+if  [ "$BUILD" = "true" ]; then
     if [ ! -d "./component/" ]; then
         git clone $REPO component
     fi
