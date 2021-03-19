@@ -46,6 +46,7 @@ export REGISTRY_NAME=img.\$DOMAINBASE
 export CERT_PATH_PUB=
 export CERT_PATH_PRIV=
 EOF
+        exit 1
     fi
     . "$fn"
 }
