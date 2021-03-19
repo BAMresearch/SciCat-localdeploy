@@ -92,7 +92,8 @@ copyimages()
 
 helm del catanie -n$NS
 
-if  [ "$BUILD" = "true" ]; then
+IMAGE_TAG="$(curl -s https://$REGISTRY_ADDR/v2/catamel/tags/list | jq -r .tags[0])"
+if [ "$BUILD" = "true" ] || [ -z "$IMAGE_TAG" ]; then
     if [ ! -d "./component" ]; then
         git clone $REPO component
     fi
@@ -112,8 +113,6 @@ if  [ "$BUILD" = "true" ]; then
     cmd="$DOCKER_PUSH $IMG_REPO:$IMAGE_TAG"
     echo "$cmd"; eval $cmd
     cd ..
-else # BUILD == false
-    IMAGE_TAG="$(curl -s https://$REGISTRY_ADDR/v2/catanie/tags/list | jq -r .tags[0])"
 fi
 echo "Deploying to Kubernetes"
 cmd="helm install catanie dacat-gui --namespace $NS --set image.tag=$IMAGE_TAG --set image.repository=$IMG_REPO ${INGRESS_NAME}"
