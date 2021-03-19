@@ -8,15 +8,14 @@
 # 3rd arg: 'clean' runs cleanup procedures only, skips starting services again
 
 # get the script directory before creating any files
-scriptpath="$(readlink -f "$0")"
-scriptdir="$(dirname "$scriptpath")"
-cd "$scriptdir"
-source ./services/deploytools
+scriptdir="$(dirname "$(readlink -f "$0")")"
+. "$scriptdir/services/deploytools"
 
 checkVars REGISTRY_NAME REGISTRY_PORT || exit 1
 export REGISTRY_ADDR=$REGISTRY_NAME:$REGISTRY_PORT
-
 export KUBE_NAMESPACE=yourns
+
+cd "$scriptdir"
 NS_FILE=./namespaces/*.yaml
 fn="$(basename $NS_FILE)"
 ns="${fn%.*}"

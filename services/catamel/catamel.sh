@@ -1,19 +1,16 @@
 #!/bin/sh
 
-source ./services/deploytools
-if [ -z "$KUBE_NAMESPACE" ]; then
-  echo "KUBE_NAMESPACE not defined!" >&2
-  exit 1
-fi
+# get the script directory before creating any files
+scriptdir="$(dirname "$(readlink -f "$0")")"
+. "$scriptdir/services/deploytools"
+
+checkVars REGISTRY_ADDR KUBE_NAMESPACE || exit 1
+
+IMG_REPO="$REGISTRY_ADDR/catamel"
+export REPO=https://github.com/SciCatProject/catamel.git
 export NS=$KUBE_NAMESPACE
 
-[ -z "$REGISTRY_ADDR" ] && \
-    echo "WARNING: Registry not defined in 'REGISTRY_ADDR'!"
-IMG_REPO="$REGISTRY_ADDR/catamel"
-
-export REPO=https://github.com/SciCatProject/catamel.git
-cd ./services/catamel/
-
+cd "$scriptdir/services/catamel"
 INGRESS_NAME=" "
 BUILD="true"
 DOCKERNAME="-f ./Dockerfile"
