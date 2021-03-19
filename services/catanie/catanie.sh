@@ -5,7 +5,7 @@ scriptdir="$(dirname "$(readlink -f "$0")")"
 . "$scriptdir/../deploytools"
 
 loadSiteConfig
-checkVars REGISTRY_ADDR KUBE_NAMESPACE || exit 1
+checkVars REGISTRY_ADDR KUBE_NAMESPACE LE_WORKING_DIR || exit 1
 
 IMG_REPO="$REGISTRY_ADDR/catanie"
 export REPO=https://github.com/SciCatProject/catanie.git
