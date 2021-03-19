@@ -97,12 +97,11 @@ if [ "$BUILD" = "true" ] || [ -z "$IMAGE_TAG" ]; then
     git checkout .
     git clean -f
     git pull
-
     angEnv="$(sed \
-        -e '/facility:/s/[[:alnum:]"]\+,$/"BAM",/g' \
-        -e '/lbBaseURL:/s#[[:alnum:]"\:\./]\+,$#"http://catamel.'$(hostname --fqdn)'",#g' \
-        -e '/fileserverBaseURL:/s#[[:alnum:]"\:\./]\+,$#"http://files.'$(hostname --fqdn)'",#g' \
-        -e '/landingPage:/s#[[:alnum:]"\:\./]\+,$#"http://landing.'$(hostname --fqdn)'",#g' \
+        -e "/facility:/s/[[:alnum:]\"]\+,$/\"$SC_SITE_NAME\",/g" \
+        -e '/lbBaseURL:/s#[[:alnum:]"\:\./]\+,$#"http://api.'$DOMAINBASE'",#g' \
+        -e '/fileserverBaseURL:/s#[[:alnum:]"\:\./]\+,$#"http://files.'$DOMAINBASE'",#g' \
+        -e '/landingPage:/s#[[:alnum:]"\:\./]\+,$#"http://landing.'$DOMAINBASE'",#g' \
         -e '/production:/s/\w\+,$/true,/g' \
         -e '/archiveWorkflowEnabled:/s/\w\+,$/false,/g' \
         -e '/synapseBaseUrl/d' \

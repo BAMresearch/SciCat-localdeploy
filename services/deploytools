@@ -46,6 +46,7 @@ export REGISTRY_NAME=img.\$DOMAINBASE
 export CERT_PATH_PUB=
 export CERT_PATH_PRIV=
 export SC_MEDIA_PATH=
+export SC_SITE_NAME="Your SciCat Site"
 EOF
         exit 1
     fi
