@@ -46,14 +46,6 @@ if [ "$1" = "bare" ] && [ "$2" = "clean" ]; then
     [ -d "$datapath" ] && rm -R "$datapath/data"
 fi
 
-[ -z "$SITECONFIG" ] && SITECONFIG="$scriptdir/siteconfig"
-export SITECONFIG
-if [ ! -d "$SITECONFIG" ]; then
-    # generate some passwords before starting any services
-    mkdir -p "$SITECONFIG"
-    gen_catamel_credentials "$SITECONFIG"
-fi
-
 kubectl apply -f "$pvcfg"
 cmd="helm install local-mongodb bitnami/mongodb --namespace $NS"
 echo "$cmd"; eval $cmd

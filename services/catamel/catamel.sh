@@ -2,15 +2,16 @@
 
 # get the script directory before creating any files
 scriptdir="$(dirname "$(readlink -f "$0")")"
-. "$scriptdir/services/deploytools"
+. "$scriptdir/../deploytools"
 
+loadSiteConfig
 checkVars REGISTRY_ADDR KUBE_NAMESPACE || exit 1
 
 IMG_REPO="$REGISTRY_ADDR/catamel"
 export REPO=https://github.com/SciCatProject/catamel.git
 export NS=$KUBE_NAMESPACE
 
-cd "$scriptdir/services/catamel"
+cd "$scriptdir"
 INGRESS_NAME=" "
 BUILD="true"
 DOCKERNAME="-f ./Dockerfile"
@@ -43,6 +44,9 @@ else
         --cert="$certpath/fullchain.cer" --key="$certpath/$DOMAINBASE.key" \
         --dry-run=client -o yaml | kubectl apply -f -
 fi
+
+# make sure DB access fits before starting any services
+gen_catamel_credentials "$SC_SITECONFIG"
 
 fix_nan_package_version()
 {

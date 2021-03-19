@@ -10,7 +10,7 @@
 # get the script directory before creating any files
 scriptdir="$(dirname "$(readlink -f "$0")")"
 . "$scriptdir/services/deploytools"
-
+loadSiteConfig
 checkVars REGISTRY_NAME REGISTRY_PORT || exit 1
 export REGISTRY_ADDR=$REGISTRY_NAME:$REGISTRY_PORT
 export KUBE_NAMESPACE=yourns
