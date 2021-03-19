@@ -1,18 +1,17 @@
 #!/usr/bin/env bash
 
-source ./services/deploytools
-if [ -z "$KUBE_NAMESPACE" ]; then
-  echo "KUBE_NAMESPACE not defined!" >&2
-  exit 1
-fi
-export env=$KUBE_NAMESPACE
+# get the script directory before creating any files
+scriptdir="$(dirname "$(readlink -f "$0")")"
+. "$scriptdir/../deploytools"
 
-[ -z "$DOCKER_REG" ] && \
-    echo "WARNING: Docker registry not defined, using default (docker.io?)!"
-docker_repo="$DOCKER_REG/catanie"
+loadSiteConfig
+checkVars REGISTRY_ADDR KUBE_NAMESPACE || exit 1
 
+IMG_REPO="$REGISTRY_ADDR/catanie"
 export REPO=https://github.com/SciCatProject/catanie.git
-cd ./services/catanie/
+export NS=$KUBE_NAMESPACE
+
+cd "$scriptdir"
 
 INGRESS_NAME=" "
 BUILD="true"
@@ -32,7 +31,7 @@ else
     cat > "$YAMLFN" << EOF
 ingress:
   enabled: true
-  host:  $(hostname --fqdn)
+  host: $DOMAINBASE
 EOF
 fi
 
@@ -98,7 +97,7 @@ copyimages()
 #export LOCAL_ENV="${envarray[i]}"
 #export LOCAL_IP="$1"
 #echo $LOCAL_ENV
-helm del catanie -n$env
+helm del catanie -n$NS
 if [ ! -d "./component" ]; then
     git clone $REPO component
 fi
@@ -107,27 +106,27 @@ git checkout develop
 git checkout .
 git clean -f
 git pull
-injectEnvConfig catanie $env "$angEnv" "$angCfg"
+injectEnvConfig catanie $NS "$angEnv" "$angCfg"
 copyimages
 if  [ "$BUILD" == "true" ]; then
     echo "Building release"
     npm install
-    ./node_modules/@angular/cli/bin/ng build --configuration $env --output-path dist/$env
+    ./node_modules/@angular/cli/bin/ng build --configuration $NS --output-path dist/$NS
 fi
 echo STATUS:
 kubectl cluster-info
 export CATANIE_IMAGE_VERSION=$(git rev-parse HEAD)
 if  [ "$BUILD" == "true" ]; then
-    cmd="docker build -t $docker_repo:$CATANIE_IMAGE_VERSION$env -t $docker_repo:latest --build-arg env=$env ."
+    cmd="docker build -t $docker_repo:$CATANIE_IMAGE_VERSION$NS -t $docker_repo:latest --build-arg NS=$NS ."
     echo "$cmd"; eval $cmd
-    cmd="docker push $docker_repo:$CATANIE_IMAGE_VERSION$env"
+    cmd="docker push $docker_repo:$CATANIE_IMAGE_VERSION$NS"
     echo "$cmd"; eval $cmd
 fi
 export tag=$(git rev-parse HEAD)
 echo "Deploying to Kubernetes"
 cd ..
-helm install catanie dacat-gui --namespace $env \
-    --set image.tag=$CATANIE_IMAGE_VERSION$env --set image.repository=$docker_repo ${INGRESS_NAME}
+helm install catanie dacat-gui --namespace $NS \
+    --set image.tag=$CATANIE_IMAGE_VERSION$NS --set image.repository=$docker_repo ${INGRESS_NAME}
 exit 0
 # disabled the lower part as we do not have a build server yet and don't use public repos
 
@@ -137,8 +136,8 @@ function docker_tag_exists() {
 
 if docker_tag_exists dacat/catanie latest; then
     echo exists
-    helm upgrade catanie-${env} dacat-gui --wait --recreate-pods --namespace=${env} --set image.tag=$tag$env ${INGRESS_NAME}
-    helm history catanie-${env}
+    helm upgrade catanie-${NS} dacat-gui --wait --recreate-pods --namespace=${NS} --set image.tag=$tag$NS ${INGRESS_NAME}
+    helm history catanie-${NS}
 else
     echo not exists
 fi
