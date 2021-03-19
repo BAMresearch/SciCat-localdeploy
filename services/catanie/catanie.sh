@@ -35,7 +35,6 @@ ingress:
 EOF
 fi
 
-#externalAuthEndpoint: "/auth/msad",
 read -r -d '' angEnv <<EOF
 export const environment = {
   production: true,
@@ -73,7 +72,7 @@ copyimages()
         echo "$0 not in directory 'component', aborting!"
         return
     fi
-    local mediaPath="../../../media"
+    local mediaPath="$scriptdir/../../media"
     if [ ! -d "$mediaPath" ]; then
         echo "No media/images found, not copying site specific media."
         return
@@ -91,42 +90,35 @@ copyimages()
     [ -f "$sitesrc" ] && cp "$sitesrc" src/assets/images/ess-site.png
 }
 
-#echo $1
-
-#for ((i=0;i<${#envarray[@]};i++)); do
-#export LOCAL_ENV="${envarray[i]}"
-#export LOCAL_IP="$1"
-#echo $LOCAL_ENV
 helm del catanie -n$NS
-if [ ! -d "./component" ]; then
-    git clone $REPO component
-fi
-cd component
-git checkout develop
-git checkout .
-git clean -f
-git pull
-injectEnvConfig catanie $NS "$angEnv" "$angCfg"
-copyimages
-if  [ "$BUILD" == "true" ]; then
-    echo "Building release"
+
+if  [ "$BUILD" = "true" ]; then
+    if [ ! -d "./component" ]; then
+        git clone $REPO component
+    fi
+    cd component
+    git checkout develop
+    git checkout .
+    git clean -f
+    git pull
+    injectEnvConfig catanie $NS "$angEnv" "$angCfg"
+    copyimages
     npm install
+    echo "Building release"
     ./node_modules/@angular/cli/bin/ng build --configuration $NS --output-path dist/$NS
-fi
-echo STATUS:
-kubectl cluster-info
-export CATANIE_IMAGE_VERSION=$(git rev-parse HEAD)
-if  [ "$BUILD" == "true" ]; then
-    cmd="docker build -t $docker_repo:$CATANIE_IMAGE_VERSION$NS -t $docker_repo:latest --build-arg NS=$NS ."
+    IMAGE_TAG="$(git rev-parse HEAD)$NS"
+    cmd="$DOCKER_BUILD -t $IMG_REPO:$IMAGE_TAG -t $IMG_REPO:latest --build-arg NS=$NS ."
     echo "$cmd"; eval $cmd
-    cmd="docker push $docker_repo:$CATANIE_IMAGE_VERSION$NS"
+    cmd="$DOCKER_PUSH $IMG_REPO:$IMAGE_TAG"
     echo "$cmd"; eval $cmd
+    cd ..
+else # BUILD == false
+    IMAGE_TAG="$(curl -s https://$REGISTRY_ADDR/v2/catanie/tags/list | jq -r .tags[0])"
 fi
-export tag=$(git rev-parse HEAD)
 echo "Deploying to Kubernetes"
-cd ..
-helm install catanie dacat-gui --namespace $NS \
-    --set image.tag=$CATANIE_IMAGE_VERSION$NS --set image.repository=$docker_repo ${INGRESS_NAME}
+cmd="helm install catanie dacat-gui --namespace $NS --set image.tag=$IMAGE_TAG --set image.repository=$IMG_REPO ${INGRESS_NAME}"
+(echo "$cmd" && eval "$cmd")
+
 exit 0
 # disabled the lower part as we do not have a build server yet and don't use public repos
 
