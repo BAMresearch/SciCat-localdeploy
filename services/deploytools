@@ -184,16 +184,21 @@ gen_catamel_credentials()
     local dbusr=dacat
     local dbpwd=$(newpwd)
     local dbname=dacatdb
-    local path; path="catamel"
-    mkdir -p "$path"
-    local srcpath="$scriptdir/services/catamel/dacat-api-server/envfiles"
-    cp $srcpath/datasources.json "$path"/
-    sed -i -e '/"user":/ s/"[^"]*"\(,\?\)\s*$/"'$dbusr'"\1/' \
-        -e '/"password":/ s/"[^"]*"\(,\?\)\s*$/"'$dbpwd'"\1/' \
-        -e '/"database":/ s/"[^"]*"\(,\?\)\s*$/"'$dbname'"\1/' \
-        "$path"/datasources.json
-    mkdir -p mongodb
-    mongodb_createUserCmd mongodb/catamel.js "$dbusr" "$dbpwd" "$dbname"
+    local targetPath="catamel/datasources.json"
+    if [ ! -f "$targetPath" ]; then
+        mkdir -p "$(dirname "$targetPath")"
+        local srcpath="$scriptdir/services/catamel/dacat-api-server/envfiles"
+        cp $srcpath/datasources.json "$targetPath"
+        sed -i -e '/"user":/ s/"[^"]*"\(,\?\)\s*$/"'$dbusr'"\1/' \
+            -e '/"password":/ s/"[^"]*"\(,\?\)\s*$/"'$dbpwd'"\1/' \
+            -e '/"database":/ s/"[^"]*"\(,\?\)\s*$/"'$dbname'"\1/' \
+            "$targetPath"
+    fi
+    targetPath="mongodb/catamel.js"
+    if [ ! -f "$targetPath" ]; then
+        mkdir -p "$(dirname "$targetPath")"
+        mongodb_createUserCmd "$targetPath" "$dbusr" "$dbpwd" "$dbname"
+    fi
     cd "$oldpath" # popd
 }
 
