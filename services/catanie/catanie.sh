@@ -76,6 +76,16 @@ copyimages()
     [ -f "$sitesrc" ] && cp "$sitesrc" src/assets/images/ess-site.png
 }
 
+# Updating TLS certificates, assuming letsencrypt provided by acme.sh client
+if [ ! -d "$LE_WORKING_DIR/$DOMAINBASE" ]; then
+    echo "WARNING! Location for TLS certificates not found ('$LE_WORKING_DIR/$DOMAINBASE')."
+else
+    certpath="$LE_WORKING_DIR/$DOMAINBASE"
+    kubectl -n $NS create secret tls certs-catanie \
+        --cert="$certpath/fullchain.cer" --key="$certpath/$DOMAINBASE.key" \
+        --dry-run=client -o yaml | kubectl apply -f -
+fi
+
 helm del catanie -n$NS
 
 IMAGE_TAG="$(curl -s https://$REGISTRY_ADDR/v2/catamel/tags/list | jq -r .tags[0])"
