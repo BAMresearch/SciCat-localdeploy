@@ -67,13 +67,12 @@ update_envfiles()
     [ -z "$service" ] && (echo "$fx No service name provided! Nothing to do." && return)
     local targetDir; targetDir="$service/$2"
     [ -d "$targetDir" ] || (echo "$fx Target dir '$targetDir' not found! Nothing to do." && return)
-    fi
     # make sure we're in the correct path
     [ -d "$service" ] || (echo "$fx Service path '$service' not found!" && return)
     local src; src="$SITECONFIG/$service"
     [ -d "$src" ] || (echo "$fx Service path '$src' not found!" && return)
     if [ "$service" = "catamel" ]; then
-	# put first-time config files in place to get system running at all
+        # put first-time config files in place to get system running at all
         [ -f "$src"/config.local.js ] || cp catamel/component/server/config.local.js-sample "$src"/config.local.js
         [ -f "$src"/providers.json ] || cp catamel/component/server/providers.json-sample "$src"/providers.json
     fi
@@ -83,7 +82,7 @@ update_envfiles()
 reset_envfiles()
 {
     local targetDir; targetDir="$1"
-    [ -d "$targetDir" ] || (echo "reset_envfiles(): Given target dir does not exist! Nothing to do." && return)
+    [ -d "$targetDir" ] || (echo "reset_envfiles(): Target dir '$targetDir' not found! Nothing to do." && return)
     (cd "$targetDir" && git checkout .)
 }
 
