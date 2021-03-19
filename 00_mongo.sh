@@ -14,11 +14,11 @@ kubectl create -f $NS_FILE
 NS="$(sed -n -e '/^metadata/{:a;n;s/^\s\+name:\s*\(\w\+\)/\1/;p;Ta' -e'}' "$NS_FILE")"
 [ -z "$NS" ] && (echo "Could not determine namespace!"; exit 1)
 
-mongopvcfg="$scriptdir/definitions/mongo_pv_hostpath.yaml"
+pvcfg="$scriptdir/definitions/mongo_pv_hostpath.yaml"
 if [ "$2" = "bare" ]; then
-    mongopvcfg="$scriptdir/definitions/mongo_pv_nfs.yaml"
+    pvcfg="$scriptdir/definitions/mongo_pv_nfs.yaml"
     echo " -> Using NFS for persistent volumes in 'bare' mode."
-    echo "    Please make sure the configured NFS shares can be mounted: '$mongopvcfg'"
+    echo "    Please make sure the configured NFS shares can be mounted: '$pvcfg'"
 fi
 
 # remove the pod
@@ -36,14 +36,14 @@ if [ "$2" = "clean" ]; then
         kubectl patch pv $pvname -p '{"metadata":{"finalizers":null}}'
         timeout 6 kubectl delete pv $pvname
     done
-    kubectl delete -f "$mongopvcfg"
+    kubectl delete -f "$pvcfg"
     echo "done."
 fi
 
 if [ "$1" = "bare" ] && [ "$2" = "clean" ]; then
     # delete the underlying data
-    mongodatapath="$(awk -F: '/path/ {sub("^\\s*","",$2); print $2}' "$mongopvcfg")"
-    [ -d "$mongodatapath" ] && rm -R "$mongodatapath/data"
+    datapath="$(awk -F: '/path/ {sub("^\\s*","",$2); print $2}' "$pvcfg")"
+    [ -d "$datapath" ] && rm -R "$datapath/data"
 fi
 
 [ -z "$SITECONFIG" ] && SITECONFIG="$scriptdir/siteconfig"
@@ -54,8 +54,8 @@ if [ ! -d "$SITECONFIG" ]; then
     gen_catamel_credentials "$SITECONFIG"
 fi
 
-kubectl apply -f "$mongopvcfg"
-mongocmd="helm install local-mongodb bitnami/mongodb --namespace $NS"
-echo "$mongocmd"; eval $mongocmd
+kubectl apply -f "$pvcfg"
+cmd="helm install local-mongodb bitnami/mongodb --namespace $NS"
+echo "$cmd"; eval $cmd
 
 # vim: set ts=4 sw=4 sts=4 tw=0 et:
