@@ -36,21 +36,6 @@ ingress:
 EOF
 fi
 
-#externalAuthEndpoint: "/auth/msad",
-read -r -d '' angEnv <<EOF
-export const environment = {
-  production: true,
-  lbBaseURL: "http://catamel.$(hostname --fqdn)",
-  fileserverBaseURL: "http://files.$(hostname --fqdn)",
-  archiveWorkflowEnabled: true,
-  editMetadataEnabled: true,
-  columnSelectEnabled: true,
-  editSampleEnabled: true,
-  shoppingCartEnabled: true,
-  facility: "BAM"
-};
-EOF
-
 read -r -d '' angCfg <<EOF
   {
     "optimization": true,
@@ -107,6 +92,22 @@ git checkout develop
 git checkout .
 git clean -f
 git pull
+
+angEnv="$(sed \
+    -e '/facility:/s/[[:alnum:]"]\+,$/"BAM",/g' \
+    -e '/lbBaseURL:/s#[[:alnum:]"\:\./]\+,$#"http://catamel.'$(hostname --fqdn)'",#g' \
+    -e '/fileserverBaseURL:/s#[[:alnum:]"\:\./]\+,$#"http://files.'$(hostname --fqdn)'",#g' \
+    -e '/landingPage:/s#[[:alnum:]"\:\./]\+,$#"http://landing.'$(hostname --fqdn)'",#g' \
+    -e '/production:/s/\w\+,$/true,/g' \
+    -e '/archiveWorkflowEnabled:/s/\w\+,$/false,/g' \
+    -e '/synapseBaseUrl/d' \
+    -e '/riotBaseUrl/d' \
+    -e '/jupyterHubUrl/d' \
+    -e '/sftpHost/d' \
+    -e '/multipleDownloadAction/d' \
+    -e '/externalAuthEndpoint/d' \
+    src/environments/environment.ts)"
+
 injectEnvConfig catanie $env "$angEnv" "$angCfg"
 copyimages
 if  [ "$BUILD" == "true" ]; then
