@@ -5,7 +5,7 @@ scriptdir="$(dirname "$(readlink -f "$0")")"
 . "$scriptdir/../deploytools"
 
 loadSiteConfig
-checkVars REGISTRY_ADDR KUBE_NAMESPACE || exit 1
+checkVars REGISTRY_ADDR KUBE_NAMESPACE LE_WORKING_DIR || exit 1
 
 IMG_REPO="$REGISTRY_ADDR/catamel"
 export REPO=https://github.com/SciCatProject/catamel.git
@@ -69,7 +69,7 @@ fix_nan_package_version()
 helm del catamel -n$NS
 
 IMAGE_TAG="$(curl -s https://$REGISTRY_ADDR/v2/catamel/tags/list | jq -r .tags[0])"
-if  [ "$BUILD" = "true" ] || [ -z "$IMAGE_TAG" ]; then
+if [ "$BUILD" = "true" ] || [ -z "$IMAGE_TAG" ]; then
     if [ ! -d "./component/" ]; then
         git clone $REPO component
     fi
