@@ -26,7 +26,7 @@ loadSiteConfig()
 {
     local fx="loadSiteConfig():"
     if [ -z "$SC_SITECONFIG" ]; then
-        SC_SITECONFIG="$scriptdir/siteconfig"
+        SC_SITECONFIG="$(readlink -f siteconfig)"
         echo "$fx SC_SITECONFIG is not set, using '$SC_SITECONFIG'."
     fi
     export SC_SITECONFIG
@@ -45,6 +45,7 @@ export REGISTRY_PORT=31000
 export REGISTRY_NAME=img.\$DOMAINBASE
 export CERT_PATH_PUB=
 export CERT_PATH_PRIV=
+export SC_MEDIA_PATH=
 EOF
         exit 1
     fi
@@ -179,17 +180,20 @@ EOF
 
 gen_catamel_credentials()
 {
+    local fx="gen_catamel_credentials():"
     local oldpath; oldpath=$(pwd) # pushd
-    # provide the working directory 'siteconfig' as first argument
-    cd "$1" || (echo "gen_catamel_credentials(): Failed to enter '$1'" && return)
+    # provide the script directory as first argument
+    local srcdir="$1"
+    [ -d "$srcdir" ] || (echo "$fx Given script dir '$srcdir' does not exist!"; return)
+    cd "$SC_SITECONFIG" || (echo "$fx Failed to enter '$SC_SITECONFIG'"; return)
     local dbusr=dacat
     local dbpwd=$(newpwd)
     local dbname=dacatdb
     local targetPath="catamel/datasources.json"
     if [ ! -f "$targetPath" ]; then
         mkdir -p "$(dirname "$targetPath")"
-        local srcpath="$scriptdir/services/catamel/dacat-api-server/envfiles"
-        cp $srcpath/datasources.json "$targetPath"
+        srcdir="$srcdir/dacat-api-server/envfiles"
+        cp $srcdir/datasources.json "$targetPath"
         sed -i -e '/"user":/ s/"[^"]*"\(,\?\)\s*$/"'$dbusr'"\1/' \
             -e '/"password":/ s/"[^"]*"\(,\?\)\s*$/"'$dbpwd'"\1/' \
             -e '/"database":/ s/"[^"]*"\(,\?\)\s*$/"'$dbname'"\1/' \
@@ -205,20 +209,30 @@ gen_catamel_credentials()
 
 gen_scichat_credentials()
 {
+    local fx="gen_scichat_credentials():"
     local oldpath; oldpath=$(pwd) # pushd
-    # provide the working directory 'siteconfig' as first argument
-    cd "$1" || (echo "gen_scichat_credentials(): Failed to enter '$1'" && return)
+    # provide the script directory as first argument
+    local srcdir="$1"
+    [ -d "$srcdir" ] || (echo "$fx Given script dir '$srcdir' does not exist!"; return)
+    cd "$SC_SITECONFIG" || (echo "$fx Failed to enter '$SC_SITECONFIG'"; return)
     local dbusr=scichat
     local dbpwd=$(newpwd)
     local dbname=scichatdb
-    local path; path="scichat"
-    mkdir -p "$path"
-    cp "$scriptdir/services/scichat-loopback/scichat/envfiles/datasources.json" "$path"/
-    sed -i -e '/"user":/ s/"[^"]*"\(,\?\)\s*$/"'$dbusr'"\1/' \
-        -e '/"password":/ s/"[^"]*"\(,\?\)\s*$/"'$dbpwd'"\1/' \
-        -e '/"database":/ s/"[^"]*"\(,\?\)\s*$/"'$dbname'"\1/' \
-        "$path"/datasources.json
-    mongodb_createUserCmd mongodb/scichat.js "$dbusr" "$dbpwd" "$dbname"
+    local targetPath="scichat/datasources.json"
+    if [ ! -f "$targetPath" ]; then
+        mkdir -p "$(dirname "$targetPath")"
+        srcdir="$srcdir/scichat/envfiles"
+        cp $srcdir/datasources.json "$targetPath"
+        sed -i -e '/"user":/ s/"[^"]*"\(,\?\)\s*$/"'$dbusr'"\1/' \
+            -e '/"password":/ s/"[^"]*"\(,\?\)\s*$/"'$dbpwd'"\1/' \
+            -e '/"database":/ s/"[^"]*"\(,\?\)\s*$/"'$dbname'"\1/' \
+            "$targetPath"
+    fi
+    targetPath="mongodb/scichat.js"
+    if [ ! -f "$targetPath" ]; then
+        mkdir -p "$(dirname "$targetPath")"
+        mongodb_createUserCmd "$targetPath" "$dbusr" "$dbpwd" "$dbname"
+    fi
     cd "$oldpath" # popd
 }
 
