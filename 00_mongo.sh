@@ -6,9 +6,7 @@
 # 2nd arg: 'clean' runs cleanup procedures only, skips starting services again
 
 # get the script directory before creating any files
-scriptpath="$(readlink -f "$0")"
-scriptdir="$(dirname "$scriptpath")"
-cd "$scriptdir"
+scriptdir="$(dirname "$(readlink -f "$0")")"
 . "$scriptdir/services/deploytools"
 
 NS_FILE="$(find "$scriptdir/namespaces" -iname '*.yaml')"
