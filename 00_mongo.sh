@@ -17,7 +17,11 @@ NS="$(sed -n -e '/^metadata/{:a;n;s/^\s\+name:\s*\(\w\+\)/\1/;p;Ta' -e'}' "$NS_F
 [ -z "$NS" ] && (echo "Could not determine namespace!"; exit 1)
 
 mongopvcfg="$scriptdir/definitions/mongo_pv_hostpath.yaml"
-[ "$2" = "bare" ] && mongopvcfg="$scriptdir/definitions/mongo_pv_nfs.yaml"
+if [ "$2" = "bare" ]; then
+    mongopvcfg="$scriptdir/definitions/mongo_pv_nfs.yaml"
+    echo " -> Using NFS for persistent volumes in 'bare' mode."
+    echo "    Please make sure the configured NFS shares can be mounted: '$mongopvcfg'"
+fi
 
 # remove the pod
 helm del local-mongodb --namespace "$NS"

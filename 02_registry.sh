@@ -9,6 +9,8 @@ scriptdir="$(dirname "$scriptpath")"
 checkVars REGISTRY_PORT CERT_PATH_PUB CERT_PATH_PRIV || exit 1
 REGISTRY_NAME=myregistry
 pvcfg="$scriptdir/definitions/registry_pv_nfs.yaml"
+echo " -> Using NFS for persistent volumes."
+echo "    Please make sure the configured NFS shares can be mounted: '$pvcfg'"
 
 if [ "$1" != "clean" ];
 then
