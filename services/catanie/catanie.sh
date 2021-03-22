@@ -119,7 +119,7 @@ if [ "$BUILD" = "true" ] || [ -z "$IMAGE_TAG" ]; then
     echo "Building release"
     ./node_modules/@angular/cli/bin/ng build --configuration $NS --output-path dist/$NS
     IMAGE_TAG="$(git rev-parse HEAD)$NS"
-    cmd="$DOCKER_BUILD -t $IMG_REPO:$IMAGE_TAG -t $IMG_REPO:latest --build-arg NS=$NS ."
+    cmd="$DOCKER_BUILD -t $IMG_REPO:$IMAGE_TAG -t $IMG_REPO:latest --build-arg env=$NS ."
     echo "$cmd"; eval $cmd
     cmd="$DOCKER_PUSH $IMG_REPO:$IMAGE_TAG"
     echo "$cmd"; eval $cmd
