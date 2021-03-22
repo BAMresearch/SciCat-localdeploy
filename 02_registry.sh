@@ -9,8 +9,6 @@ scriptdir="$(dirname "$scriptpath")"
 checkVars REGISTRY_PORT CERT_PATH_PUB CERT_PATH_PRIV || exit 1
 REGISTRY_NAME=myregistry
 pvcfg="$scriptdir/definitions/registry_pv_nfs.yaml"
-echo " -> Using NFS for persistent volumes."
-echo "    Please make sure the configured NFS shares can be mounted: '$pvcfg'"
 
 if [ "$1" != "clean" ];
 then
@@ -19,6 +17,9 @@ then
     # add registry name to known hosts -> on all nodes which access the registry
 #    grep -q $REGISTRY_NAME /etc/hosts || sudo sed -i -e '/10.0.9.1/s/$/ '$REGISTRY_NAME'/' /etc/hosts
     sudo -E kubectl create secret -ndev tls "${REGISTRY_NAME}.secret" --key "$CERT_PATH_PRIV" --cert "$CERT_PATH_PUB"
+
+    echo " -> Using NFS for persistent volumes."
+    echo "    Please make sure the configured NFS shares can be mounted: '$pvcfg'"
     kubectl apply -f "$pvcfg"
     helm install $REGISTRY_NAME twuni/docker-registry --namespace dev \
         --set service.type=NodePort,service.nodePort=$REGISTRY_PORT \
