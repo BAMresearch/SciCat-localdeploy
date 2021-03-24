@@ -49,6 +49,8 @@ then
             akey="\"nginx\\.ingress\\.kubernetes\\.io"
             pwdargs="         --set ingress.annotations.$akey/auth-type\"=basic"
             pwdargs="$pwdargs --set ingress.annotations.$akey/auth-secret\"=${SVC_NAME}.ht"
+            # fix this https://imti.co/413-request-entity-too-large/
+            pwdargs="$pwdargs --set ingress.annotations.$akey/proxy-body-size\"=0"
         fi
     else
         echo "Using NodePort without ingress: Make sure that $REGISTRY_NAME points to this host!"
