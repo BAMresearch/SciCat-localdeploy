@@ -10,7 +10,6 @@ noBuild="$(getScriptFlags nobuild "$@")"
 loadSiteConfig
 checkVars REGISTRY_ADDR SC_NAMESPACE LE_WORKING_DIR || exit 1
 
-IMG_REPO="$REGISTRY_ADDR/catamel"
 export REPO=https://github.com/SciCatProject/catamel.git
 
 cd "$scriptdir"
@@ -69,7 +68,10 @@ fix_nan_package_version()
 # remove the existing service
 helm del catamel -n$NS
 
-IMAGE_TAG="$(curl -s https://$REGISTRY_ADDR/v2/catamel/tags/list | jq -r .tags[0])"
+IMG_REPO="$REGISTRY_ADDR/catamel"
+baseurl="$REGISTRY_ADDR"
+[ -z "$REGISTRY_PASS" ] || baseurl="$REGISTRY_USER:$REGISTRY_PASS@$baseurl"
+IMAGE_TAG="$(curl -s "https://$baseurl/v2/catamel/tags/list" | jq -r .tags[0])"
 if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
     if [ ! -d "./component/" ]; then
         git clone $REPO component
@@ -102,7 +104,7 @@ fi
 echo "Deploying to Kubernetes"
 cmd="helm install catamel dacat-api-server --namespace $NS --set image.tag=$IMAGE_TAG --set image.repository=$IMG_REPO ${INGRESS_NAME}"
 (echo "$cmd" && eval "$cmd")
-reset_envfiles component/server
+[ -d component ] && reset_envfiles component/server
 exit 0
 # this part is disabled as we do not have a build server yet and don't use public repos
 
