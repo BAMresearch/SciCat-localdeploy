@@ -27,8 +27,15 @@ then
 
     if [ -z "$nopwd" ]; then
         # check for credentials for protected public accessible registry
-        checkVars REGISTRY_USER REGISTRY_PASS || exit 1
+        checkVars REGISTRY_USER REGISTRY_PASS SC_NAMESPACE || exit 1
         pwdargs="--set secrets.htpasswd=$(echo "$REGISTRY_PASS" | htpasswd -Bbn -i "$REGISTRY_USER")"
+        # set the private registry credentials to the service account pulling scicat builds later
+        # see https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+        # and https://www.digitalocean.com/community/questions/using-do-k8s-container-registry-authentication-required
+        # alternatively https://stackoverflow.com/a/63643081
+        kubectl -n "$SC_NAMESPACE" patch serviceaccount default -p '{"imagePullSecrets": [{"name": "regcred"}]}'
+        kubectl -n "$SC_NAMESPACE" create secret docker-registry regcred \
+            --docker-server="$REGISTRY_NAME" --docker-username="$REGISTRY_USER" --docker-password="$REGISTRY_PASS"
     fi
     if [ -z "$noingress" ]; then
         args="--set ingress.enabled=true,ingress.hosts[0]=$REGISTRY_NAME"
