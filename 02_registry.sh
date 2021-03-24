@@ -8,6 +8,7 @@
 scriptpath="$(readlink -f "$0")"
 scriptdir="$(dirname "$scriptpath")"
 . "$scriptdir/services/deploytools"
+loadSiteConfig
 
 # find which script flags were provided
 nopwd=
@@ -27,7 +28,6 @@ then
     if [ -z "$nopwd" ]; then
         # check for credentials for protected public accessible registry
         checkVars REGISTRY_USER REGISTRY_PASS || exit 1
-        echo "$REGISTRY_NAME credentials are: $REGISTRY_USER - $REGISTRY_PASS"
         pwdargs="--set secrets.htpasswd=$(echo "$REGISTRY_PASS" | htpasswd -Bbn -i "$REGISTRY_USER")"
     fi
     if [ -z "$noingress" ]; then
