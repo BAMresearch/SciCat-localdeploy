@@ -4,6 +4,9 @@
 scriptdir="$(dirname "$(readlink -f "$0")")"
 . "$scriptdir/../deploytools"
 
+# get given command line flags
+noBuild="$(getScriptFlags nobuild "$@")"
+
 loadSiteConfig
 checkVars REGISTRY_ADDR SC_NAMESPACE LE_WORKING_DIR || exit 1
 
@@ -12,7 +15,6 @@ export REPO=https://github.com/SciCatProject/catamel.git
 
 cd "$scriptdir"
 INGRESS_NAME=" "
-BUILD="false"
 DOCKERNAME="-f ./Dockerfile"
 if [ "$(hostname)" = "kubetest01.dm.esss.dk" ]; then
     INGRESS_NAME="-f ./dacat-api-server/dmsc.yaml"
@@ -68,7 +70,7 @@ fix_nan_package_version()
 helm del catamel -n$NS
 
 IMAGE_TAG="$(curl -s https://$REGISTRY_ADDR/v2/catamel/tags/list | jq -r .tags[0])"
-if [ "$BUILD" = "true" ] || [ -z "$IMAGE_TAG" ]; then
+if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
     if [ ! -d "./component/" ]; then
         git clone $REPO component
     fi
