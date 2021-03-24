@@ -7,7 +7,7 @@ source ./services/deploytools
 docker_repo="$DOCKER_REG/scichat"
 
 export REPO=https://github.com/SciCatProject/scichat-loopback.git
-LOCAL_ENV=$KUBE_NAMESPACE # selects angular configuration in subrepo component
+LOCAL_ENV=$SC_NAMESPACE # selects angular configuration in subrepo component
 cd ./services/scichat-loopback/
 
 INGRESS_NAME=" "

@@ -13,7 +13,6 @@ scriptdir="$(dirname "$(readlink -f "$0")")"
 loadSiteConfig
 checkVars REGISTRY_NAME REGISTRY_PORT || exit 1
 export REGISTRY_ADDR=$REGISTRY_NAME:$REGISTRY_PORT
-export KUBE_NAMESPACE=yourns
 
 cd "$scriptdir"
 NS_FILE=./namespaces/*.yaml

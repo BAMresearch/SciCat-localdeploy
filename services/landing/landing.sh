@@ -7,7 +7,7 @@ source ./services/deploytools
 docker_repo="$DOCKER_REG/ls"
 
 REPO="https://github.com/SciCatProject/LandingPageServer.git"
-export LOCAL_ENV=$KUBE_NAMESPACE # selects angular configuration in subrepo component
+export LOCAL_ENV=$SC_NAMESPACE # selects angular configuration in subrepo component
 cd ./services/landing/
 
 INGRESS_NAME=" "

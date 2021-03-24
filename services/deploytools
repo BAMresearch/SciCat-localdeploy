@@ -47,10 +47,13 @@ export CERT_PATH_PUB=
 export CERT_PATH_PRIV=
 export SC_MEDIA_PATH=
 export SC_SITE_NAME="Your SciCat Site"
+export SC_NAMESPACE=yourns
 EOF
         exit 1
     fi
     . "$fn"
+    # derive some values from the basic settings
+    export NS="$SC_NAMESPACE"
 }
 
 getHostAddr()

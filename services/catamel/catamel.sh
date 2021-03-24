@@ -5,11 +5,10 @@ scriptdir="$(dirname "$(readlink -f "$0")")"
 . "$scriptdir/../deploytools"
 
 loadSiteConfig
-checkVars REGISTRY_ADDR KUBE_NAMESPACE LE_WORKING_DIR || exit 1
+checkVars REGISTRY_ADDR SC_NAMESPACE LE_WORKING_DIR || exit 1
 
 IMG_REPO="$REGISTRY_ADDR/catamel"
 export REPO=https://github.com/SciCatProject/catamel.git
-export NS=$KUBE_NAMESPACE
 
 cd "$scriptdir"
 INGRESS_NAME=" "
