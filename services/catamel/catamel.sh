@@ -14,13 +14,13 @@ cd "$scriptdir"
 INGRESS_NAME=" "
 BUILD="false"
 DOCKERNAME="-f ./Dockerfile"
-if [ "$(hostname)" == "kubetest01.dm.esss.dk" ]; then
+if [ "$(hostname)" = "kubetest01.dm.esss.dk" ]; then
     INGRESS_NAME="-f ./dacat-api-server/dmsc.yaml"
     DOCKERNAME="-f ./CI/ESS/Dockerfile.proxy"
-elif  [ "$(hostname)" == "scicat01.esss.lu.se" ]; then
+elif  [ "$(hostname)" = "scicat01.esss.lu.se" ]; then
     INGRESS_NAME="-f ./dacat-api-server/lund.yaml"
     DOCKERNAME="-f ./Dockerfile"
-elif  [ "$(hostname)" == "k8-lrg-serv-prod.esss.dk" ]; then
+elif  [ "$(hostname)" = "k8-lrg-serv-prod.esss.dk" ]; then
     INGRESS_NAME="-f ./dacat-api-server/dmscprod.yaml"
     DOCKERNAME="-f ./CI/ESS/Dockerfile.proxy"
 else
