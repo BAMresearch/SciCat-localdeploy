@@ -17,7 +17,6 @@ NS_FILE=./namespaces/*.yaml
 fn="$(basename $NS_FILE)"
 ns="${fn%.*}"
 kubectl create -f $NS_FILE
-export LOCAL_ENV="$ns"
 
 # Deploy services
 
