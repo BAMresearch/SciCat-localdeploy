@@ -25,19 +25,17 @@ then
     helm repo add twuni https://helm.twun.io
 
     if [ -z "$nopwd" ]; then
-        # set password for public accessible registry
-        sudo apt install -y apache2-utils apg
-        htusr="foo"
-        htpwd="$(apg -m 17 -n1)"
-        echo "$REGISTRY_NAME credentials are: $htusr - $htpwd"
-        pwdargs="--set secrets.htpasswd=$(echo "$htpwd" | htpasswd -Bbn -i "$htusr")"
+        # check for credentials for protected public accessible registry
+        checkVars REGISTRY_USER REGISTRY_PASS || exit 1
+        echo "$REGISTRY_NAME credentials are: $REGISTRY_USER - $REGISTRY_PASS"
+        pwdargs="--set secrets.htpasswd=$(echo "$REGISTRY_PASS" | htpasswd -Bbn -i "$REGISTRY_USER")"
     fi
     if [ -z "$noingress" ]; then
         args="--set ingress.enabled=true,ingress.hosts[0]=$REGISTRY_NAME"
         args="$args --set ingress.tls[0].hosts[0]=$REGISTRY_NAME"
         args="$args --set ingress.tls[0].secretName=${SVC_NAME}.tls"
         if [ -z "$nopwd" ]; then
-            echo "$htpwd" | htpasswd -Bbn -i $htusr | \
+            echo "$REGISTRY_PASS" | htpasswd -Bbn -i $REGISTRY_USER | \
                 kubectl -n dev create secret generic ${SVC_NAME}.ht --from-file=auth=/dev/stdin
             akey="\"nginx\\.ingress\\.kubernetes\\.io"
             pwdargs="         --set ingress.annotations.$akey/auth-type\"=basic"
