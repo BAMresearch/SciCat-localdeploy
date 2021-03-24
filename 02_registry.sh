@@ -8,16 +8,15 @@
 scriptpath="$(readlink -f "$0")"
 scriptdir="$(dirname "$scriptpath")"
 . "$scriptdir/services/deploytools"
+
+# get provided command line flags
+nopwd="$(getScriptFlags nopwd "$@")"
+noingress="$(getScriptFlags noingress "$@")"
+
 loadSiteConfig
 
-# find which script flags were provided
-nopwd=
-(echo "$@" | grep -qi nopwd) && nopwd=true
-noingress=
-(echo "$@" | grep -qi noingress) && noingress=true
-
 # CERT_PATH_PUB should be the path to the full chain public cert
-checkVars SC_SITECONFIG REGISTRY_PORT CERT_PATH_PUB CERT_PATH_PRIV || exit 1
+checkVars REGISTRY_NAME CERT_PATH_PUB CERT_PATH_PRIV || exit 1
 SVC_NAME=myregistry
 pvcfg="$scriptdir/definitions/registry_pv_nfs.yaml"
 
@@ -33,9 +32,12 @@ then
         # see https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
         # and https://www.digitalocean.com/community/questions/using-do-k8s-container-registry-authentication-required
         # alternatively https://stackoverflow.com/a/63643081
-        kubectl -n "$SC_NAMESPACE" patch serviceaccount default -p '{"imagePullSecrets": [{"name": "regcred"}]}'
-        kubectl -n "$SC_NAMESPACE" create secret docker-registry regcred \
+        kubectl -n "$SC_NAMESPACE" patch serviceaccount default \
+            -p "{\"imagePullSecrets\": [{\"name\": \"${SVC_NAME}-cred\"}]}"
+        kubectl -n "$SC_NAMESPACE" create secret docker-registry "${SVC_NAME}-cred" \
             --docker-server="$REGISTRY_NAME" --docker-username="$REGISTRY_USER" --docker-password="$REGISTRY_PASS"
+        # check details with:
+        # kubectl -n "$SC_NAMESPACE" get secret "${SVC_NAME}-cred" -o="jsonpath={.data.\.dockerconfigjson}" | base64 --decode
     fi
     if [ -z "$noingress" ]; then
         args="--set ingress.enabled=true,ingress.hosts[0]=$REGISTRY_NAME"
@@ -69,6 +71,8 @@ else # clean up
     helm del $SVC_NAME -ndev
     kubectl delete secret -n dev "${SVC_NAME}.tls"
     kubectl delete secret -n dev "${SVC_NAME}.ht"
+    kubectl delete secret -n "$SC_NAMESPACE" "${SVC_NAME}-cred"
+    kubectl patch serviceaccount -n "$SC_NAMESPACE" default -p '{"imagePullSecrets":[]}'
     kubectl delete -f "$pvcfg"
 fi
 
