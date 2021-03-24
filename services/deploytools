@@ -54,6 +54,8 @@ EOF
     . "$fn"
     # derive some values from the basic settings
     export NS="$SC_NAMESPACE"
+    export REGISTRY_ADDR="$REGISTRY_NAME"
+    [ -z "$REGISTRY_PORT" ] || export REGISTRY_ADDR="$REGISTRY_NAME:$REGISTRY_PORT"
 }
 
 getHostAddr()
