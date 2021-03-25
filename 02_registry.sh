@@ -26,7 +26,7 @@ then
     if [ -z "$nopwd" ]; then
         # check for credentials for protected public accessible registry
         checkVars SC_REGISTRY_USER SC_REGISTRY_PASS SC_NAMESPACE || exit 1
-        command -v htpasswd || sudo apt-get install -y apache2-utils
+        cmdExists htpasswd || sudo apt-get install -y apache2-utils
         pwdargs="--set secrets.htpasswd=$(echo "$SC_REGISTRY_PASS" | htpasswd -Bbn -i "$SC_REGISTRY_USER")"
         # set the private registry credentials to the service account pulling scicat builds later
         # see https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/

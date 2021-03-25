@@ -29,6 +29,11 @@ getScriptFlags()
     (echo "$@" | grep -qi "\\<$key\\>") && echo true
 }
 
+cmdExists()
+{
+    command -v "$1" > /dev/null
+}
+
 loadSiteConfig()
 {
     local fx="loadSiteConfig():"
