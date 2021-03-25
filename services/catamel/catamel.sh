@@ -6,13 +6,19 @@ scriptdir="$(dirname "$(readlink -f "$0")")"
 
 # get given command line flags
 noBuild="$(getScriptFlags nobuild "$@")"
+buildOnly="$(getScriptFlags buildonly "$@")"
 
 loadSiteConfig
 checkVars REGISTRY_ADDR SC_NAMESPACE LE_WORKING_DIR || exit 1
 
-export REPO=https://github.com/SciCatProject/catamel.git
+REPO=https://github.com/SciCatProject/catamel.git
 
 cd "$scriptdir"
+
+if [ -z "$buildOnly" ]; then
+# remove the existing service
+helm del catamel -n "$NS"
+
 INGRESS_NAME=" "
 DOCKERNAME="-f ./Dockerfile"
 if [ "$(hostname)" = "kubetest01.dm.esss.dk" ]; then
@@ -45,12 +51,9 @@ else
         --dry-run=client -o yaml | kubectl apply -f -
 fi
 
-# make sure DB access fits before starting any services
+# make sure DB credentials exist before starting any services
 gen_catamel_credentials "$SC_SITECONFIG"
-
-
-# remove the existing service
-helm del catamel -n$NS
+fi
 
 IMG_REPO="$REGISTRY_ADDR/catamel"
 baseurl="$REGISTRY_ADDR"
@@ -85,6 +88,7 @@ if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
     [ -z "$REGISTRY_PASS" ] || pushargs="--creds \$REGISTRY_USER:\$REGISTRY_PASS"
     cmd="$DOCKER_PUSH $pushargs $IMG_REPO:$IMAGE_TAG"
     echo "$cmd"; eval "$cmd"
+    [ -z "$buildOnly" ] || exit 0
     cd .. && create_dbuser catamel
 fi
 echo "Deploying to Kubernetes"
