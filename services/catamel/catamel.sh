@@ -22,11 +22,10 @@ if [ -z "$buildOnly" ]; then
     kubectl -n $NS delete secret certs-catamel
     [ -z "$clean" ] || exit 0 # stop here when cleaning up
 
-    DOCKERNAME="-f ./Dockerfile"
     IARGS="--set ingress.enabled=true,ingress.host=$SC_CATAMEL_FQDN,ingress.tlsSecretName=certs-catamel"
 
     # Updating TLS certificates, assuming letsencrypt provided by acme.sh client
-    if [ ! -d "$LE_WORKING_DIR/$DOMAINBASE" ]; then
+    if [ -z "$LE_WORKING_DIR" ] || [ ! -d "$LE_WORKING_DIR/$DOMAINBASE" ]; then
         echo "WARNING! Location for TLS certificates not found ('$LE_WORKING_DIR/$DOMAINBASE')."
     else
         certpath="$LE_WORKING_DIR/$DOMAINBASE"
@@ -66,7 +65,7 @@ if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
     npm install
     echo "Building release"
     IMAGE_TAG="$(git rev-parse HEAD)$NS"
-    cmd="$DOCKER_BUILD ${DOCKERNAME} -t $IMG_REPO:$IMAGE_TAG -t $IMG_REPO:latest ."
+    cmd="$DOCKER_BUILD -t $IMG_REPO:$IMAGE_TAG -t $IMG_REPO:latest ."
     echo "$cmd"; eval $cmd
     # extra arguments if the registry need authentication as indicated by a set password
     [ -z "$REGISTRY_PASS" ] || pushargs="--creds \$REGISTRY_USER:\$REGISTRY_PASS"
