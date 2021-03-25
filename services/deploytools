@@ -69,6 +69,22 @@ EOF
     [ -z "$REGISTRY_PORT" ] || export REGISTRY_ADDR="$REGISTRY_NAME:$REGISTRY_PORT"
 }
 
+createTLSsecret()
+{
+    local ns="$1"
+    local secretName="$2"
+    local pathPub="$3"
+    local pathKey="$4"
+    local fx="createTLSsecret()"
+    [ -z "$secretName" ] && (echo "$fx: Secret name is empty!"; return)
+    [ -f "$pathPub" ] || (echo "$fx: Public certificate file does not exist: '$pathPub'!"; return)
+    [ -f "$pathKey" ] || (echo "$fx: Private key file does not exist: '$pathKey'!"; return)
+    [ -z "$ns" ] || ns="-n $ns"
+    kubectl $ns create secret tls "$secretName" \
+        --cert="$pathPub" --key="$pathKey" \
+        --dry-run=client -o yaml | kubectl apply -f -
+}
+
 getHostAddr()
 {
     local devpath devname hostaddr

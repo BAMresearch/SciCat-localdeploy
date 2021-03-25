@@ -23,17 +23,7 @@ if [ -z "$buildOnly" ]; then
     [ -z "$clean" ] || exit 0 # stop here when cleaning up
 
     IARGS="--set ingress.enabled=true,ingress.host=$SC_CATAMEL_FQDN,ingress.tlsSecretName=certs-catamel"
-
-    # Updating TLS certificates, assuming letsencrypt provided by acme.sh client
-    if [ -z "$LE_WORKING_DIR" ] || [ ! -d "$LE_WORKING_DIR/$DOMAINBASE" ]; then
-        echo "WARNING! Location for TLS certificates not found ('$LE_WORKING_DIR/$DOMAINBASE')."
-    else
-        certpath="$LE_WORKING_DIR/$DOMAINBASE"
-        kubectl -n $NS create secret tls certs-catamel \
-            --cert="$certpath/fullchain.cer" --key="$certpath/$DOMAINBASE.key" \
-            --dry-run=client -o yaml | kubectl apply -f -
-    fi
-
+    createTLSsecret "$NS" certs-catamel "$LE_WORKING_DIR/$DOMAINBASE/fullchain.cer" "$LE_WORKING_DIR/$DOMAINBASE/$DOMAINBASE.key"
     # make sure DB credentials exist before starting any services
     gen_catamel_credentials "$SC_SITECONFIG"
 fi
