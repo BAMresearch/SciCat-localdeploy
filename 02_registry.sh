@@ -15,8 +15,7 @@ noingress="$(getScriptFlags noingress "$@")"
 
 loadSiteConfig
 
-# CERT_PATH_PUB should be the path to the full chain public cert
-checkVars REGISTRY_NAME CERT_PATH_PUB CERT_PATH_PRIV || exit 1
+checkVars REGISTRY_NAME SC_REGISTRY_PUB SC_REGISTRY_KEY || exit 1
 SVC_NAME=myregistry
 pvcfg="$scriptdir/definitions/registry_pv_nfs.yaml"
 
@@ -27,6 +26,7 @@ then
     if [ -z "$nopwd" ]; then
         # check for credentials for protected public accessible registry
         checkVars REGISTRY_USER REGISTRY_PASS SC_NAMESPACE || exit 1
+        command -v htpasswd || sudo apt-get install -y apache2-utils
         pwdargs="--set secrets.htpasswd=$(echo "$REGISTRY_PASS" | htpasswd -Bbn -i "$REGISTRY_USER")"
         # set the private registry credentials to the service account pulling scicat builds later
         # see https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
@@ -61,7 +61,7 @@ then
 
     # add registry name to known hosts -> on all nodes which access the registry
 #    grep -q $REGISTRY_NAME /etc/hosts || sudo sed -i -e '/10.0.9.1/s/$/ '$REGISTRY_NAME'/' /etc/hosts
-    kubectl create secret -ndev tls "${SVC_NAME}.tls" --key "$CERT_PATH_PRIV" --cert "$CERT_PATH_PUB"
+    createTLSsecret dev "${SVC_NAME}.tls" "$SC_REGISTRY_PUB" "$SC_REGISTRY_KEY"
 
     echo " -> Using NFS for persistent volumes."
     echo "    Please make sure the configured NFS shares can be mounted: '$pvcfg'"
