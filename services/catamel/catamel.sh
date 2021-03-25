@@ -16,43 +16,31 @@ REPO=https://github.com/SciCatProject/catamel.git
 cd "$scriptdir"
 
 if [ -z "$buildOnly" ]; then
-# remove the existing service
-helm del catamel -n "$NS"
+    # remove the existing service
+    helm del catamel -n "$NS"
 
-INGRESS_NAME=" "
-DOCKERNAME="-f ./Dockerfile"
-if [ "$(hostname)" = "kubetest01.dm.esss.dk" ]; then
-    INGRESS_NAME="-f ./dacat-api-server/dmsc.yaml"
-    DOCKERNAME="-f ./CI/ESS/Dockerfile.proxy"
-elif  [ "$(hostname)" = "scicat01.esss.lu.se" ]; then
-    INGRESS_NAME="-f ./dacat-api-server/lund.yaml"
     DOCKERNAME="-f ./Dockerfile"
-elif  [ "$(hostname)" = "k8-lrg-serv-prod.esss.dk" ]; then
-    INGRESS_NAME="-f ./dacat-api-server/dmscprod.yaml"
-    DOCKERNAME="-f ./CI/ESS/Dockerfile.proxy"
-else
-    YAMLFN="./dacat-api-server/$(hostname).yaml"
-    INGRESS_NAME="-f $YAMLFN"
+    YAMLFN="./dacat-api-server/$NS.yaml"
+    IARGS="-f $YAMLFN"
     # generate yaml file with appropriate hostname here
     cat > "$YAMLFN" << EOF
 ingress:
   enabled: true
   host:  api.$DOMAINBASE
 EOF
-fi
 
-# Updating TLS certificates, assuming letsencrypt provided by acme.sh client
-if [ ! -d "$LE_WORKING_DIR/$DOMAINBASE" ]; then
-    echo "WARNING! Location for TLS certificates not found ('$LE_WORKING_DIR/$DOMAINBASE')."
-else
-    certpath="$LE_WORKING_DIR/$DOMAINBASE"
-    kubectl -n $NS create secret tls certs-catamel \
-        --cert="$certpath/fullchain.cer" --key="$certpath/$DOMAINBASE.key" \
-        --dry-run=client -o yaml | kubectl apply -f -
-fi
+    # Updating TLS certificates, assuming letsencrypt provided by acme.sh client
+    if [ ! -d "$LE_WORKING_DIR/$DOMAINBASE" ]; then
+        echo "WARNING! Location for TLS certificates not found ('$LE_WORKING_DIR/$DOMAINBASE')."
+    else
+        certpath="$LE_WORKING_DIR/$DOMAINBASE"
+        kubectl -n $NS create secret tls certs-catamel \
+            --cert="$certpath/fullchain.cer" --key="$certpath/$DOMAINBASE.key" \
+            --dry-run=client -o yaml | kubectl apply -f -
+    fi
 
-# make sure DB credentials exist before starting any services
-gen_catamel_credentials "$SC_SITECONFIG"
+    # make sure DB credentials exist before starting any services
+    gen_catamel_credentials "$SC_SITECONFIG"
 fi
 
 IMG_REPO="$REGISTRY_ADDR/catamel"
@@ -92,7 +80,7 @@ if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
     cd .. && create_dbuser catamel
 fi
 echo "Deploying to Kubernetes"
-cmd="helm install catamel dacat-api-server --namespace $NS --set image.tag=$IMAGE_TAG --set image.repository=$IMG_REPO ${INGRESS_NAME}"
+cmd="helm install catamel dacat-api-server --namespace $NS --set image.tag=$IMAGE_TAG --set image.repository=$IMG_REPO ${IARGS}"
 (echo "$cmd" && eval "$cmd")
 [ -d component ] && reset_envfiles component/server
 exit 0
