@@ -70,6 +70,7 @@ helm del catamel -n$NS
 
 IMG_REPO="$REGISTRY_ADDR/catamel"
 baseurl="$REGISTRY_ADDR"
+# extra arguments if the registry need authentication as indicated by a set password
 [ -z "$REGISTRY_PASS" ] || baseurl="$REGISTRY_USER:$REGISTRY_PASS@$baseurl"
 IMAGE_TAG="$(curl -s "https://$baseurl/v2/catamel/tags/list" | jq -r .tags[0])"
 if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
@@ -97,7 +98,9 @@ if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
     IMAGE_TAG="$(git rev-parse HEAD)$NS"
     cmd="$DOCKER_BUILD ${DOCKERNAME} -t $IMG_REPO:$IMAGE_TAG -t $IMG_REPO:latest ."
     echo "$cmd"; eval $cmd
-    cmd="$DOCKER_PUSH $IMG_REPO:$IMAGE_TAG"
+    # extra arguments if the registry need authentication as indicated by a set password
+    [ -z "$REGISTRY_PASS" ] || pushargs="--creds \$REGISTRY_USER:\$REGISTRY_PASS"
+    cmd="$DOCKER_PUSH $pushargs $IMG_REPO:$IMAGE_TAG"
     echo "$cmd"; eval "$cmd"
     cd .. && create_dbuser catamel
 fi
