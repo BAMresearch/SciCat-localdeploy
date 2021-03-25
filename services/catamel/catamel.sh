@@ -7,6 +7,7 @@ scriptdir="$(dirname "$(readlink -f "$0")")"
 # get given command line flags
 noBuild="$(getScriptFlags nobuild "$@")"
 buildOnly="$(getScriptFlags buildonly "$@")"
+clean="$(getScriptFlags clean "$@")"
 
 loadSiteConfig
 checkVars REGISTRY_ADDR SC_NAMESPACE LE_WORKING_DIR || exit 1
@@ -18,6 +19,8 @@ cd "$scriptdir"
 if [ -z "$buildOnly" ]; then
     # remove the existing service
     helm del catamel -n "$NS"
+    kubectl -n $NS delete secret certs-catamel
+    [ -z "$clean" ] || exit 0 # stop here when cleaning up
 
     DOCKERNAME="-f ./Dockerfile"
     YAMLFN="./dacat-api-server/$NS.yaml"
