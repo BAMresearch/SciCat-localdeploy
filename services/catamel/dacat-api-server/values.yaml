@@ -23,6 +23,7 @@ ingress:
   # this will be extended by environment within yaml file
   # TODO: change service name to include environment ?
   host: scicatapi.esss.dk
+  tlsSecretName: certs-catamel
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious

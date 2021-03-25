@@ -23,14 +23,7 @@ if [ -z "$buildOnly" ]; then
     [ -z "$clean" ] || exit 0 # stop here when cleaning up
 
     DOCKERNAME="-f ./Dockerfile"
-    YAMLFN="./dacat-api-server/$NS.yaml"
-    IARGS="-f $YAMLFN"
-    # generate yaml file with appropriate hostname here
-    cat > "$YAMLFN" << EOF
-ingress:
-  enabled: true
-  host: $SC_CATAMEL_FQDN
-EOF
+    IARGS="--set ingress.enabled=true,ingress.host=$SC_CATAMEL_FQDN,ingress.tlsSecretName=certs-catamel"
 
     # Updating TLS certificates, assuming letsencrypt provided by acme.sh client
     if [ ! -d "$LE_WORKING_DIR/$DOMAINBASE" ]; then
