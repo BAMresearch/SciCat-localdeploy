@@ -136,7 +136,7 @@ reset_envfiles()
 create_dbuser()
 {
     checkVars SC_SITECONFIG || return
-    local service="$2"
+    local service="$1"
     local svcjs="$SC_SITECONFIG/mongodb/${service}.js"
     local rootpwd; rootpwd="$(kubectl get secret -n dev local-mongodb \
         -o jsonpath="{.data.mongodb-root-password}" | base64 --decode)"
