@@ -46,8 +46,7 @@ if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
     # https://stackoverflow.com/questions/54428608/docker-node-alpine-image-build-fails-on-node-gyp#59538284
     sed -i -e '/COPY .*CI\/ESS/d' \
         -e '/FROM/s/^.*$/FROM node:15.1-alpine/' \
-        -e '/RUN apk/a\    apk add --no-cache python make g++ curl && \\' \
-        -e '/USER/a\USER node' \
+        -e '/RUN apk/a\    apk add --no-cache python make g++ && \\' \
         Dockerfile
     echo '*.json-sample' >> .dockerignore
     (cd ../.. && update_envfiles catamel component/server)
