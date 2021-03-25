@@ -53,6 +53,7 @@ export REGISTRY_PORT=31000
 export REGISTRY_NAME=img.\$DOMAINBASE
 export REGISTRY_USER=foo
 export REGISTRY_PASS=$(apg -m 17 -n1 -M NCL)
+export SC_CATAMEL_FQDN=api.\$DOMAINBASE
 export CERT_PATH_PUB=
 export CERT_PATH_PRIV=
 export SC_MEDIA_PATH=

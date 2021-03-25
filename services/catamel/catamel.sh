@@ -26,7 +26,7 @@ if [ -z "$buildOnly" ]; then
     cat > "$YAMLFN" << EOF
 ingress:
   enabled: true
-  host:  api.$DOMAINBASE
+  host: $SC_CATAMEL_FQDN
 EOF
 
     # Updating TLS certificates, assuming letsencrypt provided by acme.sh client
