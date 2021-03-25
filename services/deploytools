@@ -140,20 +140,19 @@ update_envfiles()
 {
     local fx="update_envfiles():"
     checkVars SC_SITECONFIG || return
-    local service; service="$1"
+    local service="$1"
     [ -z "$service" ] && (echo "$fx No service name provided! Nothing to do." && return)
-    local targetDir; targetDir="$service/$2"
-    [ -d "$targetDir" ] || (echo "$fx Target dir '$targetDir' not found! Nothing to do." && return)
+    local targetDir="$service/$2"
     # make sure we're in the correct path
-    [ -d "$service" ] || (echo "$fx Service path '$service' not found!" && return)
-    local src; src="$SC_SITECONFIG/$service"
-    [ -d "$src" ] || (echo "$fx Service path '$src' not found!" && return)
+    [ -d "$targetDir" ] || (echo "$fx Target dir '$targetDir' not found! Nothing to do." && return)
+    local sitecfg="$SC_SITECONFIG/$service"
+    [ -d "$sitecfg" ] || (echo "$fx Siteconfig path '$sitecfg' not found!" && return)
     if [ "$service" = "catamel" ]; then
         # put first-time config files in place to get system running at all
-        [ -f "$src"/config.local.js ] || cp catamel/component/server/config.local.js-sample "$src"/config.local.js
-        [ -f "$src"/providers.json ] || cp catamel/component/server/providers.json-sample "$src"/providers.json
+        [ -f "$sitecfg/config.local.js" ] || cp "$targetDir/config.local.js-sample" "$sitecfg/config.local.js"
+        [ -f "$sitecfg/providers.json" ] || cp "$targetDir/providers.json-sample" "$sitecfg/providers.json"
     fi
-    cp -v "$src"/* "$targetDir"
+    cp -v "$sitecfg"/*.* "$targetDir/"
 }
 
 reset_envfiles()
