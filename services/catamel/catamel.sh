@@ -10,7 +10,7 @@ buildOnly="$(getScriptFlags buildonly "$@")"
 clean="$(getScriptFlags clean "$@")"
 
 loadSiteConfig
-checkVars REGISTRY_ADDR SC_NAMESPACE LE_WORKING_DIR || exit 1
+checkVars SC_CATAMEL_FQDN SC_CATAMEL_PUB SC_CATAMEL_KEY SC_REGISTRY_ADDR SC_NAMESPACE || exit 1
 
 REPO=https://github.com/SciCatProject/catamel.git
 
@@ -23,15 +23,15 @@ if [ -z "$buildOnly" ]; then
     [ -z "$clean" ] || exit 0 # stop here when cleaning up
 
     IARGS="--set ingress.enabled=true,ingress.host=$SC_CATAMEL_FQDN,ingress.tlsSecretName=certs-catamel"
-    createTLSsecret "$NS" certs-catamel "$LE_WORKING_DIR/$DOMAINBASE/fullchain.cer" "$LE_WORKING_DIR/$DOMAINBASE/$DOMAINBASE.key"
+    createTLSsecret "$NS" certs-catamel "$SC_CATAMEL_PUB" "$SC_CATAMEL_KEY"
     # make sure DB credentials exist before starting any services
     gen_catamel_credentials "$SC_SITECONFIG"
 fi
 
-IMG_REPO="$REGISTRY_ADDR/catamel"
-baseurl="$REGISTRY_ADDR"
+IMG_REPO="$SC_REGISTRY_ADDR/catamel"
+baseurl="$SC_REGISTRY_ADDR"
 # extra arguments if the registry need authentication as indicated by a set password
-[ -z "$REGISTRY_PASS" ] || baseurl="$REGISTRY_USER:$REGISTRY_PASS@$baseurl"
+[ -z "$SC_REGISTRY_PASS" ] || baseurl="$SC_REGISTRY_USER:$SC_REGISTRY_PASS@$baseurl"
 IMAGE_TAG="$(curl -s "https://$baseurl/v2/catamel/tags/list" | jq -r .tags[0])"
 if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
     if [ ! -d "./component/" ]; then
@@ -58,7 +58,7 @@ if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
     cmd="$DOCKER_BUILD -t $IMG_REPO:$IMAGE_TAG -t $IMG_REPO:latest ."
     echo "$cmd"; eval $cmd
     # extra arguments if the registry need authentication as indicated by a set password
-    [ -z "$REGISTRY_PASS" ] || pushargs="--creds \$REGISTRY_USER:\$REGISTRY_PASS"
+    [ -z "$SC_REGISTRY_PASS" ] || pushargs="--creds \$SC_REGISTRY_USER:\$SC_REGISTRY_PASS"
     cmd="$DOCKER_PUSH $pushargs $IMG_REPO:$IMAGE_TAG"
     echo "$cmd"; eval "$cmd"
     [ -z "$buildOnly" ] || exit 0

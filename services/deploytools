@@ -49,24 +49,33 @@ loadSiteConfig()
         command -v apg || (echo "Password generator 'apg' required! Giving up."; return)
         cat > "$fn" << EOF
 export DOMAINBASE=
-export REGISTRY_PORT=31000
-export REGISTRY_NAME=img.\$DOMAINBASE
-export REGISTRY_USER=foo
-export REGISTRY_PASS=$(apg -m 17 -n1 -M NCL)
-export SC_CATAMEL_FQDN=api.\$DOMAINBASE
-export CERT_PATH_PUB=
-export CERT_PATH_PRIV=
-export SC_MEDIA_PATH=
-export SC_SITE_NAME="Your SciCat Site"
 export SC_NAMESPACE=yourns
+# letsencrypt working dir
+export LE_WORKING_DIR=
+# settings for the private image registry
+export SC_REGISTRY_PORT=
+export SC_REGISTRY_NAME=img.\$DOMAINBASE
+export SC_REGISTRY_USER=foo
+export SC_REGISTRY_PASS=$(apg -m 17 -n1 -M NCL)
+export SC_REGISTRY_PUB=\$LE_WORKING_DIR/fullchain.cer
+export SC_REGISTRY_KEY=\$LE_WORKING_DIR/\$DOMAINBASE.key
+# settings for the api backend catamel
+export SC_CATAMEL_FQDN=api.\$DOMAINBASE
+export SC_CATAMEL_PUB=\$LE_WORKING_DIR/fullchain.cer
+export SC_CATAMEL_KEY=\$LE_WORKING_DIR/\$DOMAINBASE.key
+# settings for the gui frontend catanie
+export SC_CATANIE_PUB=\$LE_WORKING_DIR/fullchain.cer
+export SC_CATANIE_KEY=\$LE_WORKING_DIR/\$DOMAINBASE.key
+export SC_MEDIA_PATH=
+export SC_SITE_NAME="Open Science Data"
 EOF
         exit 1
     fi
     . "$fn"
     # derive some values from the basic settings
     export NS="$SC_NAMESPACE"
-    export REGISTRY_ADDR="$REGISTRY_NAME"
-    [ -z "$REGISTRY_PORT" ] || export REGISTRY_ADDR="$REGISTRY_NAME:$REGISTRY_PORT"
+    export SC_REGISTRY_ADDR="$SC_REGISTRY_NAME"
+    [ -z "$SC_REGISTRY_PORT" ] || export SC_REGISTRY_ADDR="$SC_REGISTRY_NAME:$SC_REGISTRY_PORT"
 }
 
 createTLSsecret()

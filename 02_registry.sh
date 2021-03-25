@@ -15,7 +15,7 @@ noingress="$(getScriptFlags noingress "$@")"
 
 loadSiteConfig
 
-checkVars REGISTRY_NAME SC_REGISTRY_PUB SC_REGISTRY_KEY || exit 1
+checkVars SC_REGISTRY_NAME SC_REGISTRY_PUB SC_REGISTRY_KEY || exit 1
 SVC_NAME=myregistry
 pvcfg="$scriptdir/definitions/registry_pv_nfs.yaml"
 
@@ -25,9 +25,9 @@ then
 
     if [ -z "$nopwd" ]; then
         # check for credentials for protected public accessible registry
-        checkVars REGISTRY_USER REGISTRY_PASS SC_NAMESPACE || exit 1
+        checkVars SC_REGISTRY_USER SC_REGISTRY_PASS SC_NAMESPACE || exit 1
         command -v htpasswd || sudo apt-get install -y apache2-utils
-        pwdargs="--set secrets.htpasswd=$(echo "$REGISTRY_PASS" | htpasswd -Bbn -i "$REGISTRY_USER")"
+        pwdargs="--set secrets.htpasswd=$(echo "$SC_REGISTRY_PASS" | htpasswd -Bbn -i "$SC_REGISTRY_USER")"
         # set the private registry credentials to the service account pulling scicat builds later
         # see https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
         # and https://www.digitalocean.com/community/questions/using-do-k8s-container-registry-authentication-required
@@ -35,16 +35,16 @@ then
         kubectl -n "$SC_NAMESPACE" patch serviceaccount default \
             -p "{\"imagePullSecrets\": [{\"name\": \"${SVC_NAME}-cred\"}]}"
         kubectl -n "$SC_NAMESPACE" create secret docker-registry "${SVC_NAME}-cred" \
-            --docker-server="$REGISTRY_NAME" --docker-username="$REGISTRY_USER" --docker-password="$REGISTRY_PASS"
+            --docker-server="$SC_REGISTRY_NAME" --docker-username="$SC_REGISTRY_USER" --docker-password="$SC_REGISTRY_PASS"
         # check details with:
         # kubectl -n "$SC_NAMESPACE" get secret "${SVC_NAME}-cred" -o="jsonpath={.data.\.dockerconfigjson}" | base64 --decode
     fi
     if [ -z "$noingress" ]; then
-        args="--set ingress.enabled=true,ingress.hosts[0]=$REGISTRY_NAME"
-        args="$args --set ingress.tls[0].hosts[0]=$REGISTRY_NAME"
+        args="--set ingress.enabled=true,ingress.hosts[0]=$SC_REGISTRY_NAME"
+        args="$args --set ingress.tls[0].hosts[0]=$SC_REGISTRY_NAME"
         args="$args --set ingress.tls[0].secretName=${SVC_NAME}.tls"
         if [ -z "$nopwd" ]; then
-            echo "$REGISTRY_PASS" | htpasswd -Bbn -i $REGISTRY_USER | \
+            echo "$SC_REGISTRY_PASS" | htpasswd -Bbn -i $SC_REGISTRY_USER | \
                 kubectl -n dev create secret generic ${SVC_NAME}.ht --from-file=auth=/dev/stdin
             akey="\"nginx\\.ingress\\.kubernetes\\.io"
             pwdargs="         --set ingress.annotations.$akey/auth-type\"=basic"
@@ -53,14 +53,14 @@ then
             pwdargs="$pwdargs --set ingress.annotations.$akey/proxy-body-size\"=0"
         fi
     else
-        echo "Using NodePort without ingress: Make sure that $REGISTRY_NAME points to this host!"
+        echo "Using NodePort without ingress: Make sure that $SC_REGISTRY_NAME points to this host!"
         echo "  e.g. via /etc/hosts"
-        args="--set service.type=NodePort,service.nodePort=$REGISTRY_PORT"
+        args="--set service.type=NodePort,service.nodePort=$SC_REGISTRY_PORT"
         args="$args --set tlsSecretName=${SVC_NAME}.tls"
     fi
 
     # add registry name to known hosts -> on all nodes which access the registry
-#    grep -q $REGISTRY_NAME /etc/hosts || sudo sed -i -e '/10.0.9.1/s/$/ '$REGISTRY_NAME'/' /etc/hosts
+#    grep -q $SC_REGISTRY_NAME /etc/hosts || sudo sed -i -e '/10.0.9.1/s/$/ '$SC_REGISTRY_NAME'/' /etc/hosts
     createTLSsecret dev "${SVC_NAME}.tls" "$SC_REGISTRY_PUB" "$SC_REGISTRY_KEY"
 
     echo " -> Using NFS for persistent volumes."
