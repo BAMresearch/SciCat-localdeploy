@@ -48,7 +48,7 @@ fi
 
 baseurl="$SC_REGISTRY_ADDR"
 IMG_REPO="$baseurl/catamel"
-registryLogin
+authargs="$(registryLogin)"
 # extra arguments if the registry need authentication as indicated by a set password
 [ -z "$SC_REGISTRY_PASS" ] || baseurl="$SC_REGISTRY_USER:$SC_REGISTRY_PASS@$baseurl"
 IMAGE_TAG="$(curl -s "https://$baseurl/v2/catamel/tags/list" | jq -r .tags[0])"
