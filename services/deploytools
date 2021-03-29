@@ -56,7 +56,7 @@ loadSiteConfig()
     if [ ! -f "$fn" ]; then
         echo "$fx WARNING: Missing general settings in '$fn'!"
         echo "    -> Creating a template, please fill it out."
-        command -v apg || (echo "Password generator 'apg' required! Giving up."; return)
+        cmdExists apg || (echo "Password generator 'apg' required! Giving up."; return)
         cat > "$fn" << EOF
 export DOMAINBASE=
 export SC_NAMESPACE=yourns
