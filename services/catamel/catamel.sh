@@ -53,6 +53,8 @@ authargs="$(registryLogin)"
 # extra arguments if the registry need authentication as indicated by a set password
 [ -z "$SC_REGISTRY_PASS" ] || baseurl="$SC_REGISTRY_USER:$SC_REGISTRY_PASS@$baseurl"
 IMAGE_TAG="$(curl -s "https://$baseurl/v2/catamel/tags/list" | jq -r .tags[0])"
+# investigate registry contents by with curl by:
+# curl -H "Accept: application/vnd.docker.distribution.manifest.v2+json,application/vnd.oci.image.manifest.v1+json" -X GET "https://$baseurl/v2/catamel/manifests/$IMAGE_TAG" | jq
 if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
     if [ ! -d "./component/" ]; then
         git clone $REPO component
@@ -75,7 +77,7 @@ if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
 
     npm install
     echo "Building release"
-    IMAGE_TAG="$(git rev-parse HEAD)$NS"
+    IMAGE_TAG="$(git show --format='%at_%h' HEAD)" # <timestamp>_<git commit>
     cmd="$DOCKER_BUILD -t $IMG_REPO:$IMAGE_TAG -t $IMG_REPO:latest ."
     echo "$cmd"; eval $cmd
     cmd="$DOCKER_PUSH $authargs $IMG_REPO:$IMAGE_TAG"
