@@ -107,6 +107,20 @@ registryLogout()
     cmdExists docker && docker logout "$SC_REGISTRY_ADDR"
 }
 
+# set the private registry credentials to the service account pulling scicat builds later
+# see https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+# and https://www.digitalocean.com/community/questions/using-do-k8s-container-registry-authentication-required
+# alternatively https://stackoverflow.com/a/63643081
+setRegistryAccessForPulling()
+{
+    kubectl -n "$SC_NAMESPACE" patch serviceaccount default \
+        -p "{\"imagePullSecrets\": [{\"name\": \"reg-cred\"}]}"
+    kubectl -n "$SC_NAMESPACE" create secret docker-registry "reg-cred" \
+        --docker-server="$SC_REGISTRY_NAME" --docker-username="$SC_REGISTRY_USER" --docker-password="$SC_REGISTRY_PASS"
+    # check details with:
+    # kubectl -n "$SC_NAMESPACE" get secret "reg-cred" -o="jsonpath={.data.\.dockerconfigjson}" | base64 --decode
+}
+
 createTLSsecret()
 {
     local ns="$1"

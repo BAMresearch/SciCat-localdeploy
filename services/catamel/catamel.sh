@@ -83,6 +83,7 @@ if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
     cd ..
 fi
 if [ -z "$buildOnly" ]; then
+    setRegistryAccessForPulling
     create_dbuser catamel
     echo "Deploying to Kubernetes"
     cmd="helm install catamel dacat-api-server --namespace $NS --set image.tag=$IMAGE_TAG --set image.repository=$IMG_REPO ${IARGS}"
