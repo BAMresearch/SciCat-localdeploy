@@ -28,7 +28,7 @@ then
         checkVars SC_REGISTRY_USER SC_REGISTRY_PASS SC_NAMESPACE || exit 1
         cmdExists htpasswd || sudo apt-get install -y apache2-utils
         pwdargs="--set secrets.htpasswd=$(echo "$SC_REGISTRY_PASS" | htpasswd -Bbn -i "$SC_REGISTRY_USER")"
-        setRegistryAccessForPulling()
+        setRegistryAccessForPulling
     fi
     if [ -z "$noingress" ]; then
         args="--set ingress.enabled=true,ingress.hosts[0]=$SC_REGISTRY_NAME"
