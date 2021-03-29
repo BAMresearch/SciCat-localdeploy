@@ -94,7 +94,7 @@ registryLogin()
     if [ ! -z "$SC_REGISTRY_PASS" ]; then # auth required
         if cmdExists docker; then
             echo "$SC_REGISTRY_PASS" | \
-                docker login -u "$SC_REGISTRY_USER" --password-stdin "$SC_REGISTRY_ADDR"
+                docker login -u "$SC_REGISTRY_USER" --password-stdin "$SC_REGISTRY_ADDR" > /dev/null
         else
             authargs="--creds \$SC_REGISTRY_USER:\$SC_REGISTRY_PASS"
         fi
