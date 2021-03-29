@@ -61,8 +61,9 @@ if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
     cmd="$DOCKER_PUSH $pushargs $IMG_REPO:$IMAGE_TAG"
     echo "$cmd"; eval "$cmd"
     [ -z "$buildOnly" ] || exit 0
-    cd .. && create_dbuser catamel
+    cd ..
 fi
+create_dbuser catamel
 echo "Deploying to Kubernetes"
 cmd="helm install catamel dacat-api-server --namespace $NS --set image.tag=$IMAGE_TAG --set image.repository=$IMG_REPO ${IARGS}"
 (echo "$cmd" && eval "$cmd")
