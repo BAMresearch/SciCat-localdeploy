@@ -34,6 +34,7 @@ fix_nan_package_version()
 cd "$scriptdir"
 
 if [ -z "$buildOnly" ]; then
+    namespaceExists "$NS" || kubectl create ns "$NS"
     # remove the existing service
     helm del catamel -n "$NS"
     kubectl -n $NS delete secret certs-catamel

@@ -34,6 +34,11 @@ getScriptFlags()
     (echo "$@" | grep -qi "\\<$key\\>") && echo true
 }
 
+namespaceExists()
+{
+    kubectl get ns -A -o name | grep -q "\\<$1\\>"
+}
+
 loadSiteConfig()
 {
     local fx="loadSiteConfig():"
