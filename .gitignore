@@ -4,6 +4,7 @@ hdf5/*/component
 .idea
 siteconfig
 .*.swp
+services/catamel/dacat-api-server/config/*.js*
 
 
 *.key

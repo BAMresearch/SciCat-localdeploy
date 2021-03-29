@@ -5,15 +5,7 @@ metadata:
   labels:
 {{ include "catamel.labels" . | indent 4 }}
 data:
-  config.local.js: |-
-{{ .Files.Get "envfiles/config.local.js" | indent 4 }}
-  component-config.json: |-
-{{ .Files.Get "envfiles/component-config.json" | indent 4 }}
-  middleware.json: |-
-{{ .Files.Get "envfiles/middleware.json" | indent 4 }}
-  datasources.json: |-
-{{ .Files.Get "envfiles/datasources.json" | indent 4 }}
-  providers.json: |-
-{{ .Files.Get "envfiles/providers.json" | indent 4 }}
-  doiconfig.local.json: |-
-{{ .Files.Get "envfiles/doiconfig.local.json" | indent 4 }}
+  {{- range $path, $d := .Files.Glob "config/*.*" }}
+  {{ base $path }}: |-
+  {{- $d | toString | nindent 4 }}
+  {{- end }}

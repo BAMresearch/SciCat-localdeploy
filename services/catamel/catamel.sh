@@ -26,6 +26,7 @@ if [ -z "$buildOnly" ]; then
     createTLSsecret "$NS" certs-catamel "$SC_CATAMEL_PUB" "$SC_CATAMEL_KEY"
     # make sure DB credentials exist before starting any services
     gen_catamel_credentials "$SC_SITECONFIG"
+    [ -d "$SC_SITECONFIG/catamel" ] && cp "$SC_SITECONFIG/catamel"/* "$scriptdir/dacat-api-server/config/"
 fi
 
 IMG_REPO="$SC_REGISTRY_ADDR/catamel"
@@ -49,7 +50,6 @@ if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
         -e '/RUN apk/a\    apk add --no-cache python make g++ && \\' \
         Dockerfile
     echo '*.json-sample' >> .dockerignore
-    (cd ../.. && update_envfiles catamel component/server)
 
     npm install
     echo "Building release"
