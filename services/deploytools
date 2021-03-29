@@ -83,6 +83,25 @@ EOF
     [ -z "$SC_REGISTRY_PORT" ] || export SC_REGISTRY_ADDR="$SC_REGISTRY_NAME:$SC_REGISTRY_PORT"
 }
 
+registryLogin()
+{
+    # extra arguments if the registry need authentication as indicated by a set password
+    if [ ! -z "$SC_REGISTRY_PASS" ]; then # auth required
+        if cmdExists docker; then
+            echo "$SC_REGISTRY_PASS" | \
+                docker login -u "$SC_REGISTRY_USER" --password-stdin "$SC_REGISTRY_ADDR"
+        else
+            authargs="--creds \$SC_REGISTRY_USER:\$SC_REGISTRY_PASS"
+        fi
+    fi
+    echo "$authargs"
+}
+
+registryLogout()
+{
+    cmdExists docker && docker logout "$SC_REGISTRY_ADDR"
+}
+
 createTLSsecret()
 {
     local ns="$1"

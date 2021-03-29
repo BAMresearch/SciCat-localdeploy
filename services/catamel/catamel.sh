@@ -46,8 +46,9 @@ if [ -z "$buildOnly" ]; then
     [ -d "$SC_SITECONFIG/catamel" ] && cp "$SC_SITECONFIG/catamel"/* "$scriptdir/dacat-api-server/config/"
 fi
 
-IMG_REPO="$SC_REGISTRY_ADDR/catamel"
 baseurl="$SC_REGISTRY_ADDR"
+IMG_REPO="$baseurl/catamel"
+registryLogin
 # extra arguments if the registry need authentication as indicated by a set password
 [ -z "$SC_REGISTRY_PASS" ] || baseurl="$SC_REGISTRY_USER:$SC_REGISTRY_PASS@$baseurl"
 IMAGE_TAG="$(curl -s "https://$baseurl/v2/catamel/tags/list" | jq -r .tags[0])"
@@ -76,18 +77,18 @@ if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
     IMAGE_TAG="$(git rev-parse HEAD)$NS"
     cmd="$DOCKER_BUILD -t $IMG_REPO:$IMAGE_TAG -t $IMG_REPO:latest ."
     echo "$cmd"; eval $cmd
-    # extra arguments if the registry need authentication as indicated by a set password
-    [ -z "$SC_REGISTRY_PASS" ] || pushargs="--creds \$SC_REGISTRY_USER:\$SC_REGISTRY_PASS"
-    cmd="$DOCKER_PUSH $pushargs $IMG_REPO:$IMAGE_TAG"
+    cmd="$DOCKER_PUSH $authargs $IMG_REPO:$IMAGE_TAG"
     echo "$cmd"; eval "$cmd"
-    [ -z "$buildOnly" ] || exit 0
     cd ..
 fi
-create_dbuser catamel
-echo "Deploying to Kubernetes"
-cmd="helm install catamel dacat-api-server --namespace $NS --set image.tag=$IMAGE_TAG --set image.repository=$IMG_REPO ${IARGS}"
-(echo "$cmd" && eval "$cmd")
-[ -d component ] && reset_envfiles component/server
+if [ -z "$buildOnly" ]; then
+    create_dbuser catamel
+    echo "Deploying to Kubernetes"
+    cmd="helm install catamel dacat-api-server --namespace $NS --set image.tag=$IMAGE_TAG --set image.repository=$IMG_REPO ${IARGS}"
+    (echo "$cmd" && eval "$cmd")
+fi
+registryLogout
+
 exit 0
 # this part is disabled as we do not have a build server yet and don't use public repos
 
