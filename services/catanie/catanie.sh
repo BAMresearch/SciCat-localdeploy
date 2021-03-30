@@ -37,9 +37,8 @@ copyimages()
     [ -f "$sitesrc" ] && cp "$sitesrc" src/assets/images/ess-site.png
 }
 
-read -r -d '' angCfg <<EOF
-  {
-    "optimization": true,
+angCfg="$(cat <<EOF
+  { "optimization": true,
     "outputHashing": "all",
     "sourceMap": false,
     "extractCss": true,
@@ -50,9 +49,11 @@ read -r -d '' angCfg <<EOF
     "buildOptimizer": true,
     "fileReplacements": [ {
       "replace": "src/environments/environment.ts",
-      "with": \$envfn } ]
+      "with": "\$envfn" } ]
   }
 EOF
+)"
+angCfg="$(echo "$angCfg" | jq)" # syntax check and prettify
 
 cd "$scriptdir"
 
