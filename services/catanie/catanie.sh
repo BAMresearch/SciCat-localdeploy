@@ -77,7 +77,7 @@ authargs="$(registryLogin)"
 # extra arguments if the registry need authentication as indicated by a set password
 [ -z "$SC_REGISTRY_PASS" ] || baseurl="$SC_REGISTRY_USER:$SC_REGISTRY_PASS@$baseurl"
 # get the latest image tag: sort by timestamp, pick the largest
-IMAGE_TAG="$(curl -s "https://$baseurl/v2/catanie/tags/list" | jq -r '.tags|sort[-1]')"
+IMAGE_TAG="$(curl -s "https://$baseurl/v2/catanie/tags/list" | jq -r '(.tags|sort[-1])?')"
 if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
     if [ ! -d "./component" ]; then
         git clone $REPO component
