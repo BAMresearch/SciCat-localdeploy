@@ -1,55 +1,18 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 # get the script directory before creating any files
 scriptdir="$(dirname "$(readlink -f "$0")")"
 . "$scriptdir/../deploytools"
 
+# get given command line flags
+noBuild="$(getScriptFlags nobuild "$@")"
+buildOnly="$(getScriptFlags buildonly "$@")"
+clean="$(getScriptFlags clean "$@")"
+
 loadSiteConfig
-checkVars REGISTRY_ADDR SC_NAMESPACE LE_WORKING_DIR || exit 1
+checkVars SC_CATAMEL_FQDN SC_CATAMEL_PUB SC_CATAMEL_KEY SC_REGISTRY_ADDR SC_NAMESPACE || exit 1
 
-IMG_REPO="$REGISTRY_ADDR/catanie"
-export REPO=https://github.com/SciCatProject/catanie.git
-
-cd "$scriptdir"
-
-INGRESS_NAME=" "
-BUILD="true"
-if [ "$(hostname)" == "kubetest01.dm.esss.dk" ]; then
-    INGRESS_NAME="-f ./dacat-gui/dmsc.yaml"
-    BUILD="false"
-elif  [ "$(hostname)" == "scicat01.esss.lu.se" ]; then
-    INGRESS_NAME="-f ./dacat-gui/lund.yaml"
-    BUILD="false"
-elif  [ "$(hostname)" == "k8-lrg-serv-prod.esss.dk" ]; then
-    INGRESS_NAME="-f ./dacat-gui/dmscprod.yaml"
-    BUILD="false"
-else
-    YAMLFN="./dacat-gui/$(hostname).yaml"
-    INGRESS_NAME="-f $YAMLFN"
-    # generate yaml file with appropriate hostname here
-    cat > "$YAMLFN" << EOF
-ingress:
-  enabled: true
-  host: $DOMAINBASE
-EOF
-fi
-
-read -r -d '' angCfg <<EOF
-  {
-    "optimization": true,
-    "outputHashing": "all",
-    "sourceMap": false,
-    "extractCss": true,
-    "namedChunks": false,
-    "aot": true,
-    "extractLicenses": true,
-    "vendorChunk": false,
-    "buildOptimizer": true,
-    "fileReplacements": [ {
-      "replace": "src/environments/environment.ts",
-      "with": \$envfn } ]
-  }
-EOF
+REPO=https://github.com/SciCatProject/catanie.git
 
 copyimages()
 {
@@ -74,20 +37,47 @@ copyimages()
     [ -f "$sitesrc" ] && cp "$sitesrc" src/assets/images/ess-site.png
 }
 
-# Updating TLS certificates, assuming letsencrypt provided by acme.sh client
-if [ ! -d "$LE_WORKING_DIR/$DOMAINBASE" ]; then
-    echo "WARNING! Location for TLS certificates not found ('$LE_WORKING_DIR/$DOMAINBASE')."
-else
-    certpath="$LE_WORKING_DIR/$DOMAINBASE"
-    kubectl -n $NS create secret tls certs-catanie \
-        --cert="$certpath/fullchain.cer" --key="$certpath/$DOMAINBASE.key" \
-        --dry-run=client -o yaml | kubectl apply -f -
+read -r -d '' angCfg <<EOF
+  {
+    "optimization": true,
+    "outputHashing": "all",
+    "sourceMap": false,
+    "extractCss": true,
+    "namedChunks": false,
+    "aot": true,
+    "extractLicenses": true,
+    "vendorChunk": false,
+    "buildOptimizer": true,
+    "fileReplacements": [ {
+      "replace": "src/environments/environment.ts",
+      "with": \$envfn } ]
+  }
+EOF
+
+cd "$scriptdir"
+
+if [ -z "$buildOnly" ]; then
+    namespaceExists "$NS" || kubectl create ns "$NS"
+    # remove the existing service
+    helm del catanie -n "$NS"
+    kubectl -n $NS delete secret certs-catanie
+    [ -z "$clean" ] || exit 0 # stop here when cleaning up
+
+    IARGS="--set ingress.enabled=true,ingress.host=$SC_CATANIE_FQDN,ingress.tlsSecretName=certs-catanie"
+    createTLSsecret "$NS" certs-catanie "$SC_CATANIE_PUB" "$SC_CATANIE_KEY"
+    # make sure DB credentials exist before starting any services
+#    gen_catamel_credentials "$SC_SITECONFIG"
+#    [ -d "$SC_SITECONFIG/catamel" ] && cp "$SC_SITECONFIG/catamel"/* "$scriptdir/dacat-api-server/config/"
 fi
 
-helm del catanie -n$NS
-
-IMAGE_TAG="$(curl -s https://$REGISTRY_ADDR/v2/catamel/tags/list | jq -r .tags[0])"
-if [ "$BUILD" = "true" ] || [ -z "$IMAGE_TAG" ]; then
+baseurl="$SC_REGISTRY_ADDR"
+IMG_REPO="$baseurl/catanie"
+authargs="$(registryLogin)"
+# extra arguments if the registry need authentication as indicated by a set password
+[ -z "$SC_REGISTRY_PASS" ] || baseurl="$SC_REGISTRY_USER:$SC_REGISTRY_PASS@$baseurl"
+# get the latest image tag: sort by timestamp, pick the largest
+IMAGE_TAG="$(curl -s "https://$baseurl/v2/catanie/tags/list" | jq -r '.tags|sort[-1]')"
+if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
     if [ ! -d "./component" ]; then
         git clone $REPO component
     fi
@@ -98,7 +88,7 @@ if [ "$BUILD" = "true" ] || [ -z "$IMAGE_TAG" ]; then
     git pull
     angEnv="$(sed \
         -e "/facility:/s/[[:alnum:]\"]\+,$/\"$SC_SITE_NAME\",/g" \
-        -e '/lbBaseURL:/s#[[:alnum:]"\:\./]\+,$#"http://api.'$DOMAINBASE'",#g' \
+        -e '/lbBaseURL:/s#[[:alnum:]"\:\./]\+,$#"http://'$SC_CATAMEL_FQDN'",#g' \
         -e '/fileserverBaseURL:/s#[[:alnum:]"\:\./]\+,$#"http://files.'$DOMAINBASE'",#g' \
         -e '/landingPage:/s#[[:alnum:]"\:\./]\+,$#"http://landing.'$DOMAINBASE'",#g' \
         -e '/production:/s/\w\+,$/true,/g' \
@@ -117,16 +107,20 @@ if [ "$BUILD" = "true" ] || [ -z "$IMAGE_TAG" ]; then
     npm install
     echo "Building release"
     ./node_modules/@angular/cli/bin/ng build --configuration $NS --output-path dist/$NS
-    IMAGE_TAG="$(git rev-parse HEAD)$NS"
+    IMAGE_TAG="$(git show --format='%at_%h' HEAD)" # <timestamp>_<git commit>
     cmd="$DOCKER_BUILD -t $IMG_REPO:$IMAGE_TAG -t $IMG_REPO:latest --build-arg env=$NS ."
     echo "$cmd"; eval $cmd
-    cmd="$DOCKER_PUSH $IMG_REPO:$IMAGE_TAG"
+    cmd="$DOCKER_PUSH $authargs $IMG_REPO:$IMAGE_TAG"
     echo "$cmd"; eval $cmd
     cd ..
 fi
-echo "Deploying to Kubernetes"
-cmd="helm install catanie dacat-gui --namespace $NS --set image.tag=$IMAGE_TAG --set image.repository=$IMG_REPO ${INGRESS_NAME}"
-(echo "$cmd" && eval "$cmd")
+if [ -z "$buildOnly" ]; then
+    setRegistryAccessForPulling
+    echo "Deploying to Kubernetes"
+    cmd="helm install catanie dacat-gui --namespace $NS --set image.tag=$IMAGE_TAG --set image.repository=$IMG_REPO ${IARGS}"
+    (echo "$cmd" && eval "$cmd")
+fi
+registryLogout
 
 exit 0
 # disabled the lower part as we do not have a build server yet and don't use public repos
