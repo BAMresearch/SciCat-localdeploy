@@ -87,10 +87,9 @@ if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
         | jq 'del(.assets[-3:])|del(.stylePreprocessorOptions)|del(.styles[-1])')"
     injectEnvConfig catanie "$NS" "$angEnv" "$angBuildCfg"
     copyimages
-
-    npm install
     echo "Building release"
-    ./node_modules/@angular/cli/bin/ng build --configuration $NS --output-path dist/$NS
+    sed '/_proxy/d;/maintainer/d;/site.png/d;/google/d;s/^\(ARG\s\+env=\).*$/\1bla/' \
+        CI/ESS/Dockerfile.dmscprod > Dockerfile
     IMAGE_TAG="$(git show --format='%at_%h' HEAD)" # <timestamp>_<git commit>
     cmd="$DOCKER_BUILD -t $IMG_REPO:$IMAGE_TAG -t $IMG_REPO:latest --build-arg env=$NS ."
     echo "$cmd"; eval $cmd
