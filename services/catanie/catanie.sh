@@ -55,7 +55,6 @@ fi
 
 baseurl="$SC_REGISTRY_ADDR"
 IMG_REPO="$baseurl/catanie"
-authargs="$(registryLogin)"
 # extra arguments if the registry need authentication as indicated by a set password
 [ -z "$SC_REGISTRY_PASS" ] || baseurl="$SC_REGISTRY_USER:$SC_REGISTRY_PASS@$baseurl"
 # get the latest image tag: sort by timestamp, pick the largest
@@ -94,6 +93,7 @@ if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
     IMAGE_TAG="$(git show --format='%at_%h' HEAD)" # <timestamp>_<git commit>
     cmd="$DOCKER_BUILD -t $IMG_REPO:$IMAGE_TAG -t $IMG_REPO:latest --build-arg env=$NS ."
     echo "$cmd"; eval $cmd
+    authargs="$(registryLogin)"
     cmd="$DOCKER_PUSH $authargs $IMG_REPO:$IMAGE_TAG"
     echo "$cmd"; eval $cmd
     cd ..
