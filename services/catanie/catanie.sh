@@ -102,7 +102,9 @@ fi
 if [ -z "$buildOnly" ]; then
     setRegistryAccessForPulling
     echo "Deploying to Kubernetes"
-    cmd="helm install catanie dacat-gui --namespace $NS --set image.tag=$IMAGE_TAG --set image.repository=$IMG_REPO ${IARGS}"
+    cmd="helm install catanie dacat-gui --namespace $NS --set image.tag=$IMAGE_TAG \\
+             --set image.repository=$IMG_REPO \\
+             ${IARGS}"
     (echo "$cmd" && eval "$cmd")
 fi
 registryLogout
