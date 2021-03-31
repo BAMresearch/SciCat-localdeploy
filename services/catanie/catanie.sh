@@ -10,7 +10,7 @@ buildOnly="$(getScriptFlags buildonly "$@")"
 clean="$(getScriptFlags clean "$@")"
 
 loadSiteConfig
-checkVars SC_CATAMEL_FQDN SC_CATAMEL_PUB SC_CATAMEL_KEY SC_REGISTRY_ADDR SC_NAMESPACE || exit 1
+checkVars SC_CATAMEL_FQDN SC_CATANIE_FQDN SC_CATANIE_PUB SC_CATANIE_KEY SC_REGISTRY_ADDR || exit 1
 
 REPO=https://github.com/SciCatProject/catanie.git
 
