@@ -149,29 +149,23 @@ getHostAddr()
 injectEnvConfig()
 {
     local prj="$1"
-    local LOCAL_ENV="$2"
+    local ns="$2"
     local angEnv="$3"
-    local angCfgBuild="$4"
-    local angCfgServer="$5"
-    local envfn="src/environments/environment.$LOCAL_ENV.ts"
+    local angBuildCfg="$4"
+    local envfn="src/environments/environment.$ns.ts"
 
     echo "$angEnv" > "$envfn"
 
-    local angularCfg='angular.json'
     local tmpcfg; tmpcfg="$(mktemp)"
     # delete existing settings in angular config
-    jq "del(.projects.$prj.architect.build.configurations.$LOCAL_ENV,
-            .projects.$prj.architect.serve.configurations.$LOCAL_ENV,
-            .projects.$prj.architect.server.configurations.$LOCAL_ENV)" \
-        "$angularCfg" | \
-    jq --arg envfn "$envfn" \
-        ".projects.$prj.architect.build.configurations.$LOCAL_ENV = $angCfgBuild" \
+    jq "del(.projects.$prj.architect.build.configurations.$ns,
+            .projects.$prj.architect.serve.configurations.$ns,
+            .projects.$prj.architect.server.configurations.$ns)" angular.json | \
+    jq ".projects.$prj.architect.build.configurations.$ns = $angBuildCfg" | \
+    jq ".projects.$prj.architect.build.configurations.$ns.fileReplacements[0].with=\"$envfn\"" | \
+    jq ".projects.$prj.architect.serve.configurations.$ns.browserTarget = \"$prj:build:$ns\"" \
         > "$tmpcfg"
-    mv "$tmpcfg" "$angularCfg"
-    jq \
-        ".projects.$prj.architect.serve.configurations.$LOCAL_ENV.browserTarget = \"$prj:build:$LOCAL_ENV\"" \
-        "$angularCfg" > "$tmpcfg"
-    mv "$tmpcfg" "$angularCfg"
+    mv "$tmpcfg" angular.json
 }
 
 update_envfiles()

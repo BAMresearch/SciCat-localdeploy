@@ -37,24 +37,6 @@ copyimages()
     [ -f "$sitesrc" ] && cp "$sitesrc" src/assets/images/ess-site.png
 }
 
-angCfg="$(cat <<EOF
-  { "optimization": true,
-    "outputHashing": "all",
-    "sourceMap": false,
-    "extractCss": true,
-    "namedChunks": false,
-    "aot": true,
-    "extractLicenses": true,
-    "vendorChunk": false,
-    "buildOptimizer": true,
-    "fileReplacements": [ {
-      "replace": "src/environments/environment.ts",
-      "with": "\$envfn" } ]
-  }
-EOF
-)"
-angCfg="$(echo "$angCfg" | jq)" # syntax check and prettify
-
 cd "$scriptdir"
 
 if [ -z "$buildOnly" ]; then
@@ -101,8 +83,9 @@ if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
         -e '/multipleDownloadAction/d' \
         -e '/externalAuthEndpoint/d' \
         src/environments/environment.ts)"
-
-    injectEnvConfig catanie $NS "$angEnv" "$angCfg"
+    angBuildCfg="$(jq '.projects.catanie.architect.build.configurations.dmscdev' angular.json \
+        | jq 'del(.assets[-3:])|del(.stylePreprocessorOptions)|del(.styles[-1])')"
+    injectEnvConfig catanie "$NS" "$angEnv" "$angBuildCfg"
     copyimages
 
     npm install
