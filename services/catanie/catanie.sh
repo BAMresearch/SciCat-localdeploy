@@ -54,7 +54,7 @@ if [ -z "$buildOnly" ]; then
 fi
 
 baseurl="$SC_REGISTRY_ADDR"
-IMG_REPO="$baseurl/catanie"
+IMG_REPO="$baseurl/catanie-$NS"
 # extra arguments if the registry need authentication as indicated by a set password
 [ -z "$SC_REGISTRY_PASS" ] || baseurl="$SC_REGISTRY_USER:$SC_REGISTRY_PASS@$baseurl"
 # get the latest image tag: sort by timestamp, pick the largest
