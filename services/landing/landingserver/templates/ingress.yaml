@@ -4,29 +4,38 @@
 {{- $namespace := .Release.Namespace -}}
 {{- $host := .Values.ingress.host -}}
 {{- $path := .Values.ingress.path -}}
-apiVersion: extensions/v1beta1
+{{- $tlsSecretName := .Values.ingress.tlsSecretName -}}
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ template "fullname" . }}
   labels:
 {{ include "ls.labels" . | indent 4 }}
+  {{- with .Values.ingress.annotations }}
   annotations:
-    {{- range $key, $value := .Values.ingress.annotations }}
-      {{ $key }}: {{ $value | quote }}
-    {{- end }}
-    ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
+  tls:
+     - secretName: {{ $tlsSecretName }}
+       hosts:
+       - {{ $host }}
   rules:
     - host: {{ $host }}
       http:
         paths:
           - path: {{ $path }}
+            pathType: Prefix
             backend:
-              serviceName: {{ $serviceName }}
-              servicePort: {{ $servicePort }}
+              service:
+                name: {{ $serviceName }}
+                port:
+                  number: {{ $servicePort }}
           - path: /detail/(.*)
+            pathType: Prefix
             backend:
-              serviceName: {{ $serviceName }}
-              servicePort: {{ $servicePort }}
+              service:
+                name: {{ $serviceName }}
+                port:
+                  number: {{ $servicePort }}
 {{- end -}}

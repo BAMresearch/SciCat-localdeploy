@@ -55,7 +55,7 @@ if [ -z "$buildOnly" ]; then
     kubectl -n $NS delete secret certs-landing
     [ -z "$clean" ] || exit 0 # stop here when cleaning up
 
-    IARGS="--set ingress.enabled=true,ingress.host=$SC_LANDING_FQDN,ingress.tlsSecretName=certs-catanie"
+    IARGS="--set ingress.enabled=true,ingress.host=$SC_LANDING_FQDN,ingress.tlsSecretName=certs-landing"
     createTLSsecret "$NS" certs-landing "$SC_LANDING_PUB" "$SC_LANDING_KEY"
 fi
 
