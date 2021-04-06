@@ -12,7 +12,7 @@ clean="$(getScriptFlags clean "$@")"
 loadSiteConfig
 checkVars SC_CATAMEL_FQDN SC_CATANIE_FQDN SC_CATANIE_PUB SC_CATANIE_KEY SC_REGISTRY_ADDR || exit 1
 
-REPO=https://github.com/SciCatProject/catanie.git
+REPO="https://github.com/SciCatProject/catanie.git"
 
 copyimages()
 {
@@ -66,11 +66,12 @@ if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
     git checkout .
     git clean -f
     git pull
+    # update angular config
     angEnv="$(sed \
         -e "/facility:/s/[[:alnum:]\"]\+,$/\"$SC_SITE_NAME\",/g" \
-        -e '/lbBaseURL:/s#[[:alnum:]"\:\./]\+,$#"http://'$SC_CATAMEL_FQDN'",#g' \
-        -e '/fileserverBaseURL:/s#[[:alnum:]"\:\./]\+,$#"http://files.'$DOMAINBASE'",#g' \
-        -e '/landingPage:/s#[[:alnum:]"\:\./]\+,$#"http://landing.'$DOMAINBASE'",#g' \
+        -e '/lbBaseURL:/s#[[:alnum:]"\:\./]\+,$#"https://'$SC_CATAMEL_FQDN'",#g' \
+        -e '/fileserverBaseURL:/s#[[:alnum:]"\:\./]\+,$#"https://files.'$DOMAINBASE'",#g' \
+        -e '/landingPage:/s#[[:alnum:]"\:\./]\+,$#"https://'$SC_LANDING_FQDN'",#g' \
         -e '/production:/s/\w\+,$/true,/g' \
         -e '/archiveWorkflowEnabled:/s/\w\+,$/false,/g' \
         -e '/synapseBaseUrl/d' \
@@ -85,7 +86,7 @@ if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
     injectEnvConfig catanie "$NS" "$angEnv" "$angBuildCfg"
     copyimages
     echo "Building release"
-    sed '/_proxy/d;/maintainer/d;/site.png/d;/google/d;s/^\(ARG\s\+env=\).*$/\1bla/' \
+    sed '/_proxy/d;/maintainer/d;/site.png/d;/google/d;s/^\(ARG\s\+env=\).*$/\1'$NS'/' \
         CI/ESS/Dockerfile.dmscprod > Dockerfile
     IMAGE_TAG="$(git show --format='%at_%h' HEAD)" # <timestamp>_<git commit>
     cmd="$DOCKER_BUILD -t $IMG_REPO:$IMAGE_TAG -t $IMG_REPO:latest --build-arg env=$NS ."
