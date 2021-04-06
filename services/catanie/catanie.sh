@@ -48,9 +48,6 @@ if [ -z "$buildOnly" ]; then
 
     IARGS="--set ingress.enabled=true,ingress.host=$SC_CATANIE_FQDN,ingress.tlsSecretName=certs-catanie"
     createTLSsecret "$NS" certs-catanie "$SC_CATANIE_PUB" "$SC_CATANIE_KEY"
-    # make sure DB credentials exist before starting any services
-#    gen_catamel_credentials "$SC_SITECONFIG"
-#    [ -d "$SC_SITECONFIG/catamel" ] && cp "$SC_SITECONFIG/catamel"/* "$scriptdir/dacat-api-server/config/"
 fi
 
 baseurl="$SC_REGISTRY_ADDR"
