@@ -74,8 +74,13 @@ export SC_CATAMEL_FQDN=api.\$DOMAINBASE
 export SC_CATAMEL_PUB=\$LE_WORKING_DIR/fullchain.cer
 export SC_CATAMEL_KEY=\$LE_WORKING_DIR/\$DOMAINBASE.key
 # settings for the gui frontend catanie
+export SC_CATANIE_FQDN=\$DOMAINBASE
 export SC_CATANIE_PUB=\$LE_WORKING_DIR/fullchain.cer
 export SC_CATANIE_KEY=\$LE_WORKING_DIR/\$DOMAINBASE.key
+# settings for the landing page server
+export SC_LANDING_FQDN=landing.\$DOMAINBASE
+export SC_LANDING_PUB=\$LE_WORKING_DIR/fullchain.cer
+export SC_LANDING_KEY=\$LE_WORKING_DIR/\$DOMAINBASE.key
 export SC_MEDIA_PATH=
 export SC_SITE_NAME="Open Science Data"
 EOF
