@@ -1,6 +1,6 @@
 # SciCat deploy scripts
 
-This repo provides scripts for setting up the [*SciCat* data catalog project](https://scicatproject.github.io/)
+This repo provides scripts for setting up the [SciCat data catalog project](https://scicatproject.github.io/)
 on a single machine by setting up a [minikube cluster](https://minikube.sigs.k8s.io)
 or a [kubernetes cluster](https://kubernetes.io)
 running on multiple machines (which may be physical or virtual).
@@ -10,9 +10,9 @@ of the SciCat microservices (catanie/front-end, catamel/api, etc.).
 The initial setup scripts download and install the required software
 and create a basic configuration accordingly.
 This was tested and developed with a minimal installation of [Ubuntu Server](https://ubuntu.com/server) Linux.
-Most likely it will work on similar distributions as well with slight modifications.
+Most likely it will work on similar distributions with slight modifications.
 
-## Installing on a single machine
+## Installing on a single machine with *minikube*
 
 ### Required software being installed automatically
 
