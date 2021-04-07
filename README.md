@@ -56,3 +56,32 @@ Running the above command will connect the appropriate ports of the network devi
 With minikube they are accessible at the (internal) address given by the `minikube ip` command only be default.
 The above mentioned script uses *ssh* to forward the service ports to the outward facing network device.
 
+## Install a kubernetes cluster dockerless
+
+For the installing SciCat on a bunch of virtual machines running Ubuntu Server
+there is [a guide on bootstrapping the kubernetes cluster without using docker](InstallingKubernetes.md)
+for a smaller memory footprint.
+Works on VMs limited to 1G RAM for master and worker nodes.
+
+### SciCat services
+
+Once the cluster is setup, to current machine needs access with `kubectl`.
+A particular service can be started (and build on the fly) by running (in this case the catamel API server):
+```
+./services/catamel/catamel.sh
+```
+
+There are command line arguments for each service to run only a part of the procedure:
+- `./services/catamel/catamel.sh nobuild` does not build the image but pull the latest one from the registry
+- `./services/catamel/catamel.sh buildonly` builds an image from source and does not interact with the cluster, it can be run on any machine, it uploads the image to the configured registry finally
+- `./services/catamel/catamel.sh clean` just removes the service and all accociated resources from the cluster
+
+## Site config
+
+All services and infrastucture refer to a *siteconfig* directory which must exist,
+contains your local settings, host names, certificate locations and credentials.
+It will be created on the first try accessing it and will be populated with sane defaults.
+Additionally, it has to be made accessible in a secure way to any machine/node installing cluster services.
+Here, a NFS server (which can be used as persistent storage backend) over VPN is used.
+There may be better options depending on your requirements.
+
