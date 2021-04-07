@@ -96,7 +96,7 @@ PrivateKey = ***
 Address = 10.0.9.2/24
 
 [Peer]
-PublicKey = Vh7nOjFAEM7qmeAOs20J9ncs/XN9FnEvEV5FGn5bMSs=
+PublicKey = ***
 Endpoint = <public IP of node1>:51820
 AllowedIPs = 10.0.9.0/24, <local node2 IP>/32, <local node3 IP>/32
 ```

@@ -58,10 +58,9 @@ The above mentioned script uses *ssh* to forward the service ports to the outwar
 
 ## Install a kubernetes cluster dockerless
 
-For the installing SciCat on a bunch of virtual machines running Ubuntu Server
+For installing SciCat on a bunch of virtual machines running Ubuntu Server
 there is [a guide on bootstrapping the kubernetes cluster without using docker](InstallingKubernetes.md)
-for a smaller memory footprint.
-Works on VMs limited to 1G RAM for master and worker nodes.
+for a smaller memory footprint - works on VMs limited to 1G RAM for master and worker nodes.
 
 ### SciCat services
 
