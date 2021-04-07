@@ -43,7 +43,7 @@ if [ -z "$buildOnly" ]; then
     IARGS="--set ingress.enabled=true,ingress.host=$SC_CATAMEL_FQDN,ingress.tlsSecretName=certs-catamel"
     createTLSsecret "$NS" certs-catamel "$SC_CATAMEL_PUB" "$SC_CATAMEL_KEY"
     # make sure DB credentials exist before starting any services
-    gen_catamel_credentials "$SC_SITECONFIG"
+    gen_catamel_credentials "component/CI/ESS/envfiles"
     [ -d "$SC_SITECONFIG/catamel" ] && cp "$SC_SITECONFIG/catamel"/* "$scriptdir/dacat-api-server/config/"
 fi
 

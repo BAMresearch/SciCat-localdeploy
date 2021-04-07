@@ -264,30 +264,39 @@ EOF
 gen_catamel_credentials()
 {
     local fx="gen_catamel_credentials():"
-    local oldpath; oldpath=$(pwd) # pushd
+    local srcdir="$(readlink -f "$1")"
     # provide the script directory as first argument
-    local srcdir="$1"
-    [ -d "$srcdir" ] || (echo "$fx Given script dir '$srcdir' does not exist!"; return)
-    cd "$SC_SITECONFIG" || (echo "$fx Failed to enter '$SC_SITECONFIG'"; return)
+    [ -d "$srcdir" ] || (echo "$fx Given script dir does not exist! '$srcdir'"; return)
+    [ -d "$SC_SITECONFIG" ] || (echo "$fx Given site config not found! '$SC_SITECONFIG'"; return)
     local dbusr=dacat
     local dbpwd=$(newpwd)
     local dbname=dacatdb
-    local targetPath="catamel/datasources.json"
+    local targetPath="$SC_SITECONFIG/catamel/datasources.json"
     if [ ! -f "$targetPath" ]; then
         mkdir -p "$(dirname "$targetPath")"
-        srcdir="$srcdir/dacat-api-server/envfiles"
-        cp $srcdir/datasources.json "$targetPath"
-        sed -i -e '/"user":/ s/"[^"]*"\(,\?\)\s*$/"'$dbusr'"\1/' \
-            -e '/"password":/ s/"[^"]*"\(,\?\)\s*$/"'$dbpwd'"\1/' \
-            -e '/"database":/ s/"[^"]*"\(,\?\)\s*$/"'$dbname'"\1/' \
-            "$targetPath"
+        jq ".mongo.user=\"$dbusr\"|.mongo.password=\"$dbpwd\"" "$srcdir/datasources.json" \
+        | jq ".mongo.database=\"$dbname\"|.mongo.host=\"local-mongodb.dev\"" \
+            > "$targetPath"
     fi
-    targetPath="mongodb/catamel.js"
+    local targetPath="$SC_SITECONFIG/catamel/providers.json"
+    if [ ! -f "$targetPath" ]; then
+        mkdir -p "$(dirname "$targetPath")"
+        jq "." "$srcdir/providers.json" > "$targetPath"
+    fi
+    local targetPath="$SC_SITECONFIG/catamel/config.local.js"
+    if [ ! -f "$targetPath" ]; then
+        mkdir -p "$(dirname "$targetPath")"
+        sed -e       "s/\(site:\\s*['\\\"]\)[^'\\\"]*\(['\\\"]\)/\\1$SC_SITE_NAME\\2/" \
+            -e "s/\(facilities:\\s*\\[['\\\"]\)[^'\\\"]*\(['\\\"]\\]\)/\\1main\\2/" \
+            -e  "s/\(pidPrefix:\\s*['\\\"]\)[^'\\\"]*\(['\\\"]\)/\\1notset\\2/" \
+            -e  "s/\(doiPrefix:\\s*['\\\"]\)[^'\\\"]*\(['\\\"]\)/\\1notset\\2/" \
+            "$srcdir/config.ess.js" > "$targetPath"
+    fi
+    targetPath="$SC_SITECONFIG/mongodb/catamel.js"
     if [ ! -f "$targetPath" ]; then
         mkdir -p "$(dirname "$targetPath")"
         mongodb_createUserCmd "$targetPath" "$dbusr" "$dbpwd" "$dbname"
     fi
-    cd "$oldpath" # popd
 }
 
 gen_scichat_credentials()
