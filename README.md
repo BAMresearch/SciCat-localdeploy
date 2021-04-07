@@ -1,99 +1,58 @@
-# SciCat localdeploy
+# SciCat deploy scripts
 
-## Purpose
+This repo provides scripts for setting up the [*SciCat* data catalog project](https://scicatproject.github.io/)
+on a single machine by setting up a [minikube cluster](https://minikube.sigs.k8s.io)
+or a [kubernetes cluster](https://kubernetes.io)
+running on multiple machines (which may be physical or virtual).
 
-The original purpose of this repo is to create a minimal install of the Data Catalog project into a minikube cluster on your machine, with a configurable number of namespaces.
+The scripts provided here can be used for the operational deployment
+of the SciCat microservices (catanie/front-end, catamel/api, etc.).
+The initial setup scripts download and install the required software
+and create a basic configuration accordingly.
+This was tested and developed with a minimal installation of [Ubuntu Server](https://ubuntu.com/server) Linux.
+Most likely it will work on similar distributions as well with slight modifications.
 
-The repo is now responsible for operational deployment of the SciCat components (catanie, catamel etc.) to development and production environments. This repo should be coupled with a private secrets repository.
+## Installing on a single machine
 
-### Software required
+### Required software being installed automatically
 
 - Docker
-- MongoDB - running locally is easiest, but this will be installed by Helm
-- RabbitMQ - running locally is easiest, but this will be installed by Helm
-- Homebrew (OS X only)
-
-### Software auto installed
-
 - Minikube
 - Kubectl
 - Helm
+- MongoDB - running locally is easiest, but this will be installed by Helm
 
-## How
+### Install minikube
 
-```
-curl -L https://github.com/scicatbam/localdeploy/raw/develop/install.sh | sh
-```
+    curl -L https://github.com/scicatbam/localdeploy/raw/develop/install.sh | sh
 
-    Running this will install:
+Running this will install the above mentioned software packages.
 
-    - Minikube
-    - Kubectl
-    - Helm
+### Start minikube
 
-2. start.sh [nopause]
+    start.sh
 
 Running this script will start minikube and set up helm access.
 It will also deploy a registry for docker images and an nginx ingress controller.
 
-    Running this will start minikube and set up helm access.
-    It will also deploy a registry for docker images and an nginx ingress controller.
+### Start the SciCat services
 
-    NOTE: If you are using OS X, you cannot use a local registry as Docker is running inside a VM and you need to forward the port from within there.
-    If you are running a local docker registry, you will need to port forward this connection and these can be found in `proxies.sh`
+    run.sh [nopause]
 
-3. run.sh -d {DOCKER_REPO}
+This starts the SciCat services one after another and waits for user confirmation before starting the next one.
+This gives a chance to spot any error messages and it can be disabled by providing the argument `nopause` to the script.
 
-    This looks inside the namespaces directory and creates them (default is only to make `dev`.
+The `services` directory contains charts and custom code SciCat consists of and is deployed through helm:
 
-    You will need to provide a docker repo (defaulting to localhost) if, for example, you are using a different registry. It needs to be the **full qualified address**.
+1. The image is built using the script
+2. The image is then pushed to your docker regsitry and tagged
+3. Once pushed, the helm script starts and pulls down the image and deploys it
 
-    For each namespace, a Rabbit MQ and MongoDB pod is deployed.
+### Publish services
 
-    The services directory contains all custom code and this is deployed through helm.
+    forwardPorts.sh
 
-    - First, the image is built using the script
-    - The image is then pushed to your docker regsitry and tagged
-    - Once pushed, the helm script starts and pulls down the image and deploys it into the `dev` namespace
+Running the above command will connect the appropriate ports of the network device to the minikube service set up previously.
+With minikube they are accessible at the (internal) address given by the `minikube ip` command only be default.
+The above mentioned script uses *ssh* to forward the service ports to the outward facing network device.
 
-4. forwardPorts.sh
-
-    Running the above command will allow you to view the Kubernetes dashboard at 127.0.0.1:8001/ui and you should see all services under the dev namespace.
-
-5. `kubectl proxy`
-
-    ```bash
-    kubectl port-forward --namespace dev $(kubectl get po -n dev | grep catanie | awk '{print $1;}') 8000:80
-    kubectl port-forward --namespace dev $(kubectl get po -n dev | grep catamel | awk '{print $1;}') 3000:3000
-    ```
-
-### Setup
-
-The scripts in this repository should do most of the work for you, that work is summarised here:
-
-1. Install Minikube
-2. Install kubectl and helm
-3. A separate run script will start a docker registry locally on your machine and configure kubectl to use a minikube instance
-4. Clone and set up docker images for each component and deploy to the docker registry.
-5. Pull into namespaces the components, as well as prebuilt images (RabbitMQ, Mongo etc)
-
-## Notes
-
-<https://docs.docker.com/registry/insecure/>
-
-## Snippets
-
-### Changing config
-
-`kubectl config use-context <context-name>
-
-### Access service
-
-`kubectl run early-ibis-mongodb-client --rm --tty -i --image bitnami/mongodb --command -- mongo --host early-ibis-mongodb`
-
-#### Port Forward Pod
-
-```bash
-export POD_NAME=$(kubectl get pods --namespace dev -l "app=calico-lynx-rabbitmq" -o jsonpath="{.items[0].metadata.name}")
-kubectl port-forward $POD_NAME 5672:5672 15672:15672
-```
