@@ -77,12 +77,6 @@ if [ "$answer" != "y" ]; then
   helm install local-node k8s-at-home/node-red --namespace $LOCAL_ENV
 fi
 
-[ "$1" = "nopause" ] || \
-  read -p "Skip generating certificates? [yN] " answer
-if [ "$answer" != "y" ]; then
-    ./secret.sh "$KUBE_NAMESPACE"
-fi
-
 # Deploy services
 
 SERVICES_DIR=./services/*/*.sh
