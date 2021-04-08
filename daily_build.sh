@@ -23,7 +23,6 @@ postprocess() {
         (gh-md-toc "$logfn" | head -n-1; cat "$logfn") > "$tmpfn"
         mv "$tmpfn" "$logfn"
     fi
-    return
     git commit -m "latest build" log.md && git push
 }
 
