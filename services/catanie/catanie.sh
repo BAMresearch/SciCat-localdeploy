@@ -62,9 +62,8 @@ if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
         git clone $REPO component
     fi
     cd component
+    git stash save
     git checkout develop
-    git checkout .
-    git clean -f
     git pull
     # update angular config
     angEnv="$(sed \

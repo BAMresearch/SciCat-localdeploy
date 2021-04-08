@@ -42,9 +42,8 @@ if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
         git clone $REPO component
     fi
 	cd component
+    git stash save
 	git checkout master
-	git checkout . # revert any changes so that pull succeeds
-	git clean -f
 	git pull
     echo "Building release"
     npm install

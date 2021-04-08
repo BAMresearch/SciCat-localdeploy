@@ -61,8 +61,8 @@ if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
         git clone $REPO component
     fi
     cd component/
+    git stash save
     git checkout develop
-    git checkout .
     git pull
     # adjustments for older versions of nodejs build env
     # (such as 10.19 + node-gyp 5.1, not needed for node 10.24 with node-gyp 6.1)
