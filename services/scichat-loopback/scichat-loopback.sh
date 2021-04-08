@@ -62,7 +62,9 @@ if [ -z "$buildOnly" ]; then
     setRegistryAccessForPulling
     create_dbuser scichat
     echo "Deploying to Kubernetes"
-    cmd="helm install scichat-loopback scichat --namespace $NS --set image.tag=$IMAGE_TAG --set image.repository=$IMG_REPO ${IARGS}"
+    cmd="helm install scichat-loopback scichat --namespace $NS --set image.tag=$IMAGE_TAG \\
+            --set image.repository=$IMG_REPO  --set service.type=ClusterIP \\
+            ${IARGS}"
     (echo "$cmd" && eval "$cmd")
 fi
 registryLogout
