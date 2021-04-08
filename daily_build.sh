@@ -3,7 +3,12 @@
 # as defined by $SC_SITECONFIG/general.rc
 #
 # Add this script to a crontab like this:
-# ./daily_build.sh > $HOME/scicat/buildlog/log.md 2>&1; (cd $HOME/scicat/buildlog; git ci -m "latest build" log.md && git push)
+# cd; export SC_SITECONFIG=$HOME/scicat/osd; $HOME/scicat/deploy/daily_build.sh > $HOME/scicat/buildlog/log.md 2>&1; (cd $HOME/scicat/buildlog; git commit -m "latest build" log.md && git push)
+# -> do not forget to
+# - clone the deploy script repo
+# - clone the buildlog repo, set user&pwd, upload ssh keys
+# - add the building user to the docker group
+# - copy the $SC_SITECONFIG/general.rc from elsewhere
 
 # get the script directory before creating any files
 scriptdir="$(dirname "$(readlink -f "$0")")"
