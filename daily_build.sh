@@ -13,6 +13,25 @@
 # get the script directory before creating any files
 scriptdir="$(dirname "$(readlink -f "$0")")"
 
+postprocess() {
+    local logfn; logfn="$(readlink -f "$1")"
+    local logpath; logpath="$(dirname "$logfn")"
+    cd "$logpath"
+    # using https://github.com/ekalinin/github-markdown-toc
+    if command -v gh-md-toc > /dev/null; then
+        local tmpfn="$(mktemp)"
+        (gh-md-toc "$logfn" | head -n-1; cat "$logfn") > "$tmpfn"
+        mv "$tmpfn" "$logfn"
+    fi
+    return
+    git commit -m "latest build" log.md && git push
+}
+
+if [ ! -z "$1" ] && [ -f "$1" ]; then
+    postprocess "$1"
+    exit
+fi
+
 ts() {
     date +%s
 }
