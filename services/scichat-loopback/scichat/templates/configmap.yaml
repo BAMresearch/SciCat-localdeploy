@@ -8,5 +8,7 @@ metadata:
     chart: {{ .Chart.Name }}-{{ .Chart.Version }}
     app: {{ template "name" . }}
 data:
-  datasources.json: |-
-{{ .Files.Get "envfiles/datasources.json" | indent 4 }}
+  {{- range $path, $d := .Files.Glob "config/*.*" }}
+  {{ base $path }}: |-
+  {{- $d | toString | nindent 4 }}
+  {{- end }}

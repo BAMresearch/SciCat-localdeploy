@@ -40,12 +40,11 @@ spec:
           resources:
 {{ toYaml .Values.resources | indent 12 }}
           volumeMounts:
+            {{- range $path, $d := .Files.Glob "config/*.*" }}
             - name: config-volume
-              mountPath: /home/node/app/server/datasources.{{ .Release.Namespace }}.json
-              subPath: datasources.json
-            - name: config-volume
-              mountPath: /home/node/app/server/datasources.json
-              subPath: datasources.json
+              mountPath: /home/node/app/server/{{ base $path }}
+              subPath: {{ base $path }}
+            {{- end }}
       volumes:
         - name: config-volume
           configMap:

@@ -1,0 +1,3 @@
+Put your copy of customized configuration files here.
+Every file is included in a ConfigMap when this chart is installed
+and overrides the file of the same name in the `server` sub-directory of the source tree.

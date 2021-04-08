@@ -1,65 +1,70 @@
-#!/bin/bash
+#!/bin/sh
 
-source ./services/deploytools
+# get the script directory before creating any files
+scriptdir="$(dirname "$(readlink -f "$0")")"
+. "$scriptdir/../deploytools"
 
-[ -z "$DOCKER_REG" ] && \
-    echo "WARNING: Docker registry not defined, using default (docker.io?)!"
-docker_repo="$DOCKER_REG/scichat"
+# get given command line flags
+noBuild="$(getScriptFlags nobuild "$@")"
+buildOnly="$(getScriptFlags buildonly "$@")"
+clean="$(getScriptFlags clean "$@")"
 
-export REPO=https://github.com/SciCatProject/scichat-loopback.git
-LOCAL_ENV=$SC_NAMESPACE # selects angular configuration in subrepo component
-cd ./services/scichat-loopback/
+loadSiteConfig
+checkVars SC_SCICHAT_FQDN SC_SCICHAT_PUB SC_SCICHAT_KEY SC_REGISTRY_ADDR SC_NAMESPACE || exit 1
 
-INGRESS_NAME=" "
-BUILD="true"
-if [ "$(hostname)" == "kubetest01.dm.esss.dk" ]; then
-    INGRESS_NAME="-f ./scichat/dmsc.yaml"
-    BUILD="false"
-elif  [ "$(hostname)" == "scicat01.esss.lu.se" ]; then
-    INGRESS_NAME="-f ./scichat/lund.yaml"
-    BUILD="false"
-elif  [ "$(hostname)" == "k8-lrg-serv-prod.esss.dk" ]; then
-    INGRESS_NAME="-f ./scichat/dmscprod.yaml"
-    BUILD="false"
-else
-    YAMLFN="./scichat/$(hostname).yaml"
-    INGRESS_NAME="-f $YAMLFN"
-    # generate yaml file with appropriate hostname here
-    cat > "$YAMLFN" << EOF
-ingress:
-  enabled: true
-  host: scichat.$(hostname --fqdn)
-EOF
+REPO="https://github.com/SciCatProject/scichat-loopback.git"
+
+cd "$scriptdir"
+
+if [ -z "$buildOnly" ]; then
+    namespaceExists "$NS" || kubectl create ns "$NS"
+    # remove the existing service
+    helm del scichat-loopback -n "$NS"
+    kubectl -n $NS delete secret certs-scichat
+    [ -z "$clean" ] || exit 0 # stop here when cleaning up
+
+    IARGS="--set ingress.enabled=true,ingress.host=$SC_SCICHAT_FQDN,ingress.tlsSecretName=certs-scichat"
+    createTLSsecret "$NS" certs-scichat "$SC_SCICHAT_PUB" "$SC_SCICHAT_KEY"
+    # make sure DB credentials exist before starting any services
+    gen_scichat_credentials "component/CI/ESS"
+    [ -d "$SC_SITECONFIG/scichat" ] && mkdir -p "$scriptdir/scichat/config/" \
+        && cp "$SC_SITECONFIG/scichat"/* "$scriptdir/scichat/config/"
 fi
 
-helm del scichat-loopback -n$env
-if [ ! -d "./component" ]; then
-    git clone $REPO component
-fi
-cd component
-git checkout master
-git checkout . # revert any changes so that pull succeeds
-git clean -f
-git pull
-if  [ $BUILD = "true" ]; then
+baseurl="$SC_REGISTRY_ADDR"
+IMG_REPO="$baseurl/scichat"
+# extra arguments if the registry need authentication as indicated by a set password
+[ -z "$SC_REGISTRY_PASS" ] || baseurl="$SC_REGISTRY_USER:$SC_REGISTRY_PASS@$baseurl"
+# get the latest image tag: sort by timestamp, pick the largest
+IMAGE_TAG="$(curl -s "https://$baseurl/v2/scichat/tags/list" | jq -r '(.tags|sort[-1])?')"
+if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
+    if [ ! -d "./component/" ]; then
+        git clone $REPO component
+    fi
+	cd component
+	git checkout master
+	git checkout . # revert any changes so that pull succeeds
+	git clean -f
+	git pull
     echo "Building release"
     npm install
-fi
-sed -i -e "/npm config set/d" Dockerfile
+	sed -i -e "/npm config set/d" Dockerfile
 
-export SCICHAT_IMAGE_VERSION=$(git rev-parse HEAD)
-if  [ $BUILD = "true" ]; then
-    cmd="docker build -t $docker_repo:$SCICHAT_IMAGE_VERSION$LOCAL_ENV -t $docker_repo:latest --build-arg env=$LOCAL_ENV ."
+    IMAGE_TAG="$(git show --format='%at_%h' HEAD)" # <timestamp>_<git commit>
+    cmd="$DOCKER_BUILD -t $IMG_REPO:$IMAGE_TAG -t $IMG_REPO:latest ."
     echo "$cmd"; eval $cmd
-    cmd="docker push $docker_repo:$SCICHAT_IMAGE_VERSION$LOCAL_ENV"
-    echo "$cmd"; eval $cmd
+    authargs="$(registryLogin)"
+    cmd="$DOCKER_PUSH $authargs $IMG_REPO:$IMAGE_TAG"
+    echo "$cmd"; eval "$cmd"
+    cd ..
 fi
-echo "Deploying to Kubernetes"
-cd ..
-update_envfiles scichat
-create_dbuser scichat
-helm install scichat-loopback scichat --namespace $LOCAL_ENV \
-    --set image.tag=$SCICHAT_IMAGE_VERSION$LOCAL_ENV --set image.repository=$docker_repo ${INGRESS_NAME}
-reset_envfiles scichat
+if [ -z "$buildOnly" ]; then
+    setRegistryAccessForPulling
+    create_dbuser scichat
+    echo "Deploying to Kubernetes"
+    cmd="helm install scichat-loopback scichat --namespace $NS --set image.tag=$IMAGE_TAG --set image.repository=$IMG_REPO ${IARGS}"
+    (echo "$cmd" && eval "$cmd")
+fi
+registryLogout
 
 # vim: set ts=4 sw=4 sts=4 tw=0 et:

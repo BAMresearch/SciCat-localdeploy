@@ -5,6 +5,7 @@ hdf5/*/component
 siteconfig
 .*.swp
 services/catamel/dacat-api-server/config/*.js*
+services/scichat-loopback/scichat/config/*.js*
 
 
 *.key

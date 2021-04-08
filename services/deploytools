@@ -81,6 +81,10 @@ export SC_CATANIE_KEY=\$LE_WORKING_DIR/\$DOMAINBASE.key
 export SC_LANDING_FQDN=landing.\$DOMAINBASE
 export SC_LANDING_PUB=\$LE_WORKING_DIR/fullchain.cer
 export SC_LANDING_KEY=\$LE_WORKING_DIR/\$DOMAINBASE.key
+# settings for the logbook/chat server
+export SC_SCICHAT_FQDN=chat.\$DOMAINBASE
+export SC_SCICHAT_PUB=\$LE_WORKING_DIR/fullchain.cer
+export SC_SCICHAT_KEY=\$LE_WORKING_DIR/\$DOMAINBASE.key
 export SC_MEDIA_PATH=
 export SC_SITE_NAME="Open Science Data"
 EOF
@@ -263,11 +267,11 @@ EOF
 
 gen_catamel_credentials()
 {
-    local fx="gen_catamel_credentials():"
+    local fx="gen_catamel_credentials()"
     local srcdir="$(readlink -f "$1")"
     # provide the script directory as first argument
-    [ -d "$srcdir" ] || (echo "$fx Given script dir does not exist! '$srcdir'"; return)
-    [ -d "$SC_SITECONFIG" ] || (echo "$fx Given site config not found! '$SC_SITECONFIG'"; return)
+    [ -d "$srcdir" ] || (echo "$fx: Given script dir does not exist! '$srcdir'"; return)
+    [ -d "$SC_SITECONFIG" ] || (echo "$fx: Given site config not found! '$SC_SITECONFIG'"; return)
     local dbusr=dacat
     local dbpwd=$(newpwd)
     local dbname=dacatdb
@@ -278,12 +282,12 @@ gen_catamel_credentials()
         | jq ".mongo.database=\"$dbname\"|.mongo.host=\"local-mongodb.dev\"" \
             > "$targetPath"
     fi
-    local targetPath="$SC_SITECONFIG/catamel/providers.json"
+    targetPath="$SC_SITECONFIG/catamel/providers.json"
     if [ ! -f "$targetPath" ]; then
         mkdir -p "$(dirname "$targetPath")"
         jq "." "$srcdir/providers.json" > "$targetPath"
     fi
-    local targetPath="$SC_SITECONFIG/catamel/config.local.js"
+    targetPath="$SC_SITECONFIG/catamel/config.local.js"
     if [ ! -f "$targetPath" ]; then
         mkdir -p "$(dirname "$targetPath")"
         sed -e       "s/\(site:\\s*['\\\"]\)[^'\\\"]*\(['\\\"]\)/\\1$SC_SITE_NAME\\2/" \
@@ -301,31 +305,27 @@ gen_catamel_credentials()
 
 gen_scichat_credentials()
 {
-    local fx="gen_scichat_credentials():"
-    local oldpath; oldpath=$(pwd) # pushd
+    local fx="gen_scichat_credentials()"
+    local srcdir="$(readlink -f "$1")"
     # provide the script directory as first argument
-    local srcdir="$1"
-    [ -d "$srcdir" ] || (echo "$fx Given script dir '$srcdir' does not exist!"; return)
-    cd "$SC_SITECONFIG" || (echo "$fx Failed to enter '$SC_SITECONFIG'"; return)
+    [ -d "$srcdir" ] || (echo "$fx: Given script dir does not exist! '$srcdir'"; return)
+    [ -d "$SC_SITECONFIG" ] || (echo "$fx: Given site config not found! '$SC_SITECONFIG'"; return)
     local dbusr=scichat
     local dbpwd=$(newpwd)
     local dbname=scichatdb
-    local targetPath="scichat/datasources.json"
+    local targetPath="$SC_SITECONFIG/scichat/datasources.json"
     if [ ! -f "$targetPath" ]; then
         mkdir -p "$(dirname "$targetPath")"
-        srcdir="$srcdir/scichat/envfiles"
-        cp $srcdir/datasources.json "$targetPath"
-        sed -i -e '/"user":/ s/"[^"]*"\(,\?\)\s*$/"'$dbusr'"\1/' \
-            -e '/"password":/ s/"[^"]*"\(,\?\)\s*$/"'$dbpwd'"\1/' \
-            -e '/"database":/ s/"[^"]*"\(,\?\)\s*$/"'$dbname'"\1/' \
-            "$targetPath"
+        jq ".mongo.user=\"$dbusr\"|.mongo.password=\"$dbpwd\"" "$srcdir/datasources.json" \
+        | jq ".mongo.database=\"$dbname\"|.mongo.host=\"local-mongodb.dev\"" \
+            > "$targetPath"
     fi
-    targetPath="mongodb/scichat.js"
+    cp "$srcdir/config.local.js" "$SC_SITECONFIG/scichat/config.local.js"
+    targetPath="$SC_SITECONFIG/mongodb/scichat.js"
     if [ ! -f "$targetPath" ]; then
         mkdir -p "$(dirname "$targetPath")"
         mongodb_createUserCmd "$targetPath" "$dbusr" "$dbpwd" "$dbname"
     fi
-    cd "$oldpath" # popd
 }
 
 # vim: set ts=4 sw=4 sts=4 tw=0 ft=sh et:
