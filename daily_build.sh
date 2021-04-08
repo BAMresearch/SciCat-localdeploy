@@ -3,7 +3,7 @@
 # as defined by $SC_SITECONFIG/general.rc
 #
 # Add this script to a crontab like this:
-# cd; export SC_SITECONFIG=$HOME/scicat/osd; $HOME/scicat/deploy/daily_build.sh > $HOME/scicat/buildlog/log.md 2>&1; (cd $HOME/scicat/buildlog; git commit -m "latest build" log.md && git push)
+# cd $HOME/scicat; export SC_SITECONFIG=$(pwd)/osd; ./deploy/daily_build.sh update buildlog/log.md; ./deploy/daily_build.sh build buildlog/log.md
 # -> do not forget to
 # - clone the deploy script repo
 # - clone the buildlog repo, set user&pwd, upload ssh keys
@@ -12,24 +12,14 @@
 
 # get the script directory before creating any files
 scriptdir="$(dirname "$(readlink -f "$0")")"
+. "$scriptdir/services/deploytools"
 
-postprocess() {
-    local logfn; logfn="$(readlink -f "$1")"
-    local logpath; logpath="$(dirname "$logfn")"
-    cd "$logpath"
-    # using https://github.com/ekalinin/github-markdown-toc
-    if command -v gh-md-toc > /dev/null; then
-        local tmpfn="$(mktemp)"
-        (gh-md-toc "$logfn" | head -n-1; cat "$logfn") > "$tmpfn"
-        mv "$tmpfn" "$logfn"
-    fi
-    git commit -m "latest build" log.md && git push
-}
-
-if [ ! -z "$1" ] && [ -f "$1" ]; then
-    postprocess "$1"
-    exit
-fi
+# get given command line flags
+update="$(getScriptFlags update "$@")"
+build="$(getScriptFlags build "$@")"
+# log file can be provided as 1st or 2nd arg
+logfn="$(readlink -f "$1")"
+[ -f "$logfn" ] || logfn="$(readlink -f "$2")"
 
 ts() {
     date +%s
@@ -43,27 +33,55 @@ timeFmt() {
     fi
 }
 
-timeSum=0
-echo "# Updating the deploy script"
-echo '```'
-cd "$scriptdir"
-git stash save && git pull --rebase && git stash pop
-echo '```'
-
-for svc in catamel catanie landing scichat-loopback;
-do
-    echo "# $svc"
-    start=$(ts)
-    echo "Attempting build at $(date)"
+update() {
+    export SC_TIMESUM=0
+    echo "# Updating the deploy script"
     echo '```'
-    sh "$scriptdir/services/$svc"/*.sh buildonly
+    cd "$scriptdir"
+    git stash save && git pull --rebase && git stash pop
     echo '```'
-    timeDelta=$(($(ts)-start))
-    timeSum=$((timeSum+timeDelta))
-    echo "Building $svc took $(timeFmt $timeDelta)."
-    echo
-done
-echo "Overall time: $(timeFmt $timeSum)."
+}
 
+build() {
+    local start
+    local tocfn="$1"
+    (echo "# Table of Contents"; echo) > "$tocfn"
+    echo "   * [Updating the deploy script](#updating-the-deploy-script)" >> "$tocfn"
+    for svc in catamel catanie landing scichat-loopback;
+    do
+        start=$(ts)
+        echo "# $svc"
+        echo "Attempting build at $(date)"
+        echo '```'
+        if echo "$scriptdir/services/$svc"/*.sh buildonly;
+        then
+            echo "   * [{+ $svc +}](#$svc)" >> "$tocfn"
+        else
+            echo "   * [{- $svc -}](#$svc)" >> "$tocfn"
+        fi
+        echo '```'
+        timeDelta=$(($(ts)-start))
+        SC_TIMESUM=$((SC_TIMESUM+timeDelta))
+        echo "Building $svc took $(timeFmt $timeDelta)."
+        echo
+    done
+    echo >> "$tocfn"
+    echo "Overall time: $(timeFmt $SC_TIMESUM)."
+}
+
+if [ ! -f "$logfn" ]; then
+    echo "No log file provided, giving up!"
+elif [ ! -z "$update" ]; then
+    update > "$logfn" 2>&1
+elif [ ! -z "$build" ]; then
+    tocfn="$(mktemp)"
+    build "$tocfn" >> "$logfn" 2>&1
+    cat "$logfn" >> "$tocfn"
+    mv "$tocfn" "$logfn"
+    cd "$(dirname "$logfn")" && \
+        git commit -m "latest build" "$(basename "$logfn")" && git push
+else
+    echo "Usage: $0 (update|build') <log file>"
+fi
 
 # vim: set ts=4 sw=4 sts=4 tw=0 et:
