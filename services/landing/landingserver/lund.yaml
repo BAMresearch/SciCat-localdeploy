@@ -1,4 +1,0 @@
-ingress:
-  enabled: true
-  host: scicat01.esss.lu.se
-  path: /landing

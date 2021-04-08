@@ -1,3 +1,0 @@
-ingress:
-  enabled: true
-  host:  catanieservice.esss.dk
