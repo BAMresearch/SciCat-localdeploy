@@ -53,7 +53,7 @@ build() {
         echo "# $svc"
         echo "Attempting build at $(date)"
         echo '```'
-        if echo "$scriptdir/services/$svc"/*.sh buildonly;
+        if "$scriptdir/services/$svc"/*.sh buildonly;
         then
             echo "   * [{+ $svc +}](#$svc)" >> "$tocfn"
         else
