@@ -83,7 +83,7 @@ if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
     angBuildCfg="$(jq '.projects.LandingPageServer.architect.build.configurations.essprod' angular.json)"
     injectEnvConfig LandingPageServer "$NS" "$angEnv" "$angBuildCfg"
     copyimages
-    sed -i -e 's#\(<title>\)\w\+\(</title>\)#\1'$SC_SITE_NAME'\2#' src/index.html
+    sed -i -e "s#\\(<title>\\)\\w\\+\\(</title>\\)#\\1$SC_SITE_NAME\\2#" src/index.html
     echo "Building release"
     sed '/_proxy/d;/maintainer/d;/site.png/d;/google/d;s/^\(ARG\s\+env=\).*$/\1'$NS'/' \
         CI/ESS/Dockerfile.dmscprod > Dockerfile
