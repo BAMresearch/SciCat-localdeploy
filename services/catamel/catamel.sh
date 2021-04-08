@@ -80,7 +80,7 @@ if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
     echo "Building release"
     IMAGE_TAG="$(git show --format='%at_%h' HEAD)" # <timestamp>_<git commit>
     cmd="$DOCKER_BUILD -t $IMG_REPO:$IMAGE_TAG -t $IMG_REPO:latest ."
-    echo "$cmd"; eval $cmd
+    echo "$cmd"; eval $cmd || exit 1
     authargs="$(registryLogin)"
     cmd="$DOCKER_PUSH $authargs $IMG_REPO:$IMAGE_TAG"
     echo "$cmd"; eval "$cmd"
