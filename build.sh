@@ -1,14 +1,20 @@
 #!/bin/sh
-# Builds all SciCat services and pushes the images to the registry
-# as defined by $SC_SITECONFIG/general.rc
+# Build script for running regularily in a crontab for example.
+# This script rebuilds all SciCat services from source and pushes the resulting
+# images to the registry as defined in $SC_SITECONFIG/general.rc
 #
 # Add this script to a crontab like this:
-# cd $HOME/scicat; export SC_SITECONFIG=$(pwd)/osd; ./deploy/daily_build.sh update buildlog/log.md; ./deploy/daily_build.sh build buildlog/log.md
-# -> do not forget to
-# - clone the deploy script repo
-# - clone the buildlog repo, set user&pwd, upload ssh keys
-# - add the building user to the docker group
-# - copy the $SC_SITECONFIG/general.rc from elsewhere
+# cd $HOME/scicat; export SC_SITECONFIG=$(pwd)/<sitecfg>; ./deploy/build.sh update buildlog/log.md; ./deploy/build.sh build buildlog/log.md
+# - Assuming the following directory structure:
+#   - `$HOME/scicat`
+#     - `<sitecfg>` ($SC_SITECONFIG directory, file 'general.rc' is needed only)
+#     - `deploy` (git repo containing this script and SciCat deploy scripts)
+#     - `buildlog` (gitlab snippet or gist repo to share the build log file)
+# - do not forget to
+#   - clone the deploy script repo
+#   - clone the buildlog repo, set user&pwd, upload ssh keys
+#   - add the building user to the docker group
+#   - copy the $SC_SITECONFIG/general.rc from elsewhere
 
 # get the script directory before creating any files
 scriptdir="$(dirname "$(readlink -f "$0")")"
