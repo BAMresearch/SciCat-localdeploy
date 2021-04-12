@@ -45,7 +45,7 @@ update() {
 build() {
     local start
     local tocfn="$1"
-    (echo "# Table of Contents"; echo) > "$tocfn"
+    (echo "# $(date)"; echo) > "$tocfn"
     echo "   * [Updating the deploy script](#updating-the-deploy-script)" >> "$tocfn"
     for svc in catamel catanie landing scichat-loopback;
     do
