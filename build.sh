@@ -27,6 +27,9 @@ build="$(getScriptFlags build "$@")"
 logfn="$(readlink -f "$1")"
 [ -f "$logfn" ] || logfn="$(readlink -f "$2")"
 
+loadSiteConfig
+checkVars SC_NAMESPACE || exit 1
+
 ts() {
     date +%s
 }
@@ -84,8 +87,10 @@ elif [ ! -z "$build" ]; then
     build "$tocfn" >> "$logfn" 2>&1
     cat "$logfn" >> "$tocfn"
     mv "$tocfn" "$logfn"
-    cd "$(dirname "$logfn")" && \
-        git commit -m "latest build" "$(basename "$logfn")" && git push
+    cd "$(dirname "$logfn")" \
+        && git checkout -B "$SC_NAMESPACE" \
+        && git commit -m "latest build" "$(basename "$logfn")" \
+        && git push -u origin "$SC_NAMESPACE"
 else
     echo "Usage: $0 (update|build') <log file>"
 fi
