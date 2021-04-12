@@ -4,7 +4,7 @@ This works for the Ubuntu Server LTS edition 20.04
 and was tested on free-tier Orcale Cloud VMs,
 inspired by https://matrix.org/docs/guides/free-small-matrix-server
 
-#### See also literature:
+#### See also:
 
 - https://kubernetes.io/docs/reference/kubectl/cheatsheet/
 - https://github.com/kelseyhightower/kubernetes-the-hard-way
@@ -40,10 +40,21 @@ sudo apt-get clean
 ```
 
 ## Configure *unattended-upgrades*
+
 To get system package updates automatically/unattended.
 ```
 sudo sh -c "echo 'Unattended-Upgrade::Origins-Pattern { \"origin=*\"; };' >> /etc/apt/apt.conf.d/50unattended-upgrades"
 ```
+
+## Install & configure fail2ban
+
+For protecting your SSH server from brute forcing system passwords.
+See also: https://linuxize.com/post/install-configure-fail2ban-on-ubuntu-20-04/
+```
+sudo apt-get install fail2ban
+sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+```
+Adjust `jail.local` your needs, especially the `[sshd]` section.
 
 ## Configure networking and packet forwarding
 
