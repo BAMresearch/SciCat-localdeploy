@@ -38,14 +38,10 @@ IMG_REPO="$baseurl/scichat"
 # get the latest image tag: sort by timestamp, pick the largest
 IMAGE_TAG="$(curl -s "https://$baseurl/v2/scichat/tags/list" | jq -r '(.tags|sort[-1])?')"
 if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
-    IMAGE_TAG_NEW="$(updateSrcRepo "$REPO" develop)"
-    # check if commit hashes differ
-    if imageTagsEqual "$IMAGE_TAG" "$IMAGE_TAG_NEW"; then
-        echo "Image $IMAGE_TAG for commit ${IMAGE_TAG_NEW##*_} found in registry, not building."
-        exit
-    fi
-    IMAGE_TAG="$IMAGE_TAG_NEW"
-    echo "Building release"
+    echo "img tag before: $IMAGE_TAG"
+    updateSrcRepo "$REPO" develop "$IMAGE_TAG" || exit 1
+    echo "img tag after:  $IMAGE_TAG"
+    echo "Building release with tag $IMAGE_TAG"
     npm install
 	sed -i -e "/npm config set/d" Dockerfile
 

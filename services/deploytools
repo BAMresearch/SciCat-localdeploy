@@ -332,15 +332,29 @@ updateSrcRepo()
 {
     local url="$1"
     local branch="$2"
+    local imgTagOld="$3"
+    local imgTagNew
     local srcdir="component"
     if [ ! -d "$(pwd)/$srcdir" ]; then
         git clone "$url" "$srcdir" 1>&2
     fi
-    cd "$srcdir" && \
-    git stash save 1>&2 && \
-    git checkout "$branch" 1>&2 && \
-    git pull 1>&2 && \
-    git show --format='%at_%h' HEAD
+    imgTagNew="$(
+        cd "$srcdir" && \
+        git stash save 1>&2 && \
+        git checkout "$branch" 1>&2 && \
+        git pull 1>&2 && \
+        git show --format='%at_%h' HEAD
+    )"
+    # check if commit hashes differ
+    if imageTagsEqual "$imgTagOld" "$imgTagNew"; then
+        echo "Image $imgTagOld for commit ${imgTagNew##*_} found in registry, not building." >&2
+        return 1
+    fi
+    if [ -z "$imgTagNew" ]; then
+        echo "Could not determine an image tag, giving up!" >&2
+        return 1
+    fi
+    export IMAGE_TAG="$imgTagNew"
 }
 
 imageTagsEqual() {
