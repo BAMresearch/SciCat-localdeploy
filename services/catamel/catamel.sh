@@ -57,13 +57,13 @@ IMAGE_TAG="$(curl -s "https://$baseurl/v2/catamel/tags/list" | jq -r '(.tags|sor
 # investigate registry contents by with curl by:
 # curl -H "Accept: application/vnd.docker.distribution.manifest.v2+json,application/vnd.oci.image.manifest.v1+json" -X GET "https://$baseurl/v2/catamel/manifests/$IMAGE_TAG" | jq
 if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
-    if [ ! -d "./component/" ]; then
-        git clone $REPO component
+    IMAGE_TAG_NEW="$(updateSrcRepo "$REPO" develop)"
+    # check if commit hashes differ
+    if imageTagsEqual "$IMAGE_TAG" "$IMAGE_TAG_NEW"; then
+        echo "Image $IMAGE_TAG for commit ${IMAGE_TAG_NEW##*_} found in registry, not building."
+        exit
     fi
-    cd component/
-    git stash save
-    git checkout develop
-    git pull
+    IMAGE_TAG="$IMAGE_TAG_NEW"
     # adjustments for older versions of nodejs build env
     # (such as 10.19 + node-gyp 5.1, not needed for node 10.24 with node-gyp 6.1)
     fix_nan_package_version

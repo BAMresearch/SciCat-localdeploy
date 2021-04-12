@@ -328,4 +328,23 @@ gen_scichat_credentials()
     fi
 }
 
+updateSrcRepo()
+{
+    local url="$1"
+    local branch="$2"
+    local srcdir="component"
+    if [ ! -d "$(pwd)/$srcdir" ]; then
+        git clone "$url" "$srcdir" 1>&2
+    fi
+    cd "$srcdir" && \
+    git stash save 1>&2 && \
+    git checkout "$branch" 1>&2 && \
+    git pull 1>&2 && \
+    git show --format='%at_%h' HEAD
+}
+
+imageTagsEqual() {
+    [ ! -z "$1" ] && [ ! -z "$2" ] && [ "$1" = "$2" ]
+}
+
 # vim: set ts=4 sw=4 sts=4 tw=0 ft=sh et:

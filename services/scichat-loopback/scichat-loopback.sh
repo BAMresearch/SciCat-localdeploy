@@ -38,13 +38,13 @@ IMG_REPO="$baseurl/scichat"
 # get the latest image tag: sort by timestamp, pick the largest
 IMAGE_TAG="$(curl -s "https://$baseurl/v2/scichat/tags/list" | jq -r '(.tags|sort[-1])?')"
 if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
-    if [ ! -d "./component/" ]; then
-        git clone $REPO component
+    IMAGE_TAG_NEW="$(updateSrcRepo "$REPO" develop)"
+    # check if commit hashes differ
+    if imageTagsEqual "$IMAGE_TAG" "$IMAGE_TAG_NEW"; then
+        echo "Image $IMAGE_TAG for commit ${IMAGE_TAG_NEW##*_} found in registry, not building."
+        exit
     fi
-	cd component
-    git stash save
-	git checkout master
-	git pull
+    IMAGE_TAG="$IMAGE_TAG_NEW"
     echo "Building release"
     npm install
 	sed -i -e "/npm config set/d" Dockerfile
