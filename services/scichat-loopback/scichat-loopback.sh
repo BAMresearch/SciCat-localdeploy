@@ -39,7 +39,7 @@ IMG_REPO="$baseurl/scichat"
 IMAGE_TAG="$(curl -s "https://$baseurl/v2/scichat/tags/list" | jq -r '(.tags|sort[-1])?')"
 if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
     echo "img tag before: $IMAGE_TAG"
-    updateSrcRepo "$REPO" develop "$IMAGE_TAG" || exit 1
+    updateSrcRepo "$REPO" master "$IMAGE_TAG" || exit 1
     echo "img tag after:  $IMAGE_TAG"
     echo "Building release with tag $IMAGE_TAG"
     npm install
