@@ -56,7 +56,7 @@ Running the above command will connect the appropriate ports of the network devi
 With minikube they are accessible at the (internal) address given by the `minikube ip` command only be default.
 The above mentioned script uses *ssh* to forward the service ports to the outward facing network device.
 
-## Install a kubernetes cluster dockerless
+## [Install a kubernetes cluster dockerless](InstallingKubernetes.md)
 
 For installing SciCat on a bunch of virtual machines running Ubuntu Server
 there is [a guide on bootstrapping the kubernetes cluster without using docker](InstallingKubernetes.md)
