@@ -57,7 +57,7 @@ IMAGE_TAG="$(curl -s "https://$baseurl/v2/catamel/tags/list" | jq -r '(.tags|sor
 # investigate registry contents by with curl by:
 # curl -H "Accept: application/vnd.docker.distribution.manifest.v2+json,application/vnd.oci.image.manifest.v1+json" -X GET "https://$baseurl/v2/catamel/manifests/$IMAGE_TAG" | jq
 if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
-    updateSrcRepo "$REPO" develop "$IMAGE_TAG" || exit 1
+    updateSrcRepo "$REPO" develop "$IMAGE_TAG"
     echo "Building release with tag $IMAGE_TAG"
     # adjustments for older versions of nodejs build env
     # (such as 10.19 + node-gyp 5.1, not needed for node 10.24 with node-gyp 6.1)

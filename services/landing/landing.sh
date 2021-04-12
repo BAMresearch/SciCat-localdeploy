@@ -67,7 +67,7 @@ IMG_REPO="$baseurl/$IMG_NAME"
 # get the latest image tag: sort by timestamp, pick the largest
 IMAGE_TAG="$(curl -s "https://$baseurl/v2/$IMG_NAME/tags/list" | jq -r '(.tags|sort[-1])?')"
 if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
-    updateSrcRepo "$REPO" develop "$IMAGE_TAG" || exit 1
+    updateSrcRepo "$REPO" develop "$IMAGE_TAG"
     echo "Building release with tag $IMAGE_TAG"
     # update angular config
     angEnv=$(sed -e "/facility:/s/[[:alnum:]\"]\+,$/\"$SC_SITE_NAME\",/g" \

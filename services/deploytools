@@ -348,11 +348,11 @@ updateSrcRepo()
     # check if commit hashes differ
     if imageTagsEqual "$imgTagOld" "$imgTagNew"; then
         echo "Image $imgTagOld for commit ${imgTagNew##*_} found in registry, not building." >&2
-        return 1
+        exit 0
     fi
     if [ -z "$imgTagNew" ]; then
         echo "Could not determine an image tag, giving up!" >&2
-        return 1
+        exit 1
     fi
     export IMAGE_TAG="$imgTagNew"
 }
