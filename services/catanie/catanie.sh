@@ -59,6 +59,7 @@ IMG_REPO="$baseurl/$IMG_NAME"
 IMAGE_TAG="$(curl -s "https://$baseurl/v2/$IMG_NAME/tags/list" | jq -r '(.tags|sort[-1])?')"
 if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
     updateSrcRepo "$REPO" develop "$IMAGE_TAG"
+    [ "$(basename $(pwd))" = "component" ] || exit 1 # make sure the current dir is correct
     echo "Building release with tag $IMAGE_TAG"
     # update angular config
     angEnv="$(sed \

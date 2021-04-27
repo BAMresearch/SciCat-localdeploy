@@ -39,6 +39,7 @@ IMG_REPO="$baseurl/scichat"
 IMAGE_TAG="$(curl -s "https://$baseurl/v2/scichat/tags/list" | jq -r '(.tags|sort[-1])?')"
 if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
     updateSrcRepo "$REPO" master "$IMAGE_TAG"
+    [ "$(basename $(pwd))" = "component" ] || exit 1 # make sure the current dir is correct
     echo "Building release with tag $IMAGE_TAG"
     npm install
 	sed -i -e "/npm config set/d" Dockerfile

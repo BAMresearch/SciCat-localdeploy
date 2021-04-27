@@ -58,12 +58,13 @@ IMAGE_TAG="$(curl -s "https://$baseurl/v2/catamel/tags/list" | jq -r '(.tags|sor
 # curl -H "Accept: application/vnd.docker.distribution.manifest.v2+json,application/vnd.oci.image.manifest.v1+json" -X GET "https://$baseurl/v2/catamel/manifests/$IMAGE_TAG" | jq
 if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
     updateSrcRepo "$REPO" develop "$IMAGE_TAG"
+    [ "$(basename $(pwd))" = "component" ] || exit 1 # make sure the current dir is correct
     echo "Building release with tag $IMAGE_TAG"
     # adjustments for older versions of nodejs build env
     # (such as 10.19 + node-gyp 5.1, not needed for node 10.24 with node-gyp 6.1)
     fix_nan_package_version
     # using the ESS Dockerfile without ESS specific stuff
-    cp CI/ESS/Dockerfile .
+    cp CI/ESS/Dockerfile . || exit 1
     # https://stackoverflow.com/questions/54428608/docker-node-alpine-image-build-fails-on-node-gyp#59538284
     sed -i -e '/COPY .*CI\/ESS/d' \
         -e '/FROM/s/^.*$/FROM node:15.1-alpine/' \
