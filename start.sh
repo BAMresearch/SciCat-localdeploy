@@ -2,6 +2,16 @@
 
 DNAME=docker.local
 
+getScriptFlags()
+{
+    local key="$1"
+    shift
+    (echo "$@" | grep -qi "\\<$key\\>") && echo true
+}
+
+# get given command line flags
+withNvidia="$(getScriptFlags withNvidia "$@")"
+
 registerDockerIP()
 {
     local hostsfn="/etc/hosts"
@@ -14,7 +24,6 @@ registerDockerIP()
 
 start_minikube()
 {
-    #minikube start -v7    --insecure-registry localhost:5000 --extra-config=apiserver.GenericServerRunOptions.AuthorizationMode=RBAC
     echo "Cleaning some KVM ressources first:"
     #virsh undefine minikube
     #virsh net-undefine minikube-net
@@ -23,7 +32,25 @@ start_minikube()
     virsh net-destroy default # stop dnsmasq and old DNS values for 'docker.local'
     sudo sed -i "/$DNAME/d" /etc/hosts # remove docker.local
     echo "Starting minikube now:"
-    minikube start --vm-driver kvm2 --insecure-registry=$DNAME:5000 $@
+    minikubeArgs="--delete-on-failure=false --insecure-registry=$DNAME:5000"
+    if [ -z "$withNvidia" ]; then
+        minikube start $minikubeArgs --vm-driver kvm2 $@
+    else
+        sudo apt-get install nvidia-docker2
+        sudo sysctl fs.protected_regular=0
+        minikube start $minikubeArgs --driver=none --docker-opt default-runtime=nvidia \
+            --apiserver-ips 127.0.0.1 --apiserver-name localhost $@
+#        kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/master/nvidia-device-plugin.yml
+        kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/1.0.0-beta6/nvidia-device-plugin.yml
+#        helm repo add nvdp https://nvidia.github.io/k8s-device-plugin \
+#            && helm repo update
+#        helm install --generate-name nvdp/nvidia-device-plugin
+         # try this? https://nvidia.github.io/gpu-operator/#quickstart
+#        helm repo add nvidia https://nvidia.github.io/gpu-operator \
+#            && helm repo update
+#        helm install --wait --generate-name nvidia/gpu-operator
+#        helm install gpu-operator deployments/gpu-operator --set operator.registry=registry.gitlab.com/nvidia/kubernetes --set operator.version=1.6.2-31-g2345a5c --set toolkit.registry=registry.gitlab.com/nvidia/container-toolkit/container-config/staging --toolkit.version=22225e5d-ubuntu18.04 --set driver.enabled=false
+    fi
 }
 
 # configure the minikube VM before it is started
@@ -32,11 +59,13 @@ cpucount="$(python3 -c "print(int($cpucount * 0.8))")"
 memratio=0.8 # how much phys. memory to use for minikube (the k8s cluster)
 mem="$(awk "/MemTotal/{print int(\$2*$memratio/1024)}" /proc/meminfo)"
 start_minikube --cpus="$cpucount" --memory="$mem" --disk-size=100g
+#exit # for debugging
+
 #kubectl config use-context minikube #should auto set, but added in case
 registerDockerIP # docker.local points always to the same local registry
 
 #kubectl -n kube-system create sa tiller # handled by rbac-config.yaml
-kubectl create -f rbac-config.yaml
+#kubectl create -f rbac-config.yaml
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
 
@@ -65,7 +94,7 @@ if false; then
 fi
 
 # let docker context point to minikube
-eval $(minikube docker-env)
+[ -z "$withNvidia" ] && eval $(minikube docker-env)
 # set up a local registry if not running
 if ! curl -s -X GET http://docker.local:5000/v2/_catalog | grep -q repositories; then
     # https://hackernoon.com/local-kubernetes-setup-with-minikube-on-mac-os-x-eeeb1cbdc0b
