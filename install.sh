@@ -46,7 +46,7 @@ fi
 
 # install KVM for minikube
 # https://cravencode.com/post/kubernetes/setup-minikube-on-ubuntu-kvm2/
-sudo apt install -y qemu-kvm libvirt-clients libvirt-daemon-system bridge-utils virt-manager
+sudo apt install -y qemu-kvm libvirt-clients libvirt-daemon-system bridge-utils virt-manager conntrack
 sudo usermod -a -G libvirt $(whoami)
 #newgrp libvirt # stops the install script here
 drvbin="/tmp/docker-machine-driver-kvm2"
@@ -90,6 +90,11 @@ elif [ "$(expr substr $(uname -s) 1 5)" = "Linux" ]; then
     chmod +x scripts/get_helm.sh
     bash scripts/get_helm.sh
 fi
+
+# sources for NVIDIA container toolkit
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID) \
+   && curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add - \
+   && curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
 
 helm repo add k8s-at-home https://k8s-at-home.com/charts/
 echo "Please reboot and continue by running the *start.sh* script, followed by *run.sh*."
