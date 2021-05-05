@@ -145,30 +145,27 @@ sudo apt-get install -y kubectl kubeadm kubelet kubernetes-cni
 
 See also: https://gist.github.com/ruanbekker/38a38aea5f325f7fa4a19e795ef4f0d0
 
-And for CRI-O for Kubernetes:
+## Install *CRI-O*
+
+Add software sources for *CRI-O* and *buildah* first:
+
+See also:
 - https://computingforgeeks.com/install-cri-o-container-runtime-on-ubuntu-linux/
 - https://linoxide.com/containers/install-kubernetes-on-ubuntu/
 - https://github.com/cri-o/cri-o/blob/master/tutorials/kubeadm.md
 
-### Add existing private registry name to /etc/hosts
-```
-grep -q registry /etc/hosts || sudo sh -c "echo '10.0.9.1 registry' >> /etc/hosts"
-```
-### Use docker.io public registry only, avoid questions for unqualified image names
-```
-sudo sed -i -e '/unqualified-search-registries/cunqualified-search-registries = ["docker.io",]' /etc/containers/registries.conf
-```
-## Add software sources for *CRI-O* and *buildah*
 ```
 source /etc/os-release
 URL="http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable"
 KUBEVER="$(kubeadm version -o short | grep -o '[0-9]\.[0-9]\+')"
-KUBEVER="$(kubectl version -o json | jq -r '.serverVersion.gitVersion' | grep -o '[0-9]\.[0-9]\+')"
 sudo sh -c "(echo 'deb $URL/x${NAME}_${VERSION_ID}/ /'; echo 'deb $URL:/cri-o:/$KUBEVER/x${NAME}_${VERSION_ID}/ /') > /etc/apt/sources.list.d/cri-o_stable.list"
 curl -L https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/x${NAME}_${VERSION_ID}/Release.key | sudo apt-key add -
 sudo apt update
-## Install CRI-O
-sudo apt install cri-o cri-o-runc
+```
+
+Install CRI-O:
+```
+sudo apt install cri-o cri-o-runc buildah
 ```
 
 ### Configuring CRI-O
@@ -179,6 +176,14 @@ cat << EOF > $TMPFN
 conmon = "$(which conmon)"
 EOF
 sudo mv $TMPFN /etc/crio/crio.conf.d/99-custom.conf
+```
+### Add existing private registry name to /etc/hosts [optional]
+```
+grep -q registry /etc/hosts || sudo sh -c "echo '10.0.9.1 registry' >> /etc/hosts"
+```
+### Use docker.io public registry only, avoid questions for unqualified image names
+```
+sudo sed -i -e '/unqualified-search-registries/cunqualified-search-registries = ["docker.io",]' /etc/containers/registries.conf
 ```
 ### Start CRI-O
 ```
@@ -210,7 +215,7 @@ sudo kubeadm init --ignore-preflight-errors=Mem,Swap --config="$KUBELET_CFG"
 
 For problems with missing pod network, see: https://github.com/coreos/flannel/issues/728#issuecomment-425701657
 
-#### Setup the kubernetes config on a client
+### Setup the kubernetes config on a client
 ```
 To start using your cluster, you need to run the following as a regular user:
 
@@ -230,12 +235,22 @@ kubeadm join 10.0.9.1:6443 --token <token> \
     --discovery-token-ca-cert-hash sha256:<hash>
 ```
 
-#### To let coredns deployment start on master node
+### To let the master node run pods as well
+
+And to let the coredns deployment start on the master node.
 ```
 kubectl taint nodes --all node-role.kubernetes.io/master-
 ```
 
-#### Check network settings (FYI)
+## Setup cluster networking with *flannel* CNI
+
+See https://github.com/coreos/flannel
+
+```
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+```
+
+### Check network settings (FYI)
 
 Get service-cluster-cidr:  
 (https://stackoverflow.com/a/61685899)
@@ -251,20 +266,17 @@ Get Pods IPs range:
 kubectl cluster-info dump | grep -m 1 cluster-cidr
 ```
  
-#### Literature on network config ports needed (FYI)
+### Literature on network config ports needed (FYI)
 
 - https://stackoverflow.com/questions/39293441/needed-ports-for-kubernetes-cluster
 - https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#check-required-ports
 - https://coreos.com/flannel/docs/latest/flannel-config.html#firewall
 - https://serverfault.com/questions/1040893/vpn-network-and-kubernetes-clusters
 
-## Setup cluster networking with *flannel* CNI
+### Troubleshooting
 
-See https://github.com/coreos/flannel
-
-```
-kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
-```
+[NetworkPlugin cni failed to set up pod “xxxxx” network: failed to set bridge addr: “cni0” already has an IP address different from 10.x.x.x - Error
+](https://stackoverflow.com/questions/61373366/networkplugin-cni-failed-to-set-up-pod-xxxxx-network-failed-to-set-bridge-add)
 
 ## Get helm
 ```
@@ -272,6 +284,49 @@ curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get-helm-3
 helm repo add k8s-at-home https://k8s-at-home.com/charts/
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
+```
+
+## NVIDIA GPU support
+
+### Install the package `nvidia-container-runtime`
+
+As described here: https://github.com/NVIDIA/nvidia-docker/issues/1427#issuecomment-737892353
+NVIDIAs container runtime needs to be installed but without using docker, CRI-O will be configured accordingly below:
+https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#installing-on-ubuntu-and-debian
+```
+# sources for NVIDIA container toolkit
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID) \
+   && curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add - \
+   && curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+
+sudo apt-get update
+sudo apt-get install nvidia-container-runtime
+```
+### Set cri-o hooks appropriately
+
+```
+sudo mkdir -p /usr/share/containers/oci/hooks.d
+sudo bash -c '
+cat > /usr/share/containers/oci/hooks.d/oci-nvidia-hook.json << EOF
+{
+    "version": "1.0.0",
+    "hook": {
+        "path": "/usr/bin/nvidia-container-toolkit",
+        "args": ["nvidia-container-toolkit", "prestart"]
+    },
+    "when": {
+        "always": true,
+        "commands": [".*"]
+    },
+    "stages": ["prestart"]
+}
+EOF
+'
+```
+
+## Install the device plugin
+```
+kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/master/nvidia-device-plugin.yml
 ```
 
 ## A public name with certificates
