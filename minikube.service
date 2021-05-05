@@ -1,16 +1,16 @@
 # anchor script for running start.sh on system startup by systemd
 # to be placed (or linked) in /etc/systemd/system/
 #
-# chmod 755 /usr/local/bin/start_minikube_services.sh
-# chmod 664 /etc/systemd/system/start_minikube.service
+# chmod 755 /usr/local/bin/minikube_services.sh
+# chmod 664 /etc/systemd/system/minikube.service
 # systemctl daemon-reload
-# systemctl enable start_minikube.service
+# systemctl enable minikube.service
 
 [Unit]
 Description=minikube startup script
 
 [Service]
-ExecStart=/usr/bin/screen -d -m bash -l -c "/usr/local/bin/start_minikube_services.sh; bash"
+ExecStart=/usr/bin/screen -d -m bash -l -c "/usr/local/bin/minikube_services.sh; bash"
 Type=oneshot
 RemainAfterExit=yes
 User=ingo
