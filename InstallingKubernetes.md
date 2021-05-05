@@ -413,7 +413,7 @@ kubectl exec -it pod1 -- nvidia-smi
 
 1. Create an account
 2. Create a new domain, wildcard capable
-3. Put the update script into /etc/dhcp/dhclient-exit-hooks.d/99_ddnss_update
+3. Put the update script into /etc/dhcp/dhclient-exit-hooks.d/99_ddnss_update  
    (from https://www.ddnss.de/info.php -> 'CRON & Bash Script')  
    https://gist.github.com/ibressler/53ea52c88392831b615d65091281dc38
 4. Fill in the update key and the host name and run it manually for the first time to check if it works
