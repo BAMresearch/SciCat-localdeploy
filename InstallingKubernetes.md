@@ -1,5 +1,9 @@
 # Walk-through for installing kubernetes dockerless
 
+This works for the Ubuntu Server LTS edition 20.04
+and was tested on free-tier Orcale Cloud VMs,
+inspired by https://matrix.org/docs/guides/free-small-matrix-server
+
   1. [Cleaning up the initial system](#cleaning-up-the-initial-system)
      - [Ubuntu minimal](#ubuntu-minimal)
   1. [Install utility packages](#install-utility-packages)
@@ -47,11 +51,7 @@
   1. [Misc. Snippets](#misc-snippets)
      - [ConfigMaps](#configmaps)
 
-[//]: # (ToC generated with: python3 -m md_toc github InstallingKubernetes.md | sed 's/^  - /  1. /')
-
-This works for the Ubuntu Server LTS edition 20.04
-and was tested on free-tier Orcale Cloud VMs,
-inspired by https://matrix.org/docs/guides/free-small-matrix-server
+[//]: # (ToC generated with: python3 -m md_toc github InstallingKubernetes.md | tail -n+2 | sed 's/^  - /  1. /;s/^    - /     - /')
 
 #### See also:
 
