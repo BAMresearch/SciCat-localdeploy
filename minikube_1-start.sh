@@ -64,8 +64,6 @@ start_minikube --cpus="$cpucount" --memory="$mem" --disk-size=100g
 #kubectl config use-context minikube #should auto set, but added in case
 registerDockerIP # docker.local points always to the same local registry
 
-#kubectl -n kube-system create sa tiller # handled by rbac-config.yaml
-#kubectl create -f rbac-config.yaml
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
 
@@ -79,9 +77,6 @@ echo "Applying ingress config from "$tmpyaml"!"
 kubectl apply -f "$tmpyaml"
 rm "$tmpyaml"
 sleep 5
-
-kubectl apply -f service-nodeport.yaml
-kubectl apply -f configmap.yaml
 
 # do not delete the dev namespace
 if false; then
