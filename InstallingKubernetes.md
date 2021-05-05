@@ -324,9 +324,38 @@ EOF
 '
 ```
 
-## Install the device plugin
+### Install the device plugin
 ```
 kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/master/nvidia-device-plugin.yml
+```
+
+### Test GPU support with an example pod
+
+Create a new file `pod1.yaml` with the following contents:
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod1
+spec:
+  restartPolicy: OnFailure
+  containers:
+  - image: nvcr.io/nvidia/cuda:11.0-base
+    name: pod1-ctr
+    command: ["sleep"]
+    args: ["100000"]
+
+    resources:
+      limits:
+        nvidia.com/gpu: 1
+```
+Create the pod by calling:
+```
+kubectl create -f test.yaml
+```
+Check GPU support by running `nvidia-smi` in the pod:
+```
+kubectl exec -it pod1 -- nvidia-smi
 ```
 
 ## A public name with certificates
