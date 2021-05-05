@@ -24,20 +24,20 @@ Most likely it will work on similar distributions with slight modifications.
 
 ### Install minikube
 
-    curl -L https://github.com/scicatbam/localdeploy/raw/develop/install.sh | sh
+    curl -L https://github.com/scicatbam/localdeploy/raw/baremetal/minikube_0-install.sh | sh
 
 Running this will install the above mentioned software packages.
 
 ### Start minikube
 
-    start.sh
+    ./minikube_1-start.sh
 
 Running this script will start minikube and set up helm access.
 It will also deploy a registry for docker images and an nginx ingress controller.
 
 ### Start the SciCat services
 
-    run.sh [nopause]
+    ./minikube_2-run.sh [nopause]
 
 This starts the SciCat services one after another and waits for user confirmation before starting the next one.
 This gives a chance to spot any error messages and it can be disabled by providing the argument `nopause` to the script.
@@ -50,7 +50,7 @@ The `services` directory contains charts and custom code SciCat consists of and 
 
 ### Publish services
 
-    forwardPorts.sh
+    ./minikube_3-forwardPorts.sh
 
 Running the above command will connect the appropriate ports of the network device to the minikube service set up previously.
 With minikube they are accessible at the (internal) address given by the `minikube ip` command only be default.
