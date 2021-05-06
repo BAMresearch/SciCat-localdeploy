@@ -11,7 +11,7 @@ scriptdir="$(dirname "$scriptpath")"
 clean="$(getScriptFlags clean "$@")"
 forwardonly="$(getScriptFlags forwardonly "$@")"
 
-# detect if is ingress already running, forward only in that case
+# detect if ingress is already running, forward only in that case
 kubectl get po -n ingress-nginx --no-headers | grep -q 'ingress-nginx-controller.*Running' && forwardonly=true
 
 latest="$(curl -s https://api.github.com/repos/kubernetes/ingress-nginx/releases | jq '[.[] | select(.prerelease == false and .tag_name[:4] == "cont" )] | .[0].tag_name' | tr -d '"')"
@@ -25,7 +25,11 @@ iptabCmd()
     local baseport=30000
     # find public ip address of this node and its device name
     local ipaddr=$(curl -s http://checkip.dyndns.org | python3 -c 'import sys; data=sys.stdin.readline(); import xml.etree.ElementTree as ET; print(ET.fromstring(data).find("body").text.split(":")[-1].strip())')
-    devname="$(ip addr show | awk -F': ' '/^[0-9]+:\s*ens/{print $2}')"
+    devname="$(ip addr show | grep -B3 "inet\\s\\+$ipaddr" | awk -F': ' '/<[^<>]+>/{print $2}')"
+    if [ -z "$devname" ]; then
+        echo "Could not determine phys. network device name, stopping."
+        exit 1
+    fi
     echo "sudo iptables -t nat $op PREROUTING -i $devname -p tcp --dport $port -j DNAT --to-destination $ipaddr:$((baseport+port))"
     echo "sudo iptables -t nat $op POSTROUTING -o $devname -p tcp --dport $((baseport+port)) -j MASQUERADE"
 }
