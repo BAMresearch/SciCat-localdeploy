@@ -97,6 +97,16 @@ EOF
     [ -z "$SC_REGISTRY_PORT" ] || export SC_REGISTRY_ADDR="$SC_REGISTRY_NAME:$SC_REGISTRY_PORT"
 }
 
+# test access and credentials
+registryOk()
+{
+    local url; url="$1"
+    if ! curl -i -s "https://$url/v2/_catalog" | grep '^HTTP' | grep -q ' 200 '; then
+        echo "WARNING: Registry return code != 200, wrong credentials?"
+        return 1
+    fi
+}
+
 registryLogin()
 {
     # extra arguments if the registry need authentication as indicated by a set password

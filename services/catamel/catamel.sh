@@ -52,6 +52,7 @@ baseurl="$SC_REGISTRY_ADDR"
 IMG_REPO="$baseurl/catamel"
 # extra arguments if the registry need authentication as indicated by a set password
 [ -z "$SC_REGISTRY_PASS" ] || baseurl="$SC_REGISTRY_USER:$SC_REGISTRY_PASS@$baseurl"
+registryOk "$baseurl" || exit 1 # test credentials first
 # get the latest image tag: sort by timestamp, pick the largest
 IMAGE_TAG="$(curl -s "https://$baseurl/v2/catamel/tags/list" | jq -r '(.tags|sort[-1])?')"
 # investigate registry contents by with curl by:
