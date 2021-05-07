@@ -59,10 +59,14 @@ EOF
     # enable rc.local service
     if [ "$(sudo systemctl is-active rc-local)" != "active" ]; then
         if [ "$(sudo systemctl is-enabled rc-local)" != "enabled" ]; then
-            svcfn="/usr/lib/systemd/system/rc-local.service"
-            grep -qiF '[Install]' "$svcfn" \
-                || (sudo sh -c "(echo '[Install]'; echo 'WantedBy=multi-user.target') >> $svcfn" \
-                    && sudo systemctl enable rc-local)
+            svcfn="$(systemctl status rc-local | grep -o '/.*.service\>' | head -n1)"
+            if [ ! -f "$svcfn" ]; then
+                echo "Systemd service definition 'rc-local' not found!"
+            else
+                grep -qiF '[Install]' "$svcfn" \
+                    || (sudo sh -c "(echo '[Install]'; echo 'WantedBy=multi-user.target') >> $svcfn" \
+                        && sudo systemctl enable rc-local)
+            fi
         fi
         sudo systemctl start rc-local
     fi
