@@ -327,6 +327,21 @@ kubectl cluster-info dump | grep -m 1 cluster-cidr
 [NetworkPlugin cni failed to set up pod “xxxxx” network: failed to set bridge addr: “cni0” already has an IP address different from 10.x.x.x - Error
 ](https://stackoverflow.com/questions/61373366/networkplugin-cni-failed-to-set-up-pod-xxxxx-network-failed-to-set-bridge-add)
 
+[failed to get cgroup stats for "/system.slice/kubelet.service"](https://github.com/kubernetes/kubernetes/issues/56850#issuecomment-406241077)
+
+Adding a file in `/etc/systemd/system/kubelet.service.d/11-cgroups.conf` with:
+```
+[Service]
+CPUAccounting=true
+MemoryAccounting=true
+```
+activate by calling:
+```
+sudo systemctl daemon-reload
+sudo systemctl restart kubelet
+```
+
+
 ## Get helm
 ```
 curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get-helm-3 | bash
