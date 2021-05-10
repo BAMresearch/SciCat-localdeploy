@@ -38,7 +38,7 @@ IMG_REPO="$baseurl/scichat"
 registryOk "$baseurl" || exit 1 # test credentials first
 # get the latest image tag: sort by timestamp, pick the largest
 IMAGE_TAG="$(curl -s "https://$baseurl/v2/scichat/tags/list" | jq -r '(.tags|sort[-1])?')"
-if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
+if [ -z "$noBuild" ]; then
     updateSrcRepo "$REPO" master "$IMAGE_TAG"
     [ "$(basename $(pwd))" = "component" ] || exit 1 # make sure the current dir is correct
     echo "Building release with tag $IMAGE_TAG"
@@ -53,7 +53,7 @@ if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
     echo "$cmd"; eval "$cmd"
     cd ..
 fi
-if [ -z "$buildOnly" ]; then
+if [ -z "$buildOnly" ] && [ ! -z "$IMAGE_TAG" ]; then
     setRegistryAccessForPulling
     create_dbuser scichat
     echo "Deploying to Kubernetes"

@@ -57,7 +57,7 @@ registryOk "$baseurl" || exit 1 # test credentials first
 IMAGE_TAG="$(curl -s "https://$baseurl/v2/catamel/tags/list" | jq -r '(.tags|sort[-1])?')"
 # investigate registry contents by with curl by:
 # curl -H "Accept: application/vnd.docker.distribution.manifest.v2+json,application/vnd.oci.image.manifest.v1+json" -X GET "https://$baseurl/v2/catamel/manifests/$IMAGE_TAG" | jq
-if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
+if [ -z "$noBuild" ]; then
     updateSrcRepo "$REPO" develop "$IMAGE_TAG"
     [ "$(basename $(pwd))" = "component" ] || exit 1 # make sure the current dir is correct
     echo "Building release with tag $IMAGE_TAG"
@@ -83,7 +83,7 @@ if [ -z "$noBuild" ] || [ -z "$IMAGE_TAG" ]; then
     echo "$cmd"; eval "$cmd"
     cd ..
 fi
-if [ -z "$buildOnly" ]; then
+if [ -z "$buildOnly" ] && [ ! -z "$IMAGE_TAG" ]; then
     setRegistryAccessForPulling
     create_dbuser catamel
     echo "Deploying to Kubernetes"
