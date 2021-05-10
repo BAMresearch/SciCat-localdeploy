@@ -214,7 +214,7 @@ sudo apt update
 
 Install CRI-O:
 ```
-sudo apt install cri-o cri-o-runc buildah
+sudo apt install cri-o cri-o-runc buildah fuse-overlayfs
 ```
 
 ### Configuring CRI-O
