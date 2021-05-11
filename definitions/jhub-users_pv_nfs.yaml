@@ -1,0 +1,18 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: pvjhub-users
+  labels:
+    type: local
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  mountOptions:
+    - hard
+    - sync
+    - vers=4.2
+  nfs:
+    path: /nfs/jhub-users
+    server: 10.244.0.1

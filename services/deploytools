@@ -60,6 +60,8 @@ loadSiteConfig()
         cat > "$fn" << EOF
 export DOMAINBASE=
 export SC_NAMESPACE=yourns
+export SC_MEDIA_PATH=
+export SC_SITE_NAME="Open Science Data"
 # letsencrypt working dir
 export LE_WORKING_DIR=
 # settings for the private image registry
@@ -85,8 +87,10 @@ export SC_LANDING_KEY=\$LE_WORKING_DIR/\$DOMAINBASE.key
 export SC_SCICHAT_FQDN=chat.\$DOMAINBASE
 export SC_SCICHAT_PUB=\$LE_WORKING_DIR/fullchain.cer
 export SC_SCICHAT_KEY=\$LE_WORKING_DIR/\$DOMAINBASE.key
-export SC_MEDIA_PATH=
-export SC_SITE_NAME="Open Science Data"
+# settings for the api backend catamel
+export SC_JHUB_FQDN=jhub.\$DOMAINBASE
+export SC_JHUB_PUB=\$LE_WORKING_DIR/fullchain.cer
+export SC_JHUB_KEY=\$LE_WORKING_DIR/\$DOMAINBASE.key
 EOF
         exit 1
     fi

@@ -1,0 +1,27 @@
+diff --git a/common/models/instrument.json b/common/models/instrument.json
+index cf26991..65e3f50 100644
+--- a/common/models/instrument.json
++++ b/common/models/instrument.json
+@@ -29,7 +29,21 @@
+             "foreignKey": ""
+         }
+     },
+-    "acls": [
++    "acls": [{
++            "principalType": "ROLE",
++            "principalId": "$everyone",
++            "permission": "ALLOW",
++            "property": [
++                "anonymousquery",
++                "find",
++                "findById",
++                "findOne",
++                "fullfacet",
++                "fullquery",
++                "metadataKeys",
++                "thumbnail"
++	    ]
++	},
+         {
+             "accessType": "*",
+             "principalType": "ROLE",
