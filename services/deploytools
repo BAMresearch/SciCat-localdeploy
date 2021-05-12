@@ -55,6 +55,11 @@ loadSiteConfig()
     local fn="$SC_SITECONFIG/general.rc"
     if [ ! -f "$fn" ]; then
         echo "$fx WARNING: Missing general settings in '$fn'!"
+        read -p "Shall I create an empty template? [N/y]" answer
+        if [ "$answer" != y ]; then
+            echo "Nope, stopping here."
+            exit 1
+        fi
         echo "    -> Creating a template, please fill it out."
         cmdExists apg || (echo "Password generator 'apg' required! Giving up."; return)
         cat > "$fn" << EOF
