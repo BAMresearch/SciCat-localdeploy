@@ -38,9 +38,9 @@ if ! [ -d "$mpath" ]; then
 fi
 
 # remove the pod
+pvname="$(kubectl get pvc -n $NS local-mongodb -o jsonpath='{.spec.volumeName}')"
 helm del local-mongodb --namespace "$NS"
 # reclaim PV
-pvname="$(kubectl -n $NS get pv | grep mongo | awk '{print $1}')"
 [ -z "$pvname" ] || \
     kubectl patch pv "$pvname" -p '{"spec":{"claimRef":null}}'
 
