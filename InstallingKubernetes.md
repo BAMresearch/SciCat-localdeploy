@@ -449,7 +449,7 @@ The [acme.sh command line client](https://github.com/acmesh-official/acme.sh) su
 The environment variable *LE_WORKING_DIR* is set by `acme.sh` somewhere
 ```
 DOMAINBASE=<your domain>
-kubectl -n yourns create secret tls certs-catamel --cert="$LE_WORKING_DIR/$DOMAINBASE/$DOMAINBASE.cer" --key="$LE_WORKING_DIR/$DOMAINBASE/$DOMAINBASE.key" --dry-run=client -o yaml | kubectl apply -f -
+kubectl -n yourns create secret tls certs-catamel --cert="$LE_WORKING_DIR/$DOMAINBASE.cer" --key="$LE_WORKING_DIR/$DOMAINBASE.key" --dry-run=client -o yaml | kubectl apply -f -
 ```
 
 ## Ingress
