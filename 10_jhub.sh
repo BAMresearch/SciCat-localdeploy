@@ -29,7 +29,7 @@ then
     # set up storage volumes (pv)
     if ! [ -d "$mpath" ]; then
         mkdir -p "$mpath"
-        #chmod a+w "$mpath"
+        chmod o-rwx "$mpath"
     fi
     kubectl apply -f "$pvcfg"
     # set up TLS config for https through ingress
