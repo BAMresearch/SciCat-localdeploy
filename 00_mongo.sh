@@ -11,6 +11,7 @@ scriptdir="$(dirname "$(readlink -f "$0")")"
 # get given command line flags
 cleanonly="$(getScriptFlags cleanonly "$@")"
 deletedata="$(getScriptFlags deletedata "$@")"
+noauth="$(getScriptFlags noauth "$@")"
 
 # ensure infrastucture namespace exists
 NS_FILE="$(find "$scriptdir/namespaces" -iname '*.yaml')"
@@ -23,7 +24,8 @@ if ! (kubectl get ns -o jsonpath='{.items[*].metadata.name}' | grep -qi "\\<$NS\
     echo "Could not find namespace, creating '$NS'."
     kubectl create -f "$NS_FILE"
 fi
-kubectl get ns -o jsonpath='{.items[*].metadata.name}'; echo
+# list all namespaces for debugging
+# kubectl get ns -o jsonpath='{.items[*].metadata.name}'; echo
 
 pvcfg="$scriptdir/definitions/mongo_pv_nfs.yaml"
 echo "-> Using NFS for persistent volumes."
@@ -61,12 +63,18 @@ fi
 
 kubectl apply -f "$pvcfg"
 # reset root password in existing db:
-# - create pod with auth disabled, helm arg '--set auth.enabled=false'
-# - change pwd of user root in db
+# - restart service with auth disabled
+#   ./00_mongo.sh noauth
+# - change pwd of user root in db: db.changeUserPassword('root', <password>)
+#   - log in by following shown notes after mongodb setup
 # - recreate pod with auth enabled
-# - update k8s secret (example pwd 'test'):
-#   kubectl -ndev get secret local-mongodb -o json | jq ".data[\"mongodb-root-password\"]=\"$(echo test | base64)\"" | kubectl apply -f -
-cmd="helm install local-mongodb bitnami/mongodb --namespace $NS"
+#   ./00_mongo.sh
+# - update k8s secret, set MONGODB_ROOT_PASSWORD env var before:
+#   kubectl -ndev get secret local-mongodb -o json | jq ".data[\"mongodb-root-password\"]=\"$(echo "$MONGODB_ROOT_PASSWORD" | base64)\"" | kubectl apply -f -
+
+autharg=""
+[ -z "$noauth" ] || autharg="--set auth.enabled=false"
+cmd="helm install local-mongodb bitnami/mongodb --namespace $NS $autharg"
 echo "$cmd"; eval $cmd
 
 # vim: set ts=4 sw=4 sts=4 tw=0 et:
