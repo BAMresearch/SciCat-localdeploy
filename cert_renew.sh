@@ -13,10 +13,12 @@ fi
 domains="$(echo $DOMAINBASE; env | awk -F'=' "/\\.$DOMAINBASE/{print \$2}" | sort | uniq)"
 #echo "$domains"
 domargs=""
+faildelay=5
 for dom in $domains; do
   domargs="$domargs -d $dom"
   #echo "$domargs"
   cmd="$le_wd/acme.sh --home $le_wd --issue --dns dns_ddnss $domargs"
-  echo "$cmd"; eval "$cmd"
+  while ! (echo "$cmd"; eval "$cmd"); do
+    echo "Waiting $faildelay secs ..."; sleep $faildelay; done;
 done
 
