@@ -63,5 +63,6 @@ if [ -z "$buildOnly" ] && [ ! -z "$IMAGE_TAG" ]; then
     (echo "$cmd" && eval "$cmd")
 fi
 registryLogout
+exit 0
 
 # vim: set ts=4 sw=4 sts=4 tw=0 et:
