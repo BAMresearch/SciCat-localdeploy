@@ -1,10 +1,11 @@
 #!/bin/sh
+# upd-svc.sh
 # Build script for running regularily in a crontab for example.
 # This script rebuilds all SciCat services from source and pushes the resulting
 # images to the registry as defined in $SC_SITECONFIG/general.rc
 #
 # Add this script to a crontab like this:
-# cd $HOME/scicat; export SC_SITECONFIG=$(pwd)/<sitecfg>; ./deploy/build.sh update buildlog/log.md; ./deploy/build.sh build buildlog/log.md
+# cd $HOME/scicat; export SC_SITECONFIG=$(pwd)/<sitecfg>; ./deploy/upd-svc.sh update buildlog/log.md; ./deploy/upd-svc.sh build buildlog/log.md
 # - Assuming the following directory structure:
 #   - `$HOME/scicat`
 #     - `<sitecfg>` ($SC_SITECONFIG directory, file 'general.rc' is needed only)
@@ -23,6 +24,11 @@ scriptdir="$(dirname "$(readlink -f "$0")")"
 # get given command line flags
 update="$(getScriptFlags update "$@")"
 build="$(getScriptFlags build "$@")"
+restart="$(getScriptFlags restart "$@")"
+[ -z "$update" ] || action=update
+[ -z "$build" ] || action=build
+[ -z "$restart" ] || action=restart
+
 # log file can be provided as 1st or 2nd arg
 logfn="$(readlink -f "$1")"
 [ -f "$logfn" ] || logfn="$(readlink -f "$2")"
@@ -51,18 +57,25 @@ update() {
     echo '```'
 }
 
-build() {
+foreachsvc()
+{
     local start
     local tocfn="$1"
     (echo "# $(date)"; echo) > "$tocfn"
     echo "   * [Updating the deploy script](#updating-the-deploy-script)" >> "$tocfn"
+    local descr; local cmd
+    if [ "$action" = "build" ]; then
+        cmd="buildonly"; descr="Building"
+    elif [ "$action" = "restart" ]; then
+        cmd="nobuild"; descr="Restarting"
+    fi
     for svc in catamel catanie landing scichat-loopback;
     do
         start=$(ts)
-        echo "# $svc"
-        echo "Attempting build at $(date)"
+        echo "# $descr $svc"
+        date
         echo '```'
-        if "$scriptdir/services/$svc"/*.sh buildonly;
+        if "$scriptdir/services/$svc"/*.sh $cmd;
         then
             echo "   * [{+ $svc +}](#$svc)" >> "$tocfn"
         else
@@ -71,28 +84,30 @@ build() {
         echo '```'
         timeDelta=$(($(ts)-start))
         SC_TIMESUM=$((SC_TIMESUM+timeDelta))
-        echo "Building $svc took $(timeFmt $timeDelta)."
+        echo "*${descr}* $svc took $(timeFmt $timeDelta)."
         echo
     done
     echo >> "$tocfn"
-    echo "Overall time: $(timeFmt $SC_TIMESUM)."
+    echo "Overall time for $descr: $(timeFmt $SC_TIMESUM)."
 }
 
 if [ ! -f "$logfn" ]; then
     echo "No log file provided, giving up!"
 elif [ ! -z "$update" ]; then
     update > "$logfn" 2>&1
-elif [ ! -z "$build" ]; then
+elif [ ! -z "$build" ] || [ ! -z "$restart" ]; then
+    # assumes *update* ran before
     tocfn="$(mktemp)"
-    build "$tocfn" >> "$logfn" 2>&1
+    foreachsvc "$tocfn" >> "$logfn" 2>&1
     cat "$logfn" >> "$tocfn"
     mv "$tocfn" "$logfn"
+    branch="${SC_NAMESPACE}-$action"
     cd "$(dirname "$logfn")" \
-        && git checkout -B "$SC_NAMESPACE" \
-        && git commit -m "latest build" "$(basename "$logfn")" \
-        && git push -u origin "$SC_NAMESPACE"
+        && git checkout -B "$branch" \
+        && git commit -m "latest $action" "$(basename "$logfn")" \
+        && git push -u origin "$branch"
 else
-    echo "Usage: $0 (update|build') <log file>"
+    echo "Usage: $0 (update|build|restart) <log file>"
 fi
 
 # vim: set ts=4 sw=4 sts=4 tw=0 et:
