@@ -64,18 +64,15 @@ if [ -z "$noBuild" ]; then
     echo "Building release with tag $IMAGE_TAG"
     # update angular config
     angEnv="$(sed \
+        -e '/production:/s/\w\+,$/true,/g' \
         -e "/facility:/s/[[:alnum:]\"]\+,$/\"$SC_SITE_NAME\",/g" \
         -e '/lbBaseURL:/s#[[:alnum:]"\:\./]\+,$#"https://'$SC_CATAMEL_FQDN'",#g' \
         -e '/fileserverBaseURL:/s#[[:alnum:]"\:\./]\+,$#"https://files.'$DOMAINBASE'",#g' \
-        -e '/landingPage:/s#[[:alnum:]"\:\./]\+,$#"https://'$SC_LANDING_FQDN'",#g' \
-        -e '/production:/s/\w\+,$/true,/g' \
+        -e '/synapseBaseUrl:/s#[[:alnum:]"\:\./]\+,$#"https://'$SC_SCICHAT_FQDN'",#g' \
+        -e '/riotBaseUrl:/s#[[:alnum:]"\:\./]\+,$#"https://'$SC_SCICHAT_FQDN/riot'",#g' \
+        -e '/jupyterHubUrl:/s#[[:alnum:]"\:\./]\+,$#"https://'$SC_JHUB_FQDN'",#g' \
         -e '/archiveWorkflowEnabled:/s/\w\+,$/false,/g' \
-        -e '/synapseBaseUrl/d' \
-        -e '/riotBaseUrl/d' \
-        -e '/jupyterHubUrl/d' \
-        -e '/sftpHost/d' \
-        -e '/multipleDownloadAction/d' \
-        -e '/externalAuthEndpoint/d' \
+        -e '/landingPage:/s#[[:alnum:]"\:\./]\+,$#"https://'$SC_LANDING_FQDN'",#g' \
         src/environments/environment.ts)"
     angBuildCfg="$(jq '.projects.catanie.architect.build.configurations.dmscdev' angular.json \
         | jq 'del(.assets[-3:])|del(.stylePreprocessorOptions)|del(.styles[-1])')"
