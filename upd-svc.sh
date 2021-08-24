@@ -84,7 +84,7 @@ foreachsvc()
         echo '```'
         timeDelta=$(($(ts)-start))
         SC_TIMESUM=$((SC_TIMESUM+timeDelta))
-        echo "*${descr}* $svc took $(timeFmt $timeDelta)."
+        echo "Completed in $(timeFmt $timeDelta)."
         echo
     done
     echo >> "$tocfn"
