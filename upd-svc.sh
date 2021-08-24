@@ -94,6 +94,7 @@ foreachsvc()
 if [ ! -f "$logfn" ]; then
     echo "No log file provided, giving up!"
 elif [ ! -z "$update" ]; then
+    rm -f "$logfn"
     update > "$logfn" 2>&1
 elif [ ! -z "$build" ] || [ ! -z "$restart" ]; then
     # assumes *update* ran before
@@ -101,6 +102,7 @@ elif [ ! -z "$build" ] || [ ! -z "$restart" ]; then
     foreachsvc "$tocfn" >> "$logfn" 2>&1
     cat "$logfn" >> "$tocfn"
     mv "$tocfn" "$logfn"
+    chmod g+rw "$logfn"
     branch="${SC_NAMESPACE}-$action"
     cd "$(dirname "$logfn")" \
         && git checkout -B "$branch" \
