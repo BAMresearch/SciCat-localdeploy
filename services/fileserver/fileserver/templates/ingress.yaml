@@ -15,12 +15,20 @@ metadata:
     {{- end }}
     ingress.kubernetes.io/ssl-redirect: "true"
 spec:
+  ingressClassName: "nginx"
+  defaultBackend:
+    service:
+      name: {{ $serviceName }}
+      port:
+        number: {{ $servicePort }}
   rules:
     - host: {{ $host }}
       http:
         paths:
           - path: /
             backend:
-              serviceName: {{ $serviceName }}
-              servicePort: {{ $servicePort }}
+              service:
+                name: {{ $serviceName }}
+                port:
+                  number: {{ $servicePort }}
 {{- end -}}

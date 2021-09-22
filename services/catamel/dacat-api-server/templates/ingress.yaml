@@ -15,21 +15,20 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
+  ingressClassName: "nginx"
   tls:
     - secretName: {{ $tlsSecretName }}
       hosts:
       - {{ $host }}
+  defaultBackend:
+    service:
+      name: {{ $serviceName }}
+      port:
+        number: {{ $servicePort }}
   rules:
     - host: {{ $host }}
       http:
         paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ $serviceName }}
-                port:
-                  number: {{ $servicePort }}
           - path: /api
             pathType: Prefix
             backend:
