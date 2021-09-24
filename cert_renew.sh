@@ -13,8 +13,8 @@ fi
 domains="$(echo $DOMAINBASE; env | awk -F'=' "/\\.$DOMAINBASE/{print \$2}" | sort | uniq)"
 #echo "$domains"
 domargs=""
-waitdelay=5
-maxtries=5 # before failing hard
+waitdelay=300 # in secs
+maxtries=5 # secs before failing hard
 for dom in $domains; do
   domargs="$domargs -d $dom"
   #echo "$domargs"
