@@ -4,8 +4,10 @@
 # This script rebuilds all SciCat services from source and pushes the resulting
 # images to the registry as defined in $SC_SITECONFIG/general.rc
 #
-# Add this script to a crontab like this:
-# cd $HOME/scicat; export SC_SITECONFIG=$(pwd)/<sitecfg>; ./deploy/upd-svc.sh update buildlog/log.md; ./deploy/upd-svc.sh build buildlog/log.md
+# Add this script to a crontab like this for building images repeatedly:
+# cd $HOME/scicat; export SC_SITECONFIG=$(pwd)/<sitecfg>; ./deploy/upd-svc.sh update buildlog/readme.md; ./deploy/upd-svc.sh build buildlog/readme.md
+# Add this script to a crontab like this for restarting regularly:
+# cd $HOME/scicat; export SC_SITECONFIG=$(pwd)/<sitecfg>; ./deploy/upd-svc.sh update buildlog/readme.md; ./deploy/upd-svc.sh restart buildlog/readme.md
 # - Assuming the following directory structure:
 #   - `$HOME/scicat`
 #     - `<sitecfg>` ($SC_SITECONFIG directory, file 'general.rc' is needed only)
