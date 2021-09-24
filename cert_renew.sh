@@ -20,5 +20,7 @@ for dom in $domains; do
   cmd="$le_wd/acme.sh --home $le_wd --issue --dns dns_ddnss $domargs"
   while ! (echo "$cmd"; eval "$cmd"); do
     echo "Waiting $faildelay secs ..."; sleep $faildelay; done;
+  # Waiting anyway here to avoid being blocked for too many requests
+  echo "Waiting $faildelay secs ..."; sleep $faildelay;
 done
 
