@@ -13,14 +13,18 @@ fi
 domains="$(echo $DOMAINBASE; env | awk -F'=' "/\\.$DOMAINBASE/{print \$2}" | sort | uniq)"
 #echo "$domains"
 domargs=""
-faildelay=5
+waitdelay=5
+maxtries=5 # before failing hard
 for dom in $domains; do
   domargs="$domargs -d $dom"
   #echo "$domargs"
   cmd="$le_wd/acme.sh --home $le_wd --issue --dns dns_ddnss $domargs"
   while ! (echo "$cmd"; eval "$cmd"); do
-    echo "Waiting $faildelay secs ..."; sleep $faildelay; done;
+    echo "Waiting $waitdelay secs ..."; sleep $waitdelay
+    [ "$maxtries" -eq 0 ] && exit 1
+    maxtries=$((maxtries-1))
+  done
   # Waiting anyway here to avoid being blocked for too many requests
-  echo "Waiting $faildelay secs ..."; sleep $faildelay;
+  echo "Waiting $waitdelay secs ..."; sleep $waitdelay;
 done
 
