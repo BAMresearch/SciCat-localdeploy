@@ -59,11 +59,13 @@ update() {
     echo '```'
 }
 
+datestr () { TZ='Europe/Berlin' date; }
+
 foreachsvc()
 {
     local start
     local tocfn="$1"
-    (echo "# $(date)"; echo) > "$tocfn"
+    (echo "# $(datestr)"; echo) > "$tocfn"
     echo "   * [Updating the deploy script](#updating-the-deploy-script)" >> "$tocfn"
     local descr; local cmd
     if [ "$action" = "build" ]; then
@@ -75,7 +77,7 @@ foreachsvc()
     do
         start=$(ts)
         echo "# $descr $svc"
-        date
+        datestr
         echo '```'
         if "$scriptdir/services/$svc"/*.sh $cmd;
         then
