@@ -73,6 +73,7 @@ foreachsvc()
     elif [ "$action" = "restart" ]; then
         cmd="nobuild"; descr="Restarting"
     fi
+    local descr_low; descr_low="$(echo $descr | tr '[:upper:]' '[:lower:]')"
     for svc in catamel catanie landing scichat-loopback;
     do
         start=$(ts)
@@ -81,9 +82,9 @@ foreachsvc()
         echo '```'
         if "$scriptdir/services/$svc"/*.sh $cmd;
         then
-            echo "   * [{+ $svc +}](#$svc)" >> "$tocfn"
+            echo "   * [{+ $svc +}](#$descr_low-$svc)" >> "$tocfn"
         else
-            echo "   * [{- $svc -}](#$svc)" >> "$tocfn"
+            echo "   * [{- $svc -}](#$descr_low-$svc)" >> "$tocfn"
         fi
         echo '```'
         timeDelta=$(($(ts)-start))
@@ -92,7 +93,7 @@ foreachsvc()
         echo
     done
     echo >> "$tocfn"
-    echo "Overall time for $descr: $(timeFmt $SC_TIMESUM)."
+    echo "Overall time for $descr_low: $(timeFmt $SC_TIMESUM)."
 }
 
 if [ ! -f "$logfn" ]; then
