@@ -41,17 +41,17 @@ fi
 pvname="$(kubectl get pvc -n $NS local-mongodb -o jsonpath='{.spec.volumeName}')"
 helm del local-mongodb --namespace "$NS"
 # reclaim PV
-[ -z "$pvname" ] || \
+if [ ! -z "$pvname" ]; then
     kubectl patch pv "$pvname" -p '{"spec":{"claimRef":null}}'
-
-# delete old volume first
-echo "Waiting for mongodb persistentvolume being removed ... "
-while kubectl -n "$NS" get pv | grep -q mongo; do
-    # https://github.com/kubernetes/kubernetes/issues/77258#issuecomment-502209800
-    kubectl patch pv $pvname -p '{"metadata":{"finalizers":null}}'
-    timeout 6 kubectl delete pv $pvname
-done
-echo "done."
+    # delete old volume first
+    echo "Waiting for mongodb persistentvolume being removed ... "
+    while kubectl -n "$NS" get pv | grep -q mongo; do
+        # https://github.com/kubernetes/kubernetes/issues/77258#issuecomment-502209800
+        kubectl patch pv "$pvname" -p '{"metadata":{"finalizers":null}}'
+        timeout 6 kubectl delete pv "$pvname"
+    done
+    echo "done."
+fi
 
 if [ ! -z "$deletedata" ]; then
     echo "Delete the underlying data!"
