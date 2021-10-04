@@ -3,6 +3,9 @@
 # USAGE: $0 [cleanonly] [deletedata]
 # *cleanonly* runs cleanup procedures only, skips starting services again
 # *deletedata* removes persistent storage data entirely
+#
+# todo: indefinitely growing journal on VM hosts
+#  - perhaps: https://docs.mongodb.com/manual/reference/command/compact/
 
 # get the script directory before creating any files
 scriptdir="$(dirname "$(readlink -f "$0")")"
