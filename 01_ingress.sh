@@ -13,7 +13,7 @@ clean="$(getScriptFlags clean "$@")"
 if [ -z "$clean" ]; then
     # make sure the necessary repo is available
     (helm repo list | grep -q '^ingress-nginx') || helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-    # get the systems outward facing (physical) ip address
+    # get the systems outward facing (physical) ip address, needs gawk (GNU awk)
     ipaddr="$(ip addr show | awk '/\<inet\>\s[0-9\.]+\/24/ { split($2,a,"/"); print a[1] }' | head -n1)"
     helm install ingress-nginx ingress-nginx/ingress-nginx --namespace kube-system \
         --set controller.kind=DaemonSet --set "controller.service.externalIPs[0]=$ipaddr"
