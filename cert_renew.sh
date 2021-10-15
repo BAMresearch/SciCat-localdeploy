@@ -12,7 +12,8 @@ if [ ! -d "$le_wd" ]; then
   exit 1
 fi
 domains="$(echo $DOMAINBASE; env | awk -F'=' "/\\.$DOMAINBASE/{print \$2}" | sort | uniq)"
-#echo "$domains"
+echo "Running certificate renewal for the following domain names:"
+echo "$domains"
 domargs=""
 waitdelay=300 # in secs
 [ -z "$nodelay" ] || waitdelay=0
@@ -23,7 +24,7 @@ for dom in $domains; do
   cmd="$le_wd/acme.sh --home $le_wd --issue --dns dns_ddnss $domargs"
   while ! (echo "$cmd"; eval "$cmd"); do
     echo "Waiting $waitdelay secs ..."; sleep $waitdelay
-    [ "$maxtries" -eq 0 ] && exit 1
+    [ "$maxtries" -eq 0 ] && break #exit 1
     maxtries=$((maxtries-1))
   done
   # Waiting anyway here to avoid being blocked for too many requests
