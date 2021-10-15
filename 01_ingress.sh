@@ -13,9 +13,8 @@ clean="$(getScriptFlags clean "$@")"
 if [ -z "$clean" ]; then
     # make sure the necessary repo is available
     (helm repo list | grep -q '^ingress-nginx') || helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-    #helm repo update
-
-    ipaddr=$(curl -s http://checkip.dyndns.org | python3 -c 'import sys; data=sys.stdin.readline(); import xml.etree.ElementTree as ET; print(ET.fromstring(data).find("body").text.split(":")[-1].strip())')
+    # get the systems outward facing (physical) ip address
+    ipaddr="$(ip addr show | awk '/\<inet\>\s[0-9\.]+\/24/ { split($2,a,"/"); print a[1] }' | head -n1)"
     helm install ingress-nginx ingress-nginx/ingress-nginx --namespace kube-system \
         --set controller.kind=DaemonSet --set "controller.service.externalIPs[0]=$ipaddr"
 else # clean up
