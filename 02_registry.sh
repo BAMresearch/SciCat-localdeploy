@@ -66,7 +66,7 @@ else # clean up
     helm del $SVC_NAME -ndev
     kubectl delete secret -n dev "${SVC_NAME}.tls"
     kubectl delete secret -n dev "${SVC_NAME}.ht"
-    kubectl delete secret -n "$SC_NAMESPACE" "${SVC_NAME}-cred"
+    kubectl delete secret -n "$SC_NAMESPACE" reg-cred #"${SVC_NAME}-cred"
     kubectl patch serviceaccount -n "$SC_NAMESPACE" default -p '{"imagePullSecrets":[]}'
     kubectl delete -f "$pvcfg"
 fi
