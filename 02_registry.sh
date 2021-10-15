@@ -58,9 +58,10 @@ then
     echo " -> Using NFS for persistent volumes."
     echo "    Please make sure the configured NFS shares can be mounted: '$pvcfg'"
     kubectl apply -f "$pvcfg"
-    helm install $SVC_NAME twuni/docker-registry --namespace dev \
+    cmd="helm install $SVC_NAME twuni/docker-registry --namespace dev \
         --set persistence.enabled=true,persistence.size=5Gi \
-        $pwdargs $args
+        $pwdargs $args"
+    (echo "$cmd" && eval "$cmd")
 else # clean up
     helm del $SVC_NAME -ndev
     kubectl delete secret -n dev "${SVC_NAME}.tls"
