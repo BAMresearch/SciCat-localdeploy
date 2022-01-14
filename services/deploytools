@@ -69,6 +69,8 @@ export SC_MEDIA_PATH=
 export SC_SITE_NAME="Open Science Data"
 # letsencrypt working dir
 export LE_WORKING_DIR=
+# API token to update the ddnss domain name entries during certification update
+export DDNSS_Token=
 # settings for the private image registry
 export SC_REGISTRY_PORT=
 export SC_REGISTRY_NAME=img.\$DOMAINBASE
