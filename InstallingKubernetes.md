@@ -569,6 +569,27 @@ It provides a cleanup routine for rollback too.
 
 ## That's it - have fun!
 
+### Troubleshooting: DiskPressure
+
+For smaller root filesystems with used space reaching 85 % (reported by `df -h`) the node my run into a `DiskPressure` condition caused by rather conservative defaults for the free disk space required to be at least 15 %:
+
+https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#hard-eviction-thresholds
+
+A prominent effect is that `kubectl get pods -A` shows many pods with status `Evicted` or `ContainerStatusUnknown`. The current limits can be viewed by exporting the kubelet configuration of the node:
+
+```
+kubectl proxy --port=8001 &
+NODE_NAME="<your-node-name>"; curl -sSL "http://localhost:8001/api/v1/nodes/${NODE_NAME}/proxy/configz" | jq '.kubeletconfig|.kind="KubeletConfiguration"|.apiVersion="kubelet.config.k8s.io/v1beta1"' | less -S
+```
+
+A solution which acutally worked was to adjust the eviction threshold via kubelet paramters in `/etc/default/kubelet`:
+
+```
+KUBELET_EXTRA_ARGS="--eviction-hard='imagefs.available<2Gi,nodefs.available<2Gi,nodefs.inodesFree<20000'"
+```
+
+Followed by restarting kubelet by `sudo service kubelet restart`.
+
 ## Misc. Snippets
 
 #### Get shell access in a pod (if a shell is available)
