@@ -92,6 +92,10 @@ foreachsvc()
         echo "Completed in $(timeFmt $timeDelta)."
         echo
     done
+    if [ "$action" = "build" ]; then
+        # remove all containers built
+        rm -Rf "$HOME/.local/share/containers"
+    fi
     echo >> "$tocfn"
     echo "Overall time for $descr_low: $(timeFmt $SC_TIMESUM)."
 }
