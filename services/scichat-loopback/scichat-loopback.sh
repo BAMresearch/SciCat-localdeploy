@@ -45,7 +45,7 @@ if [ -z "$noBuild" ]; then
     npm install
 	sed -i -e "/npm config set/d" Dockerfile
 
-    IMAGE_TAG="$(git show --format='%at_%h' HEAD)" # <timestamp>_<git commit>
+    IMAGE_TAG="$(getImageTag)" # <timestamp>_<git commit>
     cmd="$DOCKER_BUILD -t $IMG_REPO:$IMAGE_TAG -t $IMG_REPO:latest ."
     echo "$cmd"; eval $cmd || exit 1
     authargs="$(registryLogin)"

@@ -75,7 +75,7 @@ if [ -z "$noBuild" ]; then
 
     npm install
     echo "Building release"
-    IMAGE_TAG="$(git show --format='%at_%h' HEAD)" # <timestamp>_<git commit>
+    IMAGE_TAG="$(getImageTag)"
     cmd="$DOCKER_BUILD -t $IMG_REPO:$IMAGE_TAG -t $IMG_REPO:latest ."
     echo "$cmd"; eval $cmd || exit 1
     authargs="$(registryLogin)"

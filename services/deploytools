@@ -16,6 +16,12 @@ if ! cmdExists docker; then
     DOCKER_PUSH="buildah push"
 fi
 
+getImageTag()
+{
+    # <timestamp>_<git commit>
+    git show -q --format='%at_%h' HEAD
+}
+
 # makes sure required ENV vars exist (supplied by arguments)
 checkVars()
 {
@@ -364,7 +370,7 @@ updateSrcRepo()
         git stash save 1>&2 && \
         git checkout "$branch" . 1>&2 && \
         git pull 1>&2 && \
-        git show --format='%at_%h' HEAD
+        getImageTag
     )"
     # check if commit hashes differ
     if imageTagsEqual "$imgTagOld" "$imgTagNew"; then
