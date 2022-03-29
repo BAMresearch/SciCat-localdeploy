@@ -56,7 +56,7 @@ then
 
     echo " -> Using NFS for persistent volumes."
     echo "    Please make sure the configured NFS shares can be mounted: '$pvcfg'"
-    kubectl apply -f "$pvcfg"
+    adjustServerAddr "$NFS_SERVER" "$pvcfg" | kubectl apply -f -
     cmd="helm install $SVC_NAME twuni/docker-registry --namespace dev \
         --set persistence.enabled=true,persistence.size=5Gi \
         $pwdargs $args"
@@ -67,7 +67,7 @@ else # clean up
     kubectl delete secret -n dev "${SVC_NAME}.ht"
     kubectl delete secret -n "$SC_NAMESPACE" reg-cred #"${SVC_NAME}-cred"
     kubectl patch serviceaccount -n "$SC_NAMESPACE" default -p '{"imagePullSecrets":[]}'
-    kubectl delete -f "$pvcfg"
+    adjustServerAddr "$NFS_SERVER" "$pvcfg" | kubectl delete -f -
 fi
 
 # vim: set ts=4 sw=4 sts=4 tw=0 et:

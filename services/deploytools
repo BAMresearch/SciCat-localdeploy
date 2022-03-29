@@ -38,6 +38,11 @@ getImageTag()
     git show -q --format='%at_%h' HEAD
 }
 
+adjustServerAddr()
+{
+    sed -e "s/\(^\s\+server:\s*\).\+$/\1$1/" "$2"
+}
+
 # makes sure required ENV vars exist (supplied by arguments)
 checkVars()
 {
@@ -89,6 +94,8 @@ export DOMAINBASE=
 export SC_NAMESPACE=yourns
 export SC_MEDIA_PATH=
 export SC_SITE_NAME="Open Science Data"
+# address of NFS server for providing persistent storage backend
+export NFS_SERVER=
 # letsencrypt working dir
 export LE_WORKING_DIR=
 # API token to update the ddnss domain name entries during certification update

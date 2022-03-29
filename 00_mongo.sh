@@ -64,7 +64,7 @@ fi
 
 [ -z "$cleanonly" ] || exit # done here in 'clean only' mode
 
-kubectl apply -f "$pvcfg"
+adjustServerAddr "$NFS_SERVER" "$pvcfg" | kubectl apply -f -
 # reset root password in existing db:
 # - restart service with auth disabled
 #   ./00_mongo.sh noauth
