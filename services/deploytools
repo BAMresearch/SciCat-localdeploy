@@ -191,6 +191,7 @@ createTLSsecret()
     [ -f "$pathPub" ] || (echo "$fx: Public certificate file does not exist: '$pathPub'!"; return)
     [ -f "$pathKey" ] || (echo "$fx: Private key file does not exist: '$pathKey'!"; return)
     [ -z "$ns" ] || ns="-n $ns"
+    echo "Creating TLS secret from '$(dirname $pathPub)'."
     kubectl $ns create secret tls "$secretName" \
         --cert="$pathPub" --key="$pathKey" \
         --dry-run=client -o yaml | kubectl apply -f -
