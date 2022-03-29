@@ -11,12 +11,15 @@ scriptdir="$(dirname "$scriptpath")"
 clean="$(getScriptFlags clean "$@")"
 
 if [ -z "$clean" ]; then
+    proccount="$(awk -F': ' '/^processor/{print ($NF)+1}' /proc/cpuinfo | tail -n1)"
+    [ "$proccount" -gt 8 ] && proccount=8
     # make sure the necessary repo is available
     (helm repo list | grep -q '^ingress-nginx') || helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
     # get the systems outward facing (physical) ip address, needs gawk (GNU awk)
     ipaddr="$(ip addr show | awk '/\<inet\>\s[0-9\.]+\/24/ { split($2,a,"/"); print a[1] }' | head -n1)"
     helm install ingress-nginx ingress-nginx/ingress-nginx --namespace kube-system \
-        --set controller.kind=DaemonSet --set "controller.service.externalIPs[0]=$ipaddr"
+        --set controller.kind=DaemonSet --set "controller.service.externalIPs[0]=$ipaddr" \
+        --set "controller.config.worker-processes=$proccount"
 else # clean up
     helm del --namespace kube-system ingress-nginx
 fi
