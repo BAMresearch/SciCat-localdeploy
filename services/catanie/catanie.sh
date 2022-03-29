@@ -80,7 +80,7 @@ if [ -z "$noBuild" ]; then
     copyimages
     echo "Building release"
     sed '/_proxy/d;/maintainer/d;/site.png/d;/google/d;s/^\(ARG\s\+env=\).*$/\1'$NS'/' \
-        CI/ESS/Dockerfile.dmscprod > Dockerfile
+        CI/ESS/Dockerfile.dmsc > Dockerfile
     IMAGE_TAG="$(getImageTag)"
     cmd="$DOCKER_BUILD -t $IMG_REPO:$IMAGE_TAG -t $IMG_REPO:latest --build-arg env=$NS ."
     echo "$cmd"; eval $cmd || exit 1
