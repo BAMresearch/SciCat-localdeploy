@@ -85,8 +85,7 @@ if [ -z "$noBuild" ]; then
     cmd="$DOCKER_BUILD -t $IMG_REPO:$IMAGE_TAG -t $IMG_REPO:latest --build-arg env=$NS ."
     echo "$cmd"; eval $cmd || exit 1
     authargs="$(registryLogin)"
-    cmd="$DOCKER_PUSH $authargs $IMG_REPO:$IMAGE_TAG"
-    echo "$cmd"; eval $cmd
+    registryPush "$authargs" "${IMG_REPO}:${IMAGE_TAG}"
     cd ..
 fi
 if [ -z "$buildOnly" ] && [ ! -z "$IMAGE_TAG" ]; then
