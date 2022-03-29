@@ -34,7 +34,6 @@ then
         args="--set ingress.enabled=true,ingress.hosts[0]=$SC_REGISTRY_NAME"
         args="$args --set ingress.tls[0].hosts[0]=$SC_REGISTRY_NAME"
         args="$args --set ingress.tls[0].secretName=${SVC_NAME}.tls"
-        args="$args --set ingress.annotations.\"kubernetes\\.io/ingress\\.class\"=nginx"
         if [ -z "$nopwd" ]; then
             echo "$SC_REGISTRY_PASS" | htpasswd -Bbn -i $SC_REGISTRY_USER | \
                 kubectl -n dev create secret generic ${SVC_NAME}.ht --from-file=auth=/dev/stdin
