@@ -64,22 +64,23 @@ if [ -z "$noBuild" ]; then
     echo "Building release with tag $IMAGE_TAG"
     # update angular config
     angEnv="$(sed \
-        -e '/production:/s/\w\+,$/true,/g' \
-        -e "/facility:/s/[[:alnum:]\"]\+,$/\"$SC_SITE_NAME\",/g" \
-        -e '/lbBaseURL:/s#[[:alnum:]"\:\./]\+,$#"https://'$SC_CATAMEL_FQDN'",#g' \
-        -e '/fileserverBaseURL:/s#[[:alnum:]"\:\./]\+,$#"https://files.'$DOMAINBASE'",#g' \
-        -e '/synapseBaseUrl:/s#[[:alnum:]"\:\./]\+,$#"https://'$SC_SCICHAT_FQDN'",#g' \
-        -e '/riotBaseUrl:/s#[[:alnum:]"\:\./]\+,$#"https://'$SC_SCICHAT_FQDN/riot'",#g' \
-        -e '/jupyterHubUrl:/s#[[:alnum:]"\:\./]\+,$#"https://'$SC_JHUB_FQDN'",#g' \
-        -e '/archiveWorkflowEnabled:/s/\w\+,$/false,/g' \
-        -e '/landingPage:/s#[[:alnum:]"\:\./]\+,$#"https://'$SC_LANDING_FQDN'",#g' \
-        src/environments/environment.ts)"
-    angBuildCfg="$(jq '.projects.catanie.architect.build.configurations.dmscdev' angular.json \
-        | jq 'del(.assets[-3:])|del(.stylePreprocessorOptions)|del(.styles[-1])')"
-    injectEnvConfig catanie "$NS" "$angEnv" "$angBuildCfg"
+        -e "/facility/s/[[:alnum:]\"]\+,$/\"$SC_SITE_NAME\",/g" \
+        -e '/lbBaseURL/s#[[:alnum:]"\:\./]\+,$#"https://'$SC_CATAMEL_FQDN'",#g' \
+        -e '/fileserverBaseURL/s#[[:alnum:]"\:\./]\+,$#"https://files.'$DOMAINBASE'",#g' \
+        -e '/synapseBaseUrl/s#[[:alnum:]"\:\./]\+,$#"https://'$SC_SCICHAT_FQDN'",#g' \
+        -e '/riotBaseUrl/s#[[:alnum:]"\:\./]\+,$#"https://'$SC_SCICHAT_FQDN/riot'",#g' \
+        -e '/jupyterHubUrl/s#[[:alnum:]"\:\./]\+,$#"https://'$SC_JHUB_FQDN'",#g' \
+        -e '/archiveWorkflowEnabled/s/\w\+,$/false,/g' \
+        -e '/landingPage/s#[[:alnum:]"\:\./]\+,$#"https://'$SC_LANDING_FQDN'",#g' \
+        -e 's#sftpHost#// sftpHost#;s#multipleDownloadAction#// multipleDownloadAction#' \
+        src/assets/config.json)"
+    angBuildCfg="$(jq '.projects.catanie.architect.build.configurations.production' angular.json \
+        | jq 'del(.assets[-3:])|del(.budgets)|del(.styles[-1])')"
+    #injectEnvConfig catanie "$NS" "$angEnv" "$angBuildCfg"
+    echo "$angEnv" > src/assets/config.json
     copyimages
     echo "Building release"
-    sed '/_proxy/d;/maintainer/d;/site.png/d;/google/d;s/^\(ARG\s\+env=\).*$/\1'$NS'/' \
+    sed -e '/_proxy/d;/maintainer/d;/site.png/d;/google/d;' \
         CI/ESS/Dockerfile.dmsc > Dockerfile
     IMAGE_TAG="$(getImageTag)"
     cmd="$DOCKER_BUILD -t $IMG_REPO:$IMAGE_TAG -t $IMG_REPO:latest --build-arg env=$NS ."
@@ -88,6 +89,7 @@ if [ -z "$noBuild" ]; then
     registryPush "$authargs" "${IMG_REPO}:${IMAGE_TAG}"
     cd ..
 fi
+
 if [ -z "$buildOnly" ] && [ ! -z "$IMAGE_TAG" ]; then
     setRegistryAccessForPulling
     echo "Deploying to Kubernetes"
