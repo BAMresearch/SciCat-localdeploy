@@ -9,11 +9,13 @@ cmdExists()
 }
 
 # replace needed docker commands if alternatives are used
-DOCKER_BUILD="docker build"
-DOCKER_PUSH="docker push"
+DOCKER_CMD=docker
+DOCKER_BUILD="$DOCKER_CMD build"
+DOCKER_PUSH="$DOCKER_CMD push"
 if ! cmdExists docker; then
-    DOCKER_BUILD="buildah bud"
-    DOCKER_PUSH="buildah push"
+    DOCKER_CMD=buildah
+    DOCKER_BUILD="$DOCKER_CMD bud"
+    DOCKER_PUSH="$DOCKER_CMD push"
 fi
 
 registryPush()

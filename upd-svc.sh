@@ -94,7 +94,7 @@ foreachsvc()
     done
     if [ "$action" = "build" ]; then
         # remove all containers built
-        rm -Rf "$HOME/.local/share/containers"
+        $DOCKER_CMD rmi -f $($DOCKER_CMD images -a -q)
     fi
     echo >> "$tocfn"
     echo "Overall time for $descr_low: $(timeFmt $SC_TIMESUM)."
