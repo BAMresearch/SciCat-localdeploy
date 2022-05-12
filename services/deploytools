@@ -381,6 +381,7 @@ gen_scichat_credentials()
     fi
 }
 
+# updates IMAGE_TAG in parent scope with latest git commit meta data
 updateSrcRepo()
 {
     local url="$1"

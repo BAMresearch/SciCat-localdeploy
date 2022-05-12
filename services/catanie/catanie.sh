@@ -8,6 +8,7 @@ scriptdir="$(dirname "$(readlink -f "$0")")"
 noBuild="$(getScriptFlags nobuild "$@")"
 buildOnly="$(getScriptFlags buildonly "$@")"
 clean="$(getScriptFlags clean "$@")"
+overrideImageTag="$(echo "$@" | grep -Eo '[0-9]+_\w+')"
 
 loadSiteConfig
 checkVars SC_CATAMEL_FQDN SC_CATANIE_FQDN SC_CATANIE_PUB SC_CATANIE_KEY SC_REGISTRY_ADDR || exit 1
@@ -58,8 +59,11 @@ IMG_REPO="$baseurl/$IMG_NAME"
 registryOk "$baseurl" || exit 1 # test credentials first
 # get the latest image tag: sort by timestamp, pick the largest
 IMAGE_TAG="$(curl -s "https://$baseurl/v2/$IMG_NAME/tags/list" | jq -r '(.tags|sort[-1])?')"
+[ -z "$overrideImageTag" ] || IMAGE_TAG="$overrideImageTag"
+
 if [ -z "$noBuild" ]; then
     updateSrcRepo "$REPO" develop "$IMAGE_TAG"
+    [ -z "$overrideImageTag" ] || IMAGE_TAG="$overrideImageTag"
     [ "$(basename $(pwd))" = "component" ] || exit 1 # make sure the current dir is correct
     echo "Building release with tag $IMAGE_TAG"
     # update angular config
@@ -82,7 +86,7 @@ if [ -z "$noBuild" ]; then
     echo "Building release"
     sed -e '/_proxy/d;/maintainer/d;/site.png/d;/google/d;' \
         CI/ESS/Dockerfile.dmsc > Dockerfile
-    IMAGE_TAG="$(getImageTag)"
+    [ -z "$overrideImageTag" ] || IMAGE_TAG="$overrideImageTag"
     cmd="$DOCKER_BUILD -t $IMG_REPO:$IMAGE_TAG -t $IMG_REPO:latest --build-arg env=$NS ."
     echo "$cmd"; eval $cmd || exit 1
     authargs="$(registryLogin)"
