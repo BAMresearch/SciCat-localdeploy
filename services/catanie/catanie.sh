@@ -76,7 +76,8 @@ if [ -z "$noBuild" ]; then
         -e '/jupyterHubUrl/s#[[:alnum:]"\:\./]\+,$#"https://'$SC_JHUB_FQDN'",#g' \
         -e '/archiveWorkflowEnabled/s/\w\+,$/false,/g' \
         -e '/landingPage/s#[[:alnum:]"\:\./]\+,$#"https://'$SC_LANDING_FQDN'",#g' \
-        -e 's#sftpHost#// sftpHost#;s#multipleDownloadAction#// multipleDownloadAction#' \
+        -e '/multipleDownloadEnabled/s/\w\+,$/false,/g' \
+        -e '/sftpHost/s#[[:alnum:]"\:\./]\+,$#"",#g' \
         src/assets/config.json)"
     angBuildCfg="$(jq '.projects.catanie.architect.build.configurations.production' angular.json \
         | jq 'del(.assets[-3:])|del(.budgets)|del(.styles[-1])')"
