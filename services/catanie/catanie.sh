@@ -62,7 +62,7 @@ IMAGE_TAG="$(curl -s "https://$baseurl/v2/$IMG_NAME/tags/list" | jq -r '(.tags|s
 [ -z "$overrideImageTag" ] || IMAGE_TAG="$overrideImageTag"
 
 if [ -z "$noBuild" ]; then
-    updateSrcRepo "$REPO" develop "$IMAGE_TAG"
+    updateSrcRepo "$REPO" master "$IMAGE_TAG"
     [ -z "$overrideImageTag" ] || IMAGE_TAG="$overrideImageTag"
     [ "$(basename $(pwd))" = "component" ] || exit 1 # make sure the current dir is correct
     echo "Building release with tag $IMAGE_TAG"

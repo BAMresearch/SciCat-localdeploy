@@ -22,6 +22,7 @@ pvcfg="$scriptdir/definitions/registry_pv_nfs.yaml"
 if [ "$1" != "clean" ];
 then
     helm repo add twuni https://helm.twun.io
+    helm repo update
 
     if [ -z "$nopwd" ]; then
         # check for credentials for protected public accessible registry

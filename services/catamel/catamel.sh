@@ -58,7 +58,7 @@ IMAGE_TAG="$(curl -s "https://$baseurl/v2/catamel/tags/list" | jq -r '(.tags|sor
 # investigate registry contents by with curl by:
 # curl -H "Accept: application/vnd.docker.distribution.manifest.v2+json,application/vnd.oci.image.manifest.v1+json" -X GET "https://$baseurl/v2/catamel/manifests/$IMAGE_TAG" | jq
 if [ -z "$noBuild" ]; then
-    updateSrcRepo "$REPO" develop "$IMAGE_TAG"
+    updateSrcRepo "$REPO" master "$IMAGE_TAG"
     [ "$(basename $(pwd))" = "component" ] || exit 1 # make sure the current dir is correct
     echo "Building release with tag $IMAGE_TAG"
     # adjustments for older versions of nodejs build env
