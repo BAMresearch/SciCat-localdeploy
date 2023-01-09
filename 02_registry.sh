@@ -2,7 +2,14 @@
 # setting up a private registry on the cluster, using
 # https://github.com/twuni/docker-registry.helm
 # argument flags:
-# - passing 'nopwd' disables http basic auth for registry access
+# - 'nopwd' disables http basic auth for registry access
+# - 'noingress' sets up NodePort without ingress
+# - 'clean' removes the services and removes used resources (e.g. secrets)
+# - 'checkCert' Returns true if the installed certificates (in kubernetes)
+#   are older than the files on disk and an restart using this script is recommended
+# example crontab:
+# (check once a week if there is a more recent cert and restart the registry if positive)
+# 23 2 * * 0 (cd /home/buildbot/scicat; export SC_SITECONFIG=$(pwd)/fb65; if ./deploy/02_registry.sh checkCert; then ./deploy/02_registry.sh clean; sleep 5; ./deploy/02_registry.sh; fi)
 
 # learn about some utility functions before heading on ...
 scriptpath="$(readlink -f "$0")"
@@ -12,12 +19,18 @@ scriptdir="$(dirname "$scriptpath")"
 # get provided command line flags
 nopwd="$(getScriptFlags nopwd "$@")"
 noingress="$(getScriptFlags noingress "$@")"
+checkCert="$(getScriptFlags checkCert "$@")"
 
 loadSiteConfig
 
 checkVars SC_REGISTRY_NAME SC_REGISTRY_PUB SC_REGISTRY_KEY || exit 1
 SVC_NAME=myregistry
 pvcfg="$scriptdir/definitions/registry_pv_nfs.yaml"
+
+if [ ! -z "$checkCert" ]; then
+    [ "$( ( (kubectl get secret -n dev ${SVC_NAME}.tls -o json | jq .data | sed 's/tls.//g' | jq -r .crt | base64 -d | openssl x509 -noout -dates); openssl x509 -in "$SC_REGISTRY_PUB" -noout -dates) | grep notBefore | python3 -c "import sys, datetime; fmt='%b %d %H:%M:%S %Y %Z'; starts=[datetime.datetime.strptime(dat.split('=')[-1].strip(), fmt).timestamp() for dat in sys.stdin.readlines()]; print(starts[0] < starts[1])")" = "True" ]
+    exit $?
+fi
 
 if [ "$1" != "clean" ];
 then
