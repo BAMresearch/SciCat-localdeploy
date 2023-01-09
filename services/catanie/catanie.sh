@@ -82,7 +82,8 @@ if [ -z "$noBuild" ]; then
     angBuildCfg="$(jq '.projects.catanie.architect.build.configurations.production' angular.json \
         | jq 'del(.assets[-3:])|del(.budgets)|del(.styles[-1])')"
     #injectEnvConfig catanie "$NS" "$angEnv" "$angBuildCfg"
-    echo "$angEnv" > src/assets/config.json
+    # rewrite default config and fix json formatting
+    echo "$angEnv" | jq '.localColumns += [{"name":"instrumentId","order":12,"type":"custom","enabled":true}]' > src/assets/config.json
     copyimages
     echo "Building release"
     sed -e '/_proxy/d;/maintainer/d;/site.png/d;/google/d;' \
