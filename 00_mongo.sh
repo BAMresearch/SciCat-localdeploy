@@ -16,6 +16,9 @@ cleanonly="$(getScriptFlags cleanonly "$@")"
 deletedata="$(getScriptFlags deletedata "$@")"
 noauth="$(getScriptFlags noauth "$@")"
 
+loadSiteConfig
+checkVars NFS_SERVER || exit 1
+
 # ensure infrastucture namespace exists
 NS_FILE="$(find "$scriptdir/namespaces" -iname '*.yaml')"
 NS="$(sed -n -e '/^metadata/{:a;n;s/^\s\+name:\s*\(\w\+\)/\1/;p;Ta' -e'}' "$NS_FILE")"
