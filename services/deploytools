@@ -270,7 +270,7 @@ create_dbuser()
     fi
     local dbname; dbname="$(awk '/db:/ {gsub("^\"|\"$,?","",$2); print $2}' "$svcjs")"
     kubectl -n dev exec -i $mongopod \
-        -- mongo -u root -p "$rootpwd" admin < "$svcjs"
+        -- mongosh -u root -p "$rootpwd" admin < "$svcjs"
 }
 
 delete_dbuser()
@@ -288,7 +288,7 @@ delete_dbuser()
     local dbname; dbname="$(awk '/db:/ {gsub("^\"|\"$,?","",$2); print $2}' \
         "$SC_SITECONFIG/mongodb/${service}.js")"
     kubectl -n dev exec -i $mongopod \
-        -- mongo $dbname -u root -p "$rootpwd" --authenticationDatabase admin -eval "db.dropUser(\"$username\")"
+        -- mongosh $dbname -u root -p "$rootpwd" --authenticationDatabase admin -eval "db.dropUser(\"$username\")"
 }
 
 #
