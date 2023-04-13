@@ -315,6 +315,7 @@ db.createUser({
         db: "$4"
     }]
 });
+db.disableFreeMonitoring();
 EOF
 }
 
