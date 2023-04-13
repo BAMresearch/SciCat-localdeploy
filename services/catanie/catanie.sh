@@ -79,6 +79,7 @@ if [ -z "$noBuild" ]; then
         -e '/multipleDownloadEnabled/s/\w\+,$/false,/g' \
         -e '/sftpHost/s#[[:alnum:]"\:\./]\+,$#"",#g' \
         -e '/externalAuthEndpoint/d' \
+        -e "/accessTokenPrefix/s/\"[^\"]\+\",$/\"\",/" \
         src/assets/config.json)"
     angBuildCfg="$(jq '.projects.catanie.architect.build.configurations.production' angular.json \
         | jq 'del(.assets[-3:])|del(.budgets)|del(.styles[-1])')"
