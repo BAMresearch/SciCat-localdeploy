@@ -81,7 +81,22 @@ else # clean up
     kubectl delete secret -n dev "${SVC_NAME}.ht"
     kubectl delete secret -n "$SC_NAMESPACE" reg-cred #"${SVC_NAME}-cred"
     kubectl patch serviceaccount -n "$SC_NAMESPACE" default -p '{"imagePullSecrets":[]}'
-    adjustServerAddr "$NFS_SERVER" "$pvcfg" | kubectl delete -f -
+    pvname="$(yq .metadata.name "$pvcfg")"
+    if [ -n "$pvname" ]; then
+        kubectl patch pv $pvname -p '{"spec":{"claimRef":null}}'
+        echo "Waiting for persistentvolume being removed ... "
+        while kubectl -n dev get pv | grep -q "$pvname"; do
+            # https://github.com/kubernetes/kubernetes/issues/77258#issuecomment-502209800
+            kubectl patch pv "$pvname" -p '{"metadata":{"finalizers":null}}'
+            timeout 6 kubectl delete pv "$pvname"
+        done
+    fi
+    pvcname="$(kubectl get pvc -n dev -o yaml | yq '.items[].metadata.name' | grep registry)"
+    if [ -n "$pvcname" ]; then
+        kubectl patch pvc -n dev "$pvcname" -p '{"metadata":{"finalizers":null}}'
+        kubectl delete pvc -n dev "$pvcname"
+    fi
+    echo "done."
 fi
 
 # vim: set ts=4 sw=4 sts=4 tw=0 et:
