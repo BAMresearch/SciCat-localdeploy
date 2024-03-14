@@ -89,9 +89,13 @@ if [ -z "$noBuild" ]; then
     copyimages
     echo "Building release"
     sed -e '/_proxy/d;/maintainer/d;/site.png/d;/google/d;' \
+        -e '/RUN apk/a    apk add --no-cache python3 && \\' \
+        -e '/COPY package/aRUN ulimit -Sn' \
+        -e 's/RUN \(npm ci.*\)$/RUN npm config set fetch-timeout=600000 \&\& \1/' \
         CI/ESS/Dockerfile.dmsc > Dockerfile
+    cat Dockerfile
     [ -z "$overrideImageTag" ] || IMAGE_TAG="$overrideImageTag"
-    cmd="$DOCKER_BUILD -t $IMG_REPO:$IMAGE_TAG -t $IMG_REPO:latest --build-arg env=$NS ."
+    cmd="$DOCKER_BUILD -t $IMG_REPO:$IMAGE_TAG -t $IMG_REPO:latest --ulimit nofile=8192 --build-arg env=$NS ."
     echo "$cmd"; eval $cmd || exit 1
     authargs="$(registryLogin)"
     registryPush "$authargs" "${IMG_REPO}:${IMAGE_TAG}"
