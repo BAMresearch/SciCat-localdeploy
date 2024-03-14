@@ -14,23 +14,6 @@ checkVars SC_CATAMEL_FQDN SC_CATAMEL_PUB SC_CATAMEL_KEY SC_REGISTRY_ADDR SC_NAME
 
 REPO=https://github.com/SciCatProject/catamel.git
 
-fix_nan_package_version()
-{
-    nan_json="$(mktemp)"
-    curl -s https://registry.npmjs.org/nan/ > "$nan_json"
-    nan_ver="$(jq '."dist-tags".latest' "$nan_json")"
-    nan_url="$(jq ".versions.$nan_ver.dist.tarball" "$nan_json")"
-    nan_sha="$(jq ".versions.$nan_ver.dist.integrity" "$nan_json")"
-    dep_path='.dependencies."loopback-connector-kafka".dependencies'
-    jq --indent 4 \
-       "$dep_path.nan.version = $nan_ver \
-      | $dep_path.nan.resolved = $nan_url \
-      | $dep_path.nan.integrity = $nan_sha \
-      | $dep_path.snappy.requires.nan = $nan_ver" package-lock.json > "$nan_json"
-    mv "$nan_json" package-lock.json
-    chmod 644 package-lock.json
-}
-
 cd "$scriptdir"
 
 if [ -z "$buildOnly" ]; then
@@ -63,13 +46,11 @@ if [ -z "$noBuild" ]; then
     echo "Building release with tag $IMAGE_TAG"
     # adjustments for older versions of nodejs build env
     # (such as 10.19 + node-gyp 5.1, not needed for node 10.24 with node-gyp 6.1)
-    fix_nan_package_version
     # using the ESS Dockerfile without ESS specific stuff
     cp CI/ESS/Dockerfile . || exit 1
     # https://stackoverflow.com/questions/54428608/docker-node-alpine-image-build-fails-on-node-gyp#59538284
     sed -i -e '/COPY .*CI\/ESS/d' \
-        -e '/FROM/s/^.*$/FROM node:15.1-alpine/' \
-        -e '/RUN apk/a\    apk add --no-cache python make g++ && \\' \
+        -e '/RUN apk/a\    apk add --no-cache python3 make g++ && \\' \
         Dockerfile
     echo '*.json-sample' >> .dockerignore
 
