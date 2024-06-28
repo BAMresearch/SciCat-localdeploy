@@ -1,5 +1,7 @@
 #!/bin/sh
 
+exit # not used atm
+
 # get the script directory before creating any files
 scriptdir="$(dirname "$(readlink -f "$0")")"
 . "$scriptdir/../deploytools"
