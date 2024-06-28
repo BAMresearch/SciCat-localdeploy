@@ -58,7 +58,7 @@ IMG_REPO="$baseurl/$IMG_NAME"
 [ -z "$SC_REGISTRY_PASS" ] || baseurl="$SC_REGISTRY_USER:$SC_REGISTRY_PASS@$baseurl"
 registryOk "$baseurl" || exit 1 # test credentials first
 # get the latest image tag: sort by timestamp, pick the largest
-IMAGE_TAG="$(curl -s "https://$baseurl/v2/$IMG_NAME/tags/list" | jq -r '(.tags|sort[-1])?')"
+IMAGE_TAG="$(getLatestImageTag "$baseurl" "$IMG_NAME")"
 [ -z "$overrideImageTag" ] || IMAGE_TAG="$overrideImageTag"
 
 if [ -z "$noBuild" ]; then

@@ -40,6 +40,21 @@ getImageTag()
     git show -q --format='%at_%h' HEAD
 }
 
+getLatestImageTag()
+{
+    local url="$1"
+    local name="$2"
+    [ -z "$name" ] && return
+    local lst=""
+    local retry=0
+    while [ -z "$lst" ] && [ "$retry" -lt 10 ]; do
+        [ "$retry" -eq 0 ] || sleep 5
+        lst="$(curl -s "https://$url/v2/$name/tags/list")"
+        retry=$((retry+1))
+    done
+    [ -z "$lst" ] || echo $lst | jq -r '(.tags|sort[-1])?'
+}
+
 adjustServerAddr()
 {
     sed -e "s/\(^\s\+server:\s*\).\+$/\1$1/" "$2"
