@@ -289,6 +289,14 @@ kubeadm join 10.0.9.1:6443 --token <token> \
 And to let the coredns deployment start on the master node.
 ```
 kubectl taint nodes --all node-role.kubernetes.io/master-
+kubectl taint nodes --all node-role.kubernetes.io/control-plane-
+```
+Note: [Documentation on taints and tolerations](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/)
+
+### Scale down the deployment for coredns
+
+```
+kubectl scale deployments.apps -n kube-system coredns --replicas=1
 ```
 
 ## Setup cluster networking with *flannel* CNI
