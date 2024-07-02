@@ -64,7 +64,14 @@ IMG_NAME="landing-$NS"
 IMG_REPO="$baseurl/$IMG_NAME"
 # extra arguments if the registry need authentication as indicated by a set password
 [ -z "$SC_REGISTRY_PASS" ] || baseurl="$SC_REGISTRY_USER:$SC_REGISTRY_PASS@$baseurl"
-registryOk "$baseurl" || exit 1 # test credentials first
+for nr in $(seq 5); do
+    registryOk "$baseurl" && break # test credentials first
+    sleep $((nr+1))
+done
+if [ "$nr" -ge 5 ]; then
+   echo "Wrong credentials or timeout! Giving up."
+   exit 1
+fi
 # get the latest image tag: sort by timestamp, pick the largest
 IMAGE_TAG="$(getLatestImageTag "$baseurl" "$IMG_NAME")"
 if [ -z "$noBuild" ]; then
