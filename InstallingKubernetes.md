@@ -301,11 +301,14 @@ kubectl scale deployments.apps -n kube-system coredns --replicas=1
 
 ## Setup cluster networking with *flannel* CNI
 
-See https://github.com/coreos/flannel
+See https://github.com/flannel-io/flannel
 
 ```
-kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
 ```
+
+### Upgrading flannel later
+See https://github.com/flannel-io/flannel/blob/master/Documentation/upgrade.md
 
 ### Check network settings (FYI)
 
