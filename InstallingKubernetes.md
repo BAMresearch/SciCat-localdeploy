@@ -373,6 +373,55 @@ sudo systemctl daemon-reload
 sudo systemctl restart kubelet
 ```
 
+## Metrics, for *kubectl top*
+
+### Install the metrics server
+
+    wget -O metrics.yaml https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+    kubectl apply -f metrics.yaml
+
+### Add machine hostname to coredns
+
+Add the hostname to coredns name resolution for the metrics server to reolv it properly:
+
+    kubectl edit cm coredns -n kube-system
+
+Add below the *health* section and before the *ready* keyword a hosts entry:
+
+    hosts {
+        <outside ip address> <hostname>.cluster.local
+        fallthrough
+    }
+
+Reread the config file:
+
+    kubectl rollout restart -n kube-system deployment/coredns
+
+### Let the cluster issue its own certs
+
+From here: https://github.com/kubernetes-sigs/metrics-server/issues/196#issuecomment-1739584281
+
+Append `serverTLSBootstrap: true` in the *kubelet:* section of the kubelet-config ConfigMap and save:
+
+    kubectl -n kube-system edit configmap kubelet-config
+
+On each node, add *serverTLSBootstrap* to the kubelet config (as root typically):
+
+    echo 'serverTLSBootstrap: true' >> /var/lib/kubelet/config.yaml
+    sudo systemctl restart kubelet
+
+Approve all signing requests (CSR) programmatically:
+
+    for kubeletcsr in `kubectl -n kube-system get csr \
+        | grep kubernetes.io/kubelet-serving \
+        | awk '{ print $1 }'`;
+    do
+        kubectl certificate approve $kubeletcsr;
+    done
+
+The metrics server should work now:
+
+    kubectl top pods --all-namespaces
 
 ## Get helm
 ```
