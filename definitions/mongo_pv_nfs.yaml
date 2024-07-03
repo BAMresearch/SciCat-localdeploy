@@ -1,7 +1,7 @@
 kind: PersistentVolume
 apiVersion: v1
 metadata:
-  name: pvmongo10g
+  name: pvmongo0
   labels:
     type: local
 spec:
@@ -20,12 +20,12 @@ spec:
 kind: PersistentVolume
 apiVersion: v1
 metadata:
-  name: pvmongo5g
+  name: pvmongo1
   labels:
     type: local
 spec:
   capacity:
-    storage: 5Gi
+    storage: 10Gi
   accessModes:
     - ReadWriteOnce
   mountOptions:
