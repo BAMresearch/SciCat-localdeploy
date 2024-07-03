@@ -115,25 +115,4 @@ echo "$tmpcmd"; eval $tmpcmd
 for podid in $(get_podids); do
     kubectl -n dev wait --for=condition=ready "pod/$podid"
 done
-exit
 
-# set root password in no-auth mode
-(echo "use admin"; echo "db.changeUserPassword(\"root\", \"$SC_MONGO_ROOTPWD\")") | \
-    kubectl -n dev exec -i "$podid"  -- mongosh # FIXME
-remove_pod $svc
-kubectl get po -n dev
-kubectl get pv -n dev
-kubectl get pvc -n dev
-
-# create a new persistent volume first
-adjustServerAddr "$NFS_SERVER" "$pvcfg" | kubectl apply -f -
-# restart mongodb with auth again
-echo "$cmd"; eval $cmd
-for podid in $(get_podids); do
-    kubectl -n dev wait --for=condition=ready "pod/$podid"
-done
-
-# update k8s secret, set MONGODB_ROOT_PASSWORD env var before:
-kubectl -n $NS get secret $svc -o json | jq ".data[\"mongodb-root-password\"]=\"$(echo "$SC_MONGO_ROOTPWD" | base64)\"" | kubectl apply -f -
-
-# vim: set ts=4 sw=4 sts=4 tw=0 et:
