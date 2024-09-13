@@ -264,6 +264,7 @@ KUBELET_CFG=/etc/kubernetes/custom_kubelet.conf
   | sed -e '/nodeRegistration:/{:a;n;/\(name:\s*\)/d;ba' -e '}' \
   | sed -e "/controllerManager:/acontrolPlaneEndpoint: $(hostname -f)" \
   | sed -e '/localAPIEndpoint:/,/bindPort:/d' \
+  | sed -e '/cgroupDriver:/aserverTLSBootstrap: true' \
   | sed -e 's#\(criSocket:\s*\).*$#\1unix:///var/run/crio/crio.sock#'\
 ) > "$KUBELET_CFG"
 sudo kubeadm init --ignore-preflight-errors=Mem,Swap --config="$KUBELET_CFG"
