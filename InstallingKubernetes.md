@@ -602,7 +602,8 @@ It provides a cleanup routine for rollback too.
 
 ## That's it - have fun!
 
-### Troubleshooting: Changed IP address
+## Troubleshooting
+### Changed IP address
 
 Fix cluster for changed IP address:  
 (From here https://github.com/kubernetes/kubeadm/issues/338#issuecomment-460935394)
@@ -628,7 +629,7 @@ Do customization described in [Init the master node](#init-the-master-node) and 
 
 Additionally, the metrics server might cause flannel to hang. [Fix CoreDNS config to resolve the host](#add-machine-hostname-to-coredns).
 
-### Troubleshooting: DiskPressure
+### DiskPressure
 
 For smaller root filesystems with used space reaching 85 % (reported by `df -h`) the node my run into a `DiskPressure` condition caused by rather conservative defaults for the free disk space required to be at least 15 %:
 
