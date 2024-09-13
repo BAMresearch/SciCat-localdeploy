@@ -310,9 +310,11 @@ kubectl scale deployments.apps -n kube-system coredns --replicas=1
 
 See https://github.com/flannel-io/flannel
 
-```
-kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
-```
+    kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
+or with Helm:
+
+    helm repo add flannel https://flannel-io.github.io/flannel/
+    helm install flannel --set podCidr="10.244.0.0/16" --namespace kube-flannel flannel/flannel  
 
 ### Upgrading flannel later
 See https://github.com/flannel-io/flannel/blob/master/Documentation/upgrade.md
