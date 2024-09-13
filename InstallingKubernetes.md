@@ -317,6 +317,18 @@ kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/
 ### Upgrading flannel later
 See https://github.com/flannel-io/flannel/blob/master/Documentation/upgrade.md
 
+### Troubleshoot missing `/run/flannel/subnet.env`
+
+In case kube-system pods fail to start with the error:
+
+    loadFlannelSubnetEnv failed: open /run/flannel/subnet.env: no such file or directory
+
+Create that file with the correct subnet:
+
+    echo -e "FLANNEL_NETWORK=10.244.0.0/16\nFLANNEL_SUBNET=10.244.0.1/24\nFLANNEL_MTU=1450\nFLANNEL_IPMASQ=true" | sudo tee /run/flannel/subnet.env
+
+(Found here: https://stackoverflow.com/a/75395978)
+
 ### Check network settings (FYI)
 
 Get service-cluster-cidr:  
