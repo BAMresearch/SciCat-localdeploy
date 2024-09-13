@@ -258,7 +258,14 @@ Set up k8s init config:
 
 ```
 KUBELET_CFG=/etc/kubernetes/custom_kubelet.conf
-(kubeadm config print init-defaults --component-configs=KubeletConfiguration | sed -e '/ClusterConfiguration/{:a;n;/networking:/{a\  podSubnet: 10.244.0.0/16' -e'};ba' -e '}' | sed -e '/bootstrapTokens/{:a;n;/\(token:\s*\)/d;ba' -e '}' | sed -e '/nodeRegistration:/{:a;n;/\(name:\s*\)/d;ba' -e '}' | sed -e "/controllerManager:/acontrolPlaneEndpoint: $(hostname -f)" | sed -e '/localAPIEndpoint:/,/bindPort:/d' | sed -e 's#\(criSocket:\s*\).*$#\1unix:///var/run/crio/crio.sock#') > "$KUBELET_CFG"
+(kubeadm config print init-defaults --component-configs=KubeletConfiguration \
+  | sed -e '/ClusterConfiguration/{:a;n;/networking:/{a\  podSubnet: 10.244.0.0/16' -e'};ba' -e '}' \
+  | sed -e '/bootstrapTokens/{:a;n;/\(token:\s*\)/d;ba' -e '}' \
+  | sed -e '/nodeRegistration:/{:a;n;/\(name:\s*\)/d;ba' -e '}' \
+  | sed -e "/controllerManager:/acontrolPlaneEndpoint: $(hostname -f)" \
+  | sed -e '/localAPIEndpoint:/,/bindPort:/d' \
+  | sed -e 's#\(criSocket:\s*\).*$#\1unix:///var/run/crio/crio.sock#'\
+) > "$KUBELET_CFG"
 sudo kubeadm init --ignore-preflight-errors=Mem,Swap --config="$KUBELET_CFG"
 ```
 
