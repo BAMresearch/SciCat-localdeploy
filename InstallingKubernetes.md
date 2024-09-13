@@ -386,7 +386,7 @@ Add the hostname to coredns name resolution for the metrics server to reolv it p
 
     kubectl edit cm coredns -n kube-system
 
-Add below the *health* section and before the *ready* keyword a hosts entry:
+Add below the *health* section and before the *ready* keyword a hosts entry (not ideal, but works):
 
     hosts {
         <outside ip address> <hostname>.cluster.local
@@ -649,6 +649,32 @@ It configures
 It provides a cleanup routine for rollback too.
 
 ## That's it - have fun!
+
+### Troubleshooting: Changed IP address
+
+Fix cluster for changed IP address:  
+(From here https://github.com/kubernetes/kubeadm/issues/338#issuecomment-460935394)
+
+    systemctl stop kubelet crio
+    killall kube-controller-manager kube-scheduler kube-apiserver conmon
+
+    cd /etc/
+
+    # backup old kubernetes data
+    mv kubernetes kubernetes-backup
+    mv /var/lib/kubelet /var/lib/kubelet-backup
+
+    # restore certificates
+    mkdir -p kubernetes
+    cp -r kubernetes-backup/pki kubernetes
+    rm kubernetes/pki/{apiserver.*,etcd/peer.*,etcd/server.*}
+
+Do customization described in [Init the master node](#init-the-master-node) and init the cluster again with:
+
+    sudo systemctl start crio
+    sudo kubeadm init --ignore-preflight-errors=DirAvailable--var-lib-etcd --config="$KUBELET_CFG"
+
+Additionally, the metrics server might cause flannel to hang. [Fix CoreDNS config to resolve the host](#add-machine-hostname-to-coredns).
 
 ### Troubleshooting: DiskPressure
 
