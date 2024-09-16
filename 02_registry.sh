@@ -10,6 +10,10 @@
 # example crontab:
 # (check once a week if there is a more recent cert and restart the registry if positive)
 # 23 2 * * 0 (cd /home/buildbot/scicat; export SC_SITECONFIG=$(pwd)/fb65; if ./deploy/02_registry.sh checkCert; then ./deploy/02_registry.sh clean; sleep 5; ./deploy/02_registry.sh; fi)
+# Delete images based on a tag list
+#   for tag in $(cat ../tags); do while [ -z "$digest" ]; do digest="$(curl -sSl -H "Accept:application/vnd.oci.image.manifest.v1+json" -X GET "https://$baseurl/v2/catanie-fb65/manifests/$tag" | jq -r .config.digest)"; sleep 1; done; date; echo $digest; curl -sSl -H "Accept:application/vnd.oci.image.manifest.v1+json" -X DELETE "https://$baseurl/v2/catanie-fb65/manifests/$digest"; sleep 8; digest=""; done
+# Get tag list:
+#   curl -sSl "https://$baseurl/v2/catanie-fb65/tags/list" | jq -r '.tags[]'
 
 # learn about some utility functions before heading on ...
 scriptpath="$(readlink -f "$0")"
@@ -74,6 +78,7 @@ then
     adjustServerAddr "$NFS_SERVER" "$pvcfg" | kubectl apply -f -
     cmd="helm install $SVC_NAME twuni/docker-registry --namespace dev \
         --set persistence.enabled=true,persistence.size=5Gi \
+        --set persistence.deleteEnabled=true \
         $pwdargs $args"
     (echo "$cmd" && eval "$cmd")
 else # clean up
