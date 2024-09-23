@@ -99,6 +99,7 @@ if [ -z "$noBuild" ]; then
         -e '/RUN apk/a    apk add --no-cache python3 && \\' \
         -e '/COPY package/aRUN ulimit -Sn' \
         -e 's/RUN \(npm ci.*\)$/RUN npm config set fetch-timeout=600000 \&\& \1/' \
+        -e '/COPY\s\+--from=builder/aRUN chmod -R o+r /usr/share/nginx/html/assets' \
         CI/ESS/Dockerfile.dmsc > Dockerfile
     cat Dockerfile
     [ -z "$overrideImageTag" ] || IMAGE_TAG="$overrideImageTag"
