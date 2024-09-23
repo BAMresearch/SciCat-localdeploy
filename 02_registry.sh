@@ -11,7 +11,7 @@
 # (check once a week if there is a more recent cert and restart the registry if positive)
 # 23 2 * * 0 (cd /home/buildbot/scicat; export SC_SITECONFIG=$(pwd)/fb65; if ./deploy/02_registry.sh checkCert; then ./deploy/02_registry.sh clean; sleep 5; ./deploy/02_registry.sh; fi)
 # Delete images based on a tag list
-#   for tag in $(cat ../tags); do while [ -z "$digest" ]; do digest="$(curl -sSl -I -H "Accept:application/vnd.oci.image.manifest.v1+json" -X GET "https://$baseurl/v2/catanie-fb65/manifests/$tag" | awk '/docker-content-digest:/{print $2}')"; sleep 1; done; date; echo $digest; curl -sSl -H "Accept:application/vnd.oci.image.manifest.v1+json" -X DELETE "https://$baseurl/v2/catanie-fb65/manifests/$digest"; sleep 8; digest=""; done
+#   for tag in $(cat ../tags); do while [ -z "$digest" ]; do digest="$(curl -sSl -I -H "Accept:application/vnd.oci.image.manifest.v1+json" -X GET "https://$baseurl/v2/catanie-fb65/manifests/$tag" | awk '/docker-content-digest:/{sub("\\r","",$2); print $2}')"; sleep 1; done; date; echo $digest; curl -sSl -H "Accept:application/vnd.oci.image.manifest.v1+json" -X DELETE "https://$baseurl/v2/catanie-fb65/manifests/$digest"; sleep 8; digest=""; done
 # Get tag list:
 #   curl -sSl "https://$baseurl/v2/catanie-fb65/tags/list" | jq -r '.tags[]'
 
