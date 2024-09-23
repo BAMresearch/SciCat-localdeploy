@@ -1,7 +1,7 @@
 #!/bin/sh
 # Set up and start a mongodb instance in a kubernetes cluster
-# USAGE: $0 [cleanonly] [deletedata]
-# *cleanonly* runs cleanup procedures only, skips starting services again
+# USAGE: $0 [clean] [deletedata]
+# *clean* runs cleanup procedures only, skips starting services again
 # *deletedata* removes persistent storage data entirely
 #
 # todo: indefinitely growing journal on VM hosts
@@ -12,7 +12,7 @@ scriptdir="$(dirname "$(readlink -f "$0")")"
 . "$scriptdir/services/deploytools"
 
 # get given command line flags
-cleanonly="$(getScriptFlags cleanonly "$@")"
+clean="$(getScriptFlags clean "$@")"
 deletedata="$(getScriptFlags deletedata "$@")"
 noauth="$(getScriptFlags noauth "$@")"
 
@@ -87,7 +87,7 @@ if [ ! -z "$deletedata" ]; then
     [ -d "$datapath" ] && rm -R "$datapath/data"
 fi
 
-[ -z "$cleanonly" ] || exit # done here in 'clean only' mode
+[ -z "$clean" ] || exit # done here in cleanup mode
 
 # create the persistent volume first
 adjustServerAddr "$NFS_SERVER" "$pvcfg" | kubectl apply -f -
