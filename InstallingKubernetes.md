@@ -217,6 +217,8 @@ KUBELET_CFG=/etc/kubernetes/custom_kubelet.conf
   | sed -e '/localAPIEndpoint:/,/bindPort:/d' \
   | sed -e '/cgroupDriver:/aserverTLSBootstrap: true' \
   | sed -e 's#\(criSocket:\s*\).*$#\1unix:///var/run/crio/crio.sock#'\
+  | sed -e '/eviction/aevictionHard:\n  memory.available:  "200Mi"\n  nodefs.available:  "2Gi"\n  nodefs.inodesFree: "20000"\n  imagefs.available: "2Gi"'\
+  | sed -e 's#^\(containerRuntimeEndpoint:\).*$#\1 "unix:///var/run/crio/crio.sock"#'\
 ) > "$KUBELET_CFG"
 sudo kubeadm init --ignore-preflight-errors=Mem,Swap --config="$KUBELET_CFG"
 ```
