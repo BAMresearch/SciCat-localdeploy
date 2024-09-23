@@ -285,6 +285,25 @@ Create that file with the correct subnet:
 
 (Found here: https://stackoverflow.com/a/75395978)
 
+### Troubleshoot unreliable connections from localhost failing >90% of the time
+
+This is a problem for a local registry server in the same cluster. Testing with *curl* this error looks like this most of the time:
+
+    $ curl -sSl "https://$baseurl/v2/_catalog"
+    curl: (7) Failed to connect to img.**.ddnss.de port 443 after 2 ms: Couldn't connect to server
+
+There are no errors logged by ingress and it looks more like caused by the underlying networking, which is flannel here. By looking at the iptables rules set up by kubernetes, it can be seen that some rules by flannel use the node name.
+
+    Chain FLANNEL-FWD (1 references)
+    target     prot opt source               destination
+    ACCEPT     all  --  ${HOSTNAME}/16       anywhere             /* flanneld forward */
+    ACCEPT     all  --  anywhere             ${HOSTNAME}/16       /* flanneld forward */
+
+
+Assuming this config has a cluster on the open net in mind, presumably, this is supposed to resolve to the external IP address. Thus, having an entry in `/etc/hosts` pointing the node name to *127.0.1.1* (which is good practice for setting the machine hostname) render these flannel rules problematic.
+
+However, removing the entry from `/etc/hosts` instantaneously resolves the connection failures.
+
 ### Check network settings (FYI)
 
 Get service-cluster-cidr:  
