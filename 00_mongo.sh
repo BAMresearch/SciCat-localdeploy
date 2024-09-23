@@ -113,6 +113,6 @@ tmpcmd="$cmd"
 # --set auth.enabled=false
 echo "$tmpcmd"; eval $tmpcmd
 for podid in $(get_podids); do
-    kubectl -n dev wait --for=condition=ready "pod/$podid"
+    kubectl -n dev wait --for=condition=ready --timeout=5m "pod/$podid"
 done
 
