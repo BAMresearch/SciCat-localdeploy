@@ -631,21 +631,22 @@ It provides a cleanup routine for rollback too.
 1. Update IP addresses in
     - `/etc/kubernetes/manifests/kube-apiserver.yaml` and
     - `/etc/kubernetes/manifests/etcd.yaml`
+
     This can be handled by [the DNS update script](#using-httpswwwddnssde) in
     `/etc/dhcp/dhclient-exit-hooks.d/99_ddnss_update`.
 
 2. Restart kubelet: `systemctl restart kubelet`
 
-3. Approve internal CSRs after kubelet was restarted:
+3. [Approve internal CSRs after kubelet was restarted](#let-the-cluster-issue-its-own-certs):
 
-    for kubeletcsr in `kubectl -n kube-system get csr \
-        | grep kubernetes.io/kubelet-serving \
-        | awk '{ print $1 }'`;
-    do
-        kubectl certificate approve $kubeletcsr;
-    done
+       for kubeletcsr in `kubectl -n kube-system get csr \
+            | grep kubernetes.io/kubelet-serving \
+            | awk '{ print $1 }'`;
+        do
+            kubectl certificate approve $kubeletcsr;
+        done
 
-4. Restart the ingress pod since it has to know about external IP address.
+5. Restart the ingress pod since it has to know about external IP address.
 
 #### Full reinit
 
