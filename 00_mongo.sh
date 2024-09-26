@@ -104,6 +104,9 @@ adjustServerAddr "$NFS_SERVER" "$pvcfg" | kubectl apply -f -
 # start mongodb in no-auth mode first
 cmd="helm install $svc $chartname --namespace $NS
     --set auth.rootPassword=$SC_MONGO_ROOTPWD
+    --set containerSecurityContext.runAsUser=2001
+    --set containerSecurityContext.runAsGroup=2001
+    --set podSecurityContext.fsGroup=2001
     --set resourcesPreset=xlarge"
 # extra arguments for sharded variant
 echo "$chartname" | grep -q shard && cmd="$cmd
