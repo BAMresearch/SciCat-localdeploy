@@ -41,7 +41,7 @@ pvcfg="$scriptdir/definitions/mongo_pv_nfs.yaml"
 echo "-> Using NFS for persistent volumes."
 echo "   Please make sure the configured NFS shares can be mounted:"
 echo "   '$pvcfg'"
-mpath="$(awk -F':' '/path:/{sub(/^ */,"",$2);print $2}' "$pvcfg")"
+mpath="$(awk -F':' '/path:/{sub(/^ */,"",$2);print $2}' "$pvcfg" | sort -u)"
 if ! [ -d "$mpath" ]; then
     mkdir -p "$mpath"
     chmod a+w "$mpath"
