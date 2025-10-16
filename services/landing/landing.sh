@@ -100,6 +100,7 @@ fi
 if [ -z "$buildOnly" ] && [ ! -z "$IMAGE_TAG" ]; then
     setRegistryAccessForPulling
     echo "Deploying to Kubernetes"
+    cd "$scriptdir"
     cmd="helm install landingserver landingserver --namespace $NS --set image.tag=$IMAGE_TAG \\
              --set image.repository=$IMG_REPO --set service.type=ClusterIP \\
              ${IARGS}"
