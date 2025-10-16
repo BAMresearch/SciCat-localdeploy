@@ -90,6 +90,7 @@ loadSiteConfig()
         SC_SITECONFIG="$(readlink -f siteconfig)"
         echo "$fx SC_SITECONFIG is not set, using '$SC_SITECONFIG'."
     fi
+    [ -f "$SC_SITECONFIG" ] && SC_SITECONFIG="$(dirname "$SC_SITECONFIG")"
     export SC_SITECONFIG
     if [ ! -d "$SC_SITECONFIG" ]; then
         echo "$fx site config path does not exist, creating it: '$SC_SITECONFIG'!"
